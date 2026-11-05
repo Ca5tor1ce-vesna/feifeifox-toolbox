@@ -1,0 +1,22 @@
+# 编辑器的基础格式设置（VS Code 要装 EditorConfig 插件，JetBrains 自带支持）。
+# 目的：不同人、不同编辑器写出来的缩进和编码一致，diff 里只剩真正的改动。tests/pages/architecture.test.ts 会检查其中几条。
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Markdown 行尾两个空格表示换行，不能自动删掉。
+[*.md]
+trim_trailing_whitespace = false
+
+# Rust 按社区默认的 4 空格缩进（cargo fmt）。
+[*.rs]
+indent_size = 4
+
+# Python 按 PEP 8 用 4 空格缩进。
+[*.py]
+indent_size = 4

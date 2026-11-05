@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <script>document.documentElement.classList.add('boot-pending');
+      // 在 B站 App 里打开（B站 Toy）：App 会在页面顶部浮一排按钮（头像、关注、分享、关闭），手机布局要给它们让出位置
+      if (/BiliApp|bili-universal|bili-inter|mobi_app\//i.test(navigator.userAgent)) document.documentElement.classList.add('in-bili-app');</script>
+    <title>绯绯狐工具箱</title>
+    <link rel="stylesheet" href="app/style.css" />
+    <link rel="icon" type="image/x-icon" href="app/favicon.ico" />
+    <link rel="manifest" href="app/manifest.json" />
+  </head>
+  <body>
+    <div id="app">
+      <aside id="sidebar">
+        <button class="brand" id="home-button" type="button" aria-label="返回欢迎页">
+          <span class="brand-icon" aria-hidden="true"><img src="app/icon.png" alt="" width="36" height="36" /></span>
+          <div class="brand-text">
+            <b>绯绯狐工具箱</b>
+            <small id="brand-version">加载中…</small>
+          </div>
+        </button>
+
+        <nav id="nav" class="nav" aria-label="功能导航"><div class="gt-nav-loading" role="status" aria-label="导航加载中"><i></i><i></i><i></i><i></i></div></nav>
+        <!-- 手机上侧栏变成底部标签栏，「更多」打开下面的 sidebar-footer（首页、存档、链接）；电脑上不显示 -->
+        <button class="nav-more" id="more-button" type="button" aria-label="更多" aria-expanded="false" aria-controls="more-sheet"><span class="icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg></span><span class="name">更多</span></button>
+
+        <div class="sidebar-footer" id="more-sheet">
+          <button class="ghost nav-page nav-home" type="button" id="home-sheet-button"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 11 8-6.5 8 6.5"/><path d="M6.5 9.5V19h11V9.5"/></svg></span><span class="name">首页</span></button>
+          <button class="ghost nav-page" hidden data-page="status" aria-label="模块状态"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a4 4 0 0 0 8 0V3"/><path d="M10 13v3a4 4 0 0 0 8 0v-2"/><circle cx="18" cy="12" r="2"/></svg></span><span class="name">模块状态</span> <span id="err-badge" class="badge hidden">0</span></button>
+          <div class="sidebar-backup" role="group" aria-label="存档备份">
+            <button class="ghost small" type="button" id="export-saves" title="把配装、队伍和页面草稿存成一个 JSON 文件"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5M5 19.5h14"/></svg>导出存档</button>
+            <button class="ghost small" type="button" id="import-saves" title="导入导出的存档，或者以前 userdata 里的 speed-plan-presets.json、aha-team-presets.json"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15.5V4.5M7.5 9 12 4.5 16.5 9M5 19.5h14"/></svg>导入存档</button>
+            <input id="import-saves-file" type="file" accept=".json,application/json" multiple hidden />
+          </div>
+          <div class="sidebar-links">
+            <!-- toy:omit -->
+            <a href="https://github.com/Ca5tor1ce-vesna/feifeifox-toolbox" target="_blank" rel="noopener">GitHub 仓库</a>
+            <!-- /toy:omit -->
+            <a href="https://space.bilibili.com/5406068" target="_blank" rel="noopener">b站：syllo椭圆</a>
+            <a href="https://space.bilibili.com/395882974" target="_blank" rel="noopener">b站：我星第一神经</a>
+            <a href="https://space.bilibili.com/14451336" target="_blank" rel="noopener">b站：素帕蜗牛</a>
+            <span class="sidebar-credits">代码贡献：<a href="https://space.bilibili.com/5406068" target="_blank" rel="noopener">syllo椭圆</a> · <a href="https://space.bilibili.com/395882974" target="_blank" rel="noopener">我星第一神经</a> · <a href="https://space.bilibili.com/14451336" target="_blank" rel="noopener">素帕蜗牛</a></span>
+          </div>
+        </div>
+      </aside>
+
+      <main id="main">
+        <span class="leaf a" aria-hidden="true"></span><span class="leaf b" aria-hidden="true"></span><span class="leaf c" aria-hidden="true"></span>
+        <header id="topbar">
+          <button id="sidebar-toggle" type="button" class="ghost small" aria-label="收起侧栏" aria-expanded="true" title="收起侧栏">‹</button>
+          <div id="crumb" class="crumb">选择一个功能开始</div>
+          <div class="search-wrap">
+            <input id="search" type="search" placeholder="搜索功能…（配速 / 抽卡 / 伤害）" autocomplete="off" aria-label="搜索功能" />
+            <kbd class="search-kbd">Ctrl K</kbd>
+          </div>
+        </header>
+        <div id="warnings"></div>
+        <section id="view" class="view">
+          <div id="boot-skeleton" class="gt-skeleton" role="status" aria-label="页面加载中"><div class="gt-skeleton-card"><i></i><i></i><i></i><i></i></div><div class="gt-skeleton-card"><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="welcome">
+            <h1>欢迎你使用，当前为<em>测试版本，</em><span class="welcome-spark" aria-hidden="true">✦</span><br />有任何建议或者反馈<em class="fade">可以联系作者</em></h1>
+            <div class="welcome-rule" aria-hidden="true"></div>
+            <div class="home-actions">
+              <button type="button" class="home-action" data-whats-new><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 3.5 14.4 9l5.6.5-4.3 3.7 1.3 5.6L12 15.9 7 18.8l1.3-5.6L4 9.5 9.6 9z"/></svg>更新内容</button>
+              <div id="install-guide" class="home-install"></div>
+            </div>
+            <div class="home-links">
+              <!-- toy:omit -->
+              <span class="home-link"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.3 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></svg><a href="https://github.com/Ca5tor1ce-vesna/feifeifox-toolbox" target="_blank" rel="noopener">GitHub 仓库</a></span>
+              <!-- /toy:omit -->
+              <span class="home-link"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M7 3.5 9.5 6M17 3.5 14.5 6"/><rect x="3" y="6" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="currentColor" d="M8 11.5h2v2H8zM14 11.5h2v2h-2z"/></svg><a href="https://space.bilibili.com/5406068" target="_blank" rel="noopener">b站：syllo椭圆</a></span>
+              <span class="home-link"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M7 3.5 9.5 6M17 3.5 14.5 6"/><rect x="3" y="6" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="currentColor" d="M8 11.5h2v2H8zM14 11.5h2v2h-2z"/></svg><a href="https://space.bilibili.com/395882974" target="_blank" rel="noopener">b站：我星第一神经</a></span>
+              <span class="home-link"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M7 3.5 9.5 6M17 3.5 14.5 6"/><rect x="3" y="6" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path fill="currentColor" d="M8 11.5h2v2H8zM14 11.5h2v2h-2z"/></svg><a href="https://space.bilibili.com/14451336" target="_blank" rel="noopener">b站：素帕蜗牛</a></span>
+              <span class="home-link"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14"/></svg><span class="home-credits">代码贡献：<a href="https://space.bilibili.com/5406068" target="_blank" rel="noopener">syllo椭圆</a> · <a href="https://space.bilibili.com/395882974" target="_blank" rel="noopener">我星第一神经</a> · <a href="https://space.bilibili.com/14451336" target="_blank" rel="noopener">素帕蜗牛</a></span></span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app/backend.js"></script>
+    <script src="app/local-state.js"></script>
+    <script src="app/select-menu.js"></script>
+    <script>
+      // B站 App 全屏打开时页面铺到状态栏下面（安全区顶部不为 0），App 的按钮会浮在页面上，手机布局要给它们让位置；
+      // App 自己留了顶栏时页面从状态栏下面开始，不用让。
+      (() => {
+        if (!document.documentElement.classList.contains('in-bili-app')) return;
+        const probe = document.createElement('div');
+        probe.style.cssText = 'position:fixed;top:0;left:0;visibility:hidden;padding-top:env(safe-area-inset-top)';
+        document.body.append(probe);
+        if (parseFloat(getComputedStyle(probe).paddingTop) > 0) document.documentElement.classList.add('bili-overlay');
+        probe.remove();
+      })();
+    </script>
+    <script type="module" src="app/app.js"></script>
+  </body>
+</html>

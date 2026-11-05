@@ -1,0 +1,11 @@
+{
+ "name": "绯绯狐工具箱",
+ "short_name": "绯绯狐",
+ "description": "崩坏：星穹铁道的配速、行动轴、角色与遗器工具箱",
+ "start_url": "../",
+ "scope": "../",
+ "display": "standalone",
+ "background_color": "#fff6f9",
+ "theme_color": "#d93670",
+ "icons": [{ "src": "icon.png", "sizes": "256x256", "type": "image/png" }]
+}

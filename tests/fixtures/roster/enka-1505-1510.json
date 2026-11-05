@@ -1,0 +1,515 @@
+{
+ "_note": "2026-11-05 Enka 返回里的两个展柜角色（绯英、姬子•启行），删掉了 UID、昵称等个人信息和 Enka 自带的取整数值；面板预期见 tests/pages/roster-panel.test.ts。",
+ "detailInfo": {
+  "avatarDetailList": [
+   {
+    "avatarId": 1505,
+    "level": 80,
+    "promotion": 6,
+    "rank": 6,
+    "equipment": {
+     "rank": 5,
+     "tid": 23058,
+     "promotion": 6,
+     "level": 80
+    },
+    "relicList": [
+     {
+      "mainAffixId": 1,
+      "subAffixList": [
+       {
+        "affixId": 3,
+        "cnt": 1
+       },
+       {
+        "affixId": 7,
+        "cnt": 1,
+        "step": 1
+       },
+       {
+        "affixId": 9,
+        "cnt": 5,
+        "step": 2
+       },
+       {
+        "affixId": 10,
+        "cnt": 1,
+        "step": 2
+       }
+      ],
+      "tid": 61291,
+      "type": 1,
+      "level": 15
+     },
+     {
+      "mainAffixId": 1,
+      "subAffixList": [
+       {
+        "affixId": 3,
+        "cnt": 1,
+        "step": 2
+       },
+       {
+        "affixId": 5,
+        "cnt": 1,
+        "step": 1
+       },
+       {
+        "affixId": 8,
+        "cnt": 2,
+        "step": 1
+       },
+       {
+        "affixId": 9,
+        "cnt": 5,
+        "step": 5
+       }
+      ],
+      "tid": 61292,
+      "type": 2,
+      "level": 15
+     },
+     {
+      "mainAffixId": 5,
+      "subAffixList": [
+       {
+        "affixId": 3,
+        "cnt": 2
+       },
+       {
+        "affixId": 4,
+        "cnt": 1,
+        "step": 2
+       },
+       {
+        "affixId": 7,
+        "cnt": 1
+       },
+       {
+        "affixId": 8,
+        "cnt": 5,
+        "step": 2
+       }
+      ],
+      "tid": 61293,
+      "type": 3,
+      "level": 15
+     },
+     {
+      "mainAffixId": 4,
+      "subAffixList": [
+       {
+        "affixId": 1,
+        "cnt": 2,
+        "step": 2
+       },
+       {
+        "affixId": 3,
+        "cnt": 1,
+        "step": 1
+       },
+       {
+        "affixId": 6,
+        "cnt": 1,
+        "step": 1
+       },
+       {
+        "affixId": 9,
+        "cnt": 4,
+        "step": 6
+       }
+      ],
+      "tid": 61294,
+      "type": 4,
+      "level": 15
+     },
+     {
+      "mainAffixId": 4,
+      "subAffixList": [
+       {
+        "affixId": 2,
+        "cnt": 1,
+        "step": 2
+       },
+       {
+        "affixId": 8,
+        "cnt": 3,
+        "step": 1
+       },
+       {
+        "affixId": 9,
+        "cnt": 3,
+        "step": 3
+       },
+       {
+        "affixId": 10,
+        "cnt": 1
+       }
+      ],
+      "tid": 63255,
+      "type": 5,
+      "level": 15
+     },
+     {
+      "mainAffixId": 2,
+      "subAffixList": [
+       {
+        "affixId": 5,
+        "cnt": 1,
+        "step": 1
+       },
+       {
+        "affixId": 6,
+        "cnt": 1,
+        "step": 2
+       },
+       {
+        "affixId": 8,
+        "cnt": 3,
+        "step": 3
+       },
+       {
+        "affixId": 9,
+        "cnt": 4,
+        "step": 6
+       }
+      ],
+      "tid": 63256,
+      "type": 6,
+      "level": 15
+     }
+    ],
+    "skillTreeList": [
+     {
+      "pointId": 1505001,
+      "level": 6
+     },
+     {
+      "pointId": 1505002,
+      "level": 10
+     },
+     {
+      "pointId": 1505003,
+      "level": 10
+     },
+     {
+      "pointId": 1505004,
+      "level": 10
+     },
+     {
+      "pointId": 1505007,
+      "level": 1
+     },
+     {
+      "pointId": 1505101,
+      "level": 1
+     },
+     {
+      "pointId": 1505102,
+      "level": 1
+     },
+     {
+      "pointId": 1505103,
+      "level": 1
+     },
+     {
+      "pointId": 1505201,
+      "level": 1
+     },
+     {
+      "pointId": 1505202,
+      "level": 1
+     },
+     {
+      "pointId": 1505203,
+      "level": 1
+     },
+     {
+      "pointId": 1505204,
+      "level": 1
+     },
+     {
+      "pointId": 1505205,
+      "level": 1
+     },
+     {
+      "pointId": 1505206,
+      "level": 1
+     },
+     {
+      "pointId": 1505207,
+      "level": 1
+     },
+     {
+      "pointId": 1505208,
+      "level": 1
+     },
+     {
+      "pointId": 1505209,
+      "level": 1
+     },
+     {
+      "pointId": 1505210,
+      "level": 1
+     },
+     {
+      "pointId": 1505420,
+      "level": 10
+     }
+    ]
+   },
+   {
+    "avatarId": 1510,
+    "level": 80,
+    "promotion": 6,
+    "rank": 6,
+    "equipment": {
+     "rank": 1,
+     "tid": 23060,
+     "promotion": 6,
+     "level": 80
+    },
+    "relicList": [
+     {
+      "mainAffixId": 1,
+      "subAffixList": [
+       {
+        "affixId": 6,
+        "cnt": 1,
+        "step": 1
+       },
+       {
+        "affixId": 8,
+        "cnt": 2
+       },
+       {
+        "affixId": 9,
+        "cnt": 4,
+        "step": 2
+       },
+       {
+        "affixId": 10,
+        "cnt": 2,
+        "step": 1
+       }
+      ],
+      "tid": 61311,
+      "type": 1,
+      "level": 15
+     },
+     {
+      "mainAffixId": 1,
+      "subAffixList": [
+       {
+        "affixId": 3,
+        "cnt": 2,
+        "step": 1
+       },
+       {
+        "affixId": 8,
+        "cnt": 3,
+        "step": 2
+       },
+       {
+        "affixId": 9,
+        "cnt": 2,
+        "step": 1
+       },
+       {
+        "affixId": 12,
+        "cnt": 1,
+        "step": 1
+       }
+      ],
+      "tid": 61312,
+      "type": 2,
+      "level": 15
+     },
+     {
+      "mainAffixId": 4,
+      "subAffixList": [
+       {
+        "affixId": 1,
+        "cnt": 1
+       },
+       {
+        "affixId": 2,
+        "cnt": 4,
+        "step": 4
+       },
+       {
+        "affixId": 6,
+        "cnt": 1
+       },
+       {
+        "affixId": 9,
+        "cnt": 2,
+        "step": 2
+       }
+      ],
+      "tid": 61313,
+      "type": 3,
+      "level": 15
+     },
+     {
+      "mainAffixId": 2,
+      "subAffixList": [
+       {
+        "affixId": 3,
+        "cnt": 1,
+        "step": 1
+       },
+       {
+        "affixId": 8,
+        "cnt": 1,
+        "step": 1
+       },
+       {
+        "affixId": 9,
+        "cnt": 3,
+        "step": 4
+       },
+       {
+        "affixId": 12,
+        "cnt": 3,
+        "step": 4
+       }
+      ],
+      "tid": 61314,
+      "type": 4,
+      "level": 15
+     },
+     {
+      "mainAffixId": 2,
+      "subAffixList": [
+       {
+        "affixId": 1,
+        "cnt": 2,
+        "step": 1
+       },
+       {
+        "affixId": 2,
+        "cnt": 2,
+        "step": 1
+       },
+       {
+        "affixId": 8,
+        "cnt": 2,
+        "step": 2
+       },
+       {
+        "affixId": 9,
+        "cnt": 2,
+        "step": 2
+       }
+      ],
+      "tid": 63275,
+      "type": 5,
+      "level": 15
+     },
+     {
+      "mainAffixId": 4,
+      "subAffixList": [
+       {
+        "affixId": 2,
+        "cnt": 2,
+        "step": 1
+       },
+       {
+        "affixId": 7,
+        "cnt": 1
+       },
+       {
+        "affixId": 8,
+        "cnt": 4,
+        "step": 5
+       },
+       {
+        "affixId": 10,
+        "cnt": 2,
+        "step": 1
+       }
+      ],
+      "tid": 63276,
+      "type": 6,
+      "level": 15
+     }
+    ],
+    "skillTreeList": [
+     {
+      "pointId": 1510001,
+      "level": 6
+     },
+     {
+      "pointId": 1510002,
+      "level": 10
+     },
+     {
+      "pointId": 1510003,
+      "level": 10
+     },
+     {
+      "pointId": 1510004,
+      "level": 10
+     },
+     {
+      "pointId": 1510007,
+      "level": 1
+     },
+     {
+      "pointId": 1510101,
+      "level": 1
+     },
+     {
+      "pointId": 1510102,
+      "level": 1
+     },
+     {
+      "pointId": 1510103,
+      "level": 1
+     },
+     {
+      "pointId": 1510201,
+      "level": 1
+     },
+     {
+      "pointId": 1510202,
+      "level": 1
+     },
+     {
+      "pointId": 1510203,
+      "level": 1
+     },
+     {
+      "pointId": 1510204,
+      "level": 1
+     },
+     {
+      "pointId": 1510205,
+      "level": 1
+     },
+     {
+      "pointId": 1510206,
+      "level": 1
+     },
+     {
+      "pointId": 1510207,
+      "level": 1
+     },
+     {
+      "pointId": 1510208,
+      "level": 1
+     },
+     {
+      "pointId": 1510209,
+      "level": 1
+     },
+     {
+      "pointId": 1510210,
+      "level": 1
+     }
+    ]
+   }
+  ]
+ }
+}

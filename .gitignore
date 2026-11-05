@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+dist/
+build/
+tools/.cache/
+node_modules/
+
+# archify 讲解页和示意图，只在本机看，不提交
+/.archify/
+
+# 用户自己的配装和设置，不进仓库
+/userdata/
+
+# Rust 外壳（desktop/）的编译产物
+desktop/target/
+desktop/gen/
+
+# 角色与遗器的识图文件：打包时从 node_modules 复制（tools/ocr_assets.mjs），不提交
+modules/honkai-star-rail/features/roster/ocr/

@@ -1,0 +1,30 @@
+{
+  "name": "game-toolbox-development",
+  "version": "1.2.1",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.check.json && tsc -p tsconfig.axis.json && vue-tsc -p tsconfig.axis-ui.json && vue-tsc -p tsconfig.pages.json",
+    "build:axis": "node tools/build_axis_engine.mjs",
+    "build:axis-ui": "node tools/build_axis_ui.mjs",
+    "build:pages": "node tools/build_pages.mjs",
+    "test:axis": "node --experimental-strip-types --no-warnings --test \"tests/axis/*.test.ts\"",
+    "test:pages": "node --experimental-strip-types --no-warnings --test \"tests/pages/*.test.ts\"",
+    "build:axis-ui:beta": "node tools/build_axis_ui.mjs --beta",
+    "test:axis:beta": "node --experimental-strip-types --no-warnings --test \"beta/tests/*.test.ts\"",
+    "build:site": "node tools/build_site.mjs",
+    "serve": "node tools/serve.mjs"
+  },
+  "devDependencies": {
+    "@tesseract.js-data/chi_sim": "1.0.0",
+    "@tesseract.js-data/eng": "1.0.0",
+    "@types/node": "22.20.5",
+    "esbuild": "0.28.2",
+    "jpeg-js": "0.4.4",
+    "motion-v": "2.10.0",
+    "reka-ui": "2.11.0",
+    "tesseract.js": "5.1.1",
+    "typescript": "5.9.3",
+    "vue": "3.5.44",
+    "vue-tsc": "3.3.14"
+  }
+}

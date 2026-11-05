@@ -1,0 +1,12 @@
+# 文本文件在仓库里一律存成 LF。各人检出时是 LF 还是 CRLF，由自己的 core.autocrlf 决定，不影响仓库内容。
+# 目的：不管谁的编辑器把文件存成了 CRLF，提交时都不会变成整个文件的假改动，对拍基准也不会因此失效。
+* text=auto
+
+# 图片、视频、图标按二进制处理，不做任何换行转换。
+# 目的：避免这些文件被误判成文本、换行被改坏。text=auto 自己也能认出来，这里写明是为了保险。
+*.webp binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.webm binary
+*.zip binary

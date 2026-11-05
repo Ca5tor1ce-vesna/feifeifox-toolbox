@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>绯绯狐工具箱 v{{version}} 免安装版 · 使用说明</title>
+<style>
+  :root { --bg:#0e1015; --panel:#161922; --panel2:#1c2029; --border:#262b37; --text:#e6e8ee; --muted:#8f97a8; --accent:#e8b84b; --accent2:#7c6cf0; --good:#4ade80; --warn:#fbbf24; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+    font:15px/1.75 -apple-system,"PingFang SC","Microsoft YaHei UI","Microsoft YaHei","Noto Sans CJK SC",sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 40px 24px 64px; }
+  header { display:flex; align-items:center; gap:16px; margin-bottom:24px; }
+  header .logo { width:56px; height:56px; border-radius:14px; background:linear-gradient(160deg,#1e2230,#0e1016);
+    display:grid; place-items:center; font-size:30px; border:1px solid var(--border); }
+  h1 { font-size:26px; margin:0; }
+  header p { margin:0; color:var(--muted); }
+  section { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:20px 24px; margin-bottom:16px; }
+  h2 { font-size:17px; margin:0 0 12px; display:flex; gap:8px; align-items:center; }
+  h2 .n { background:var(--accent); color:#1a1405; width:24px; height:24px; border-radius:50%; display:inline-grid; place-items:center; font-size:13px; }
+  ol, ul { margin:0; padding-left:22px; } li { margin:4px 0; }
+  code, kbd { font-family:"Cascadia Mono",Consolas,monospace; font-size:13px; background:var(--panel2); border:1px solid var(--border); border-radius:5px; padding:1px 6px; }
+  .tree { font-family:"Cascadia Mono",Consolas,monospace; font-size:13.5px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:12px 16px; white-space:pre; overflow-x:auto; line-height:1.6; }
+  .tree b { color:var(--accent); font-weight:600; } .tree i { color:var(--muted); font-style:normal; }
+  .tip { border-left:3px solid var(--accent2); background:color-mix(in srgb,var(--accent2) 10%,transparent); padding:8px 14px; border-radius:0 8px 8px 0; margin-top:12px; }
+  .warn { border-left-color:var(--warn); background:color-mix(in srgb,var(--warn) 10%,transparent); }
+  table { width:100%; border-collapse:collapse; } td { padding:8px 4px; border-bottom:1px solid var(--border); vertical-align:top; }
+  td:first-child { white-space:nowrap; color:var(--accent); padding-right:16px; }
+  footer { color:var(--muted); font-size:13px; text-align:center; margin-top:24px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="logo">⏱️</div>
+    <div>
+      <h1>绯绯狐工具箱 v{{version}} · 免安装版</h1>
+      <p>免安装、断网可用（角色顶分要联网取数据）。解压就能用，删掉文件夹就是卸载。</p>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="n">1</span>打开</h2>
+    <ol>
+      <li>把压缩包<b>整个解压</b>到一个文件夹（例如 <code>D:绯绯狐工具箱</code>）。不要在压缩软件里直接双击运行。</li>
+      <li>双击 <b>FeifeiFoxToolbox.exe</b>，会打开工具箱窗口。界面用 Windows 自带的 WebView2 显示，不用另外安装。</li>
+      <li>用完直接关窗口就行。</li>
+    </ol>
+    <div class="tip warn">第一次打开时 Windows 可能提示「Windows 已保护你的电脑」：这个程序没有购买代码签名证书。点 <b>更多信息 → 仍要运行</b> 即可。杀毒软件误报时，把这个文件夹加入信任。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>文件夹里有什么</h2>
+    <div class="tree"><b>FeifeiFoxToolbox.exe</b>     <i>← 双击这个</i>
+<b>使用说明.html</b>      <i>← 就是本页</i>
+<b>userdata/</b>          <i>← 你的数据：配装、队伍、页面上次的状态</i></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>有哪些功能</h2>
+    <table>
+      <tr><td>配速查询</td><td>选角色（也可以自定义空白角色）、光锥、星魂、遗器，算出各模式各 T 数各动数需要的速度，右侧直接显示「还差几速」和大约要几条速度副词条；可以存自己的配装，一键自动推荐最省的配装。</td></tr>
+      <tr><td>全角色行动轴</td><td>选角色就能出轴，算速度、拉条、额外回合、插大和回能；队里有欢愉角色时自动显示阿哈时刻。可以读取配速查询里存的配装，也能存队伍。</td></tr>
+      <tr><td>抽卡规划</td><td>按官方概率和保底算期望抽数、各分位要多少抽和星琼。</td></tr>
+      <tr><td>角色顶分</td><td>按模式和关卡浏览低配通关阵容（数据来自 The Herta，需要联网）。</td></tr>
+    </table>
+    <div class="tip">左上角搜索框可以按名字找功能，快捷键 <kbd>Ctrl</kbd>+<kbd>K</kbd>。左侧模块分组可以点标题折叠。</div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>升级与备份</h2>
+    <ul>
+      <li>升级：解压新版本，把旧文件夹里的 <code>userdata</code> 整个拷到新文件夹里覆盖即可。以前版本的 <code>userdata</code> 直接能用。</li>
+      <li>备份：只需要备份 <code>userdata</code> 文件夹；也可以用左下角的「导出存档」存成一个文件，在别的电脑或 B站网页版里「导入存档」。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>出问题了</h2>
+    <ul>
+      <li><b>双击没反应或窗口一闪就没</b>：确认系统里有 WebView2（Windows 10/11 一般自带；没有的话到微软官网下载「WebView2 运行时」）。</li>
+      <li><b>界面空白</b>：截图反馈，并说一下 Windows 版本。</li>
+      <li><b>存档保存失败</b>：确认解压的文件夹不是只读的（比如别放在 <code>C:Program Files</code> 里）。</li>
+    </ul>
+  </section>
+
+  <footer>v{{version}} · 打包时间 {{built_at}}</footer>
+</main>
+</body>
+</html>

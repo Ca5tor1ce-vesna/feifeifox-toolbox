@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "绯绯狐工具箱",
+  "mainBinaryName": "FeifeiFoxToolbox",
+  "version": "1.2.1",
+  "identifier": "com.feifeifox.toolbox",
+  "build": {
+    "frontendDist": "../build/site"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "绯绯狐工具箱",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 900,
+        "minHeight": 600,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": false,
+    "icon": ["icons/icon.ico"]
+  }
+}
