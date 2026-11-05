@@ -1,6 +1,6 @@
 <script setup lang="ts">
-/* 角色：左边是已添加的角色，右边是选中角色的设置、面板和身上 6 件遗器（可以换、可以脱）。 */
-import { computed, ref } from "vue";
+/* 角色：上面一排是已添加的角色（横着滑，「全部角色」看全部），下面是选中角色的设置、面板和身上 6 件遗器（可以换、可以脱）。 */
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { SLOT_NAMES, SLOTS } from "../../ui-shared/src/stats/labels.ts";
 import type { RelicPiece, RosterCharacter, Slot, StatData } from "../../ui-shared/src/stats/types.ts";
 import { orderCones } from "./cone-order.ts";
@@ -33,6 +33,45 @@ const pathGroups = computed(() => {
 async function add(id: string): Promise<void> {
   adding.value = false;
   await r.addCharacter(id);
+}
+
+// 全部角色：角色多了横排里不好找，用和添加角色一样的头像网格挑（2026-11-05 群里建议，手机上尤其需要）
+const browsing = ref(false);
+const ownedItems = computed<GridItem[]>(() => r.characters.value.map((c) => {
+  const info = props.catalog.characters.get(c.id);
+  return { id: c.id, name: info?.name ?? c.id, icon: info?.icon, rarity: info?.rarity, groups: info?.path, meta: `Lv.${c.level} · ${c.eidolon} 魂` };
+}));
+const ownedGroups = computed(() => {
+  const names = new Map<string, string>();
+  for (const c of r.characters.value) {
+    const info = props.catalog.characters.get(c.id);
+    if (info?.path && info.pathName) names.set(info.path, info.pathName);
+  }
+  return [{ key: "", label: "全部" }, ...[...names].map(([key, label]) => ({ key, label }))];
+});
+const listEl = ref<HTMLElement | null>(null);
+/**
+ * 选中的角色要在横排里看得见（2026-11-05 用户反馈：横排停在别处，看不到当前是谁）。
+ * 只横着滚这一排，不用 scrollIntoView，免得整页跟着上下跳；按排版位置（offsetLeft，这一排是 position: relative）算，
+ * 切页签时的入场动画会让屏幕上的位置偏一点。
+ */
+async function showChip(): Promise<void> {
+  await nextTick();
+  const list = listEl.value;
+  const chip = list?.querySelector<HTMLElement>(".rs-chip.active");
+  if (!list || !chip) return;
+  const left = chip.offsetLeft;
+  const right = left + chip.offsetWidth;
+  if (left < list.scrollLeft) list.scrollLeft = left;
+  else if (right > list.scrollLeft + list.clientWidth) list.scrollLeft = right - list.clientWidth;
+}
+// 打开页面、导入或添加后、在「全部角色」里挑了别人，都滚到选中的那个
+watch(() => r.selectedId.value, () => void showChip());
+onMounted(() => void showChip());
+function browse(id: string): void {
+  browsing.value = false;
+  r.selectedId.value = id;
+  void showChip();
 }
 
 const info = computed(() => (r.selected.value ? props.catalog.characters.get(r.selected.value.id) : null));
@@ -108,7 +147,7 @@ const pickable = computed(() => {
 });
 const ownerName = (id: string | null): string | null => (id ? props.catalog.characters.get(id)?.name ?? id : null);
 /**
- * 窄屏时角色排成一行横着滑，滚动条藏起来了：电脑上用鼠标滚轮也能左右滚。
+ * 角色排成一行横着滑，滚动条藏起来了：电脑上用鼠标滚轮也能左右滚。
  * 只在这一排能横滚、又不能竖滚时接管；滚到头了就放给页面，免得页面滚不动。
  */
 function wheelSideways(event: WheelEvent): void {
@@ -131,7 +170,7 @@ async function pick(relic: RelicPiece): Promise<void> {
 <template>
   <div class="rs-characters">
     <aside class="card rs-list">
-      <div class="rs-list-items" @wheel="wheelSideways">
+      <div ref="listEl" class="rs-list-items" @wheel="wheelSideways">
         <button
           v-for="c in r.characters.value" :key="c.id" type="button" class="rs-chip" :class="{ active: r.selectedId.value === c.id }"
           @click="r.selectedId.value = c.id"
@@ -141,7 +180,10 @@ async function pick(relic: RelicPiece): Promise<void> {
           <small>Lv.{{ c.level }} · {{ c.eidolon }} 魂</small>
         </button>
       </div>
-      <button type="button" class="rs-add" title="按默认值添加（80 级、行迹全点），之后可以改" @click="adding = true">＋ 添加角色</button>
+      <div class="rs-list-actions">
+        <button v-if="r.characters.value.length > 1" type="button" class="rs-add rs-all" @click="browsing = true">全部角色 · {{ r.characters.value.length }}</button>
+        <button type="button" class="rs-add" title="按默认值添加（80 级、行迹全点），之后可以改" @click="adding = true">＋ 添加角色</button>
+      </div>
     </aside>
 
     <section v-if="r.selected.value && info" class="rs-detail">
@@ -220,9 +262,13 @@ async function pick(relic: RelicPiece): Promise<void> {
     </section>
 
     <section v-else class="card rs-detail rs-blank">
-      <p class="muted">还没有角色。用上面的「识图导入」「导入扫描文件」把角色和遗器导进来，或者在左边手动添加。</p>
+      <p class="muted">还没有角色。用上面的「识图导入」「导入扫描文件」把角色和遗器导进来，或者点「＋ 添加角色」手动添加。</p>
     </section>
 
+    <GridPicker
+      v-if="browsing" title="全部角色" search="搜索角色名" :items="ownedItems" :groups="ownedGroups" :value="r.selectedId.value ?? ''"
+      @pick="browse" @close="browsing = false"
+    />
     <GridPicker v-if="adding" title="添加角色" search="搜索角色名" :items="addItems" :groups="pathGroups" @pick="add" @close="adding = false" />
     <GridPicker
       v-if="conePicking && info" :title="`给${info.name}选光锥`" search="搜索光锥名（搜全部光锥）" :items="coneItems" :value="r.selected.value?.lightcone?.id ?? ''"

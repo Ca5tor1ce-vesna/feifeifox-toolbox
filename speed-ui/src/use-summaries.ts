@@ -15,7 +15,8 @@ interface GearView {
 
 const signed = (value: unknown, unit = ""): string => `${Number(value) > 0 ? "+" : ""}${Number(value)}${unit}`;
 
-export function useSummaries(s: PlanState, gear: GearView, plan: PlanRun, tables: Ref<any[]>) {
+/** linked：正按「角色与遗器」的实际装配算时，「其它固定速度」是补差额用的，不算用户填的加成。 */
+export function useSummaries(s: PlanState, gear: GearView, plan: PlanRun, tables: Ref<any[]>, linked: Ref<unknown>) {
   const { state, currentCharacter } = s;
   const summaries = computed(() => {
     const character = currentCharacter.value;
@@ -34,7 +35,7 @@ export function useSummaries(s: PlanState, gear: GearView, plan: PlanRun, tables
       ].join(" · "),
       other: [
         state.relic.customPct ? `速度 ${signed(state.relic.customPct, "%")}` : "",
-        state.relic.customFlat ? `固定 ${signed(state.relic.customFlat)}` : "",
+        state.relic.customFlat && !linked.value ? `固定 ${signed(state.relic.customFlat)}` : "",
         state.advance.custom ? `拉条 ${signed(state.advance.custom, "%")}` : "",
       ].filter(Boolean).join(" · "),
       targetmore: [

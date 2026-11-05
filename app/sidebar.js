@@ -43,6 +43,19 @@ export function setupMoreSheet({ app, more, sheet, nav, document: doc, window: w
   win.matchMedia(MOBILE).addEventListener("change", (event) => { if (!event.matches) setOpen(false); });
 }
 
+const searchText = (...parts) => parts.join(" ").toLowerCase();
+
+/** 列表里显示模块的哪些功能。先看功能自己写的词，都没写到才按模块算（搜「崩铁」列出整个游戏）：
+ *  模块标签汇总了各功能的词，算进每个功能的话，搜「抽卡」一个也筛不掉。 */
+export function matchingFeatures(module, needle) {
+  const features = module.features || [];
+  // feature.json 写了 menu:false 的功能平时不在菜单里，只有搜索时才列出。
+  if (!needle) return features.filter((f) => f.menu !== false);
+  const hits = features.filter((f) => searchText(f.name, f.id, f.description, ...(f.tags || [])).includes(needle));
+  if (hits.length) return hits;
+  return searchText(module.name, module.id, ...(module.tags || [])).includes(needle) ? features : [];
+}
+
 export function setupSidebar({ app, nav, toggle, document: doc, window: win }) {
   const tip = doc.createElement("div");
   tip.id = "sidebar-tip"; tip.hidden = true; tip.setAttribute("role", "tooltip");

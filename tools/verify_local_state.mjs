@@ -63,9 +63,12 @@ try{
   await ev(`window.GT_LOCAL_STATE.flush()`);
   // 网页版的存档在浏览器里：先导出，清掉浏览器数据（相当于换了浏览器），再导入，应该原样恢复。
   const backup=await ev(`window.GT_BACKEND.exportAll()`);
+  // 先离开页面再清：页面离开时（pagehide）会把草稿再存一次，清在前面的话会被写回去（CI 上慢，2026-11-05 连着三次挂在这里）。
+  await send('Page.navigate',{url:'about:blank'});await wait(`location.href==='about:blank'`);
   await send('Storage.clearDataForOrigin',{origin:base,storageTypes:'local_storage'});
   await navigate('honkai-star-rail/axis');
-  check('清掉浏览器数据后存档没了（网页版要靠导出备份）',await ev(`(async()=>{await window.GT_BACKEND.store.ready;return !window.GT_BACKEND.store.get('ui-state')})()`));
+  // 新打开的页面可能先存一份默认草稿，这里只看之前存的东西（行动轴「模拟到 450」）还在不在。
+  check('清掉浏览器数据后存档没了（网页版要靠导出备份）',await ev(`(async()=>{await window.GT_BACKEND.store.ready;return window.GT_BACKEND.store.get('ui-state')?.entries?.['honkai-star-rail/axis']?.value?.data?.customAV!==450})()`));
   await ev(`window.GT_BACKEND.importAll(${JSON.stringify(backup)})`);
   await navigate('honkai-star-rail/axis');await wait(`document.querySelectorAll('.axis-member').length===4`);
   check('导入导出的存档后恢复队伍和窗口',await ev(`[...document.querySelectorAll('.axis-field')].find(l=>l.textContent.includes('模拟到')).querySelector('input').value==='450'`));

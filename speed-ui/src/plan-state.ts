@@ -27,10 +27,12 @@ export function createPlanState(catalog: any, draft?: SpeedDraft | null) {
     // 模拟参数：第一次开大发生在自己第几次行动之后（0 = 进战即开大）
     simulation: { firstUltAction: 1 },
     target: { t: 0, actions: 2, customAV: 0, mode: catalog.modes?.[0]?.id || "moc" },
+    // 「角色与遗器」里有这个角色时，auto = 遗器按实际装配；manual = 用户点了「手动改」（见 use-roster-link.ts）
+    rosterMode: "auto",
   });
   const restored = draft?.state;
   if (restored && (restored.characterId === CUSTOM_ID || characters.some((c) => String(c.id) === String(restored.characterId)))) {
-    for (const key of ["characterId", "lightconeId", "superimpose", "eidolon", "enabled"]) if (Object.hasOwn(restored, key)) state[key] = restored[key];
+    for (const key of ["characterId", "lightconeId", "superimpose", "eidolon", "enabled", "rosterMode"]) if (Object.hasOwn(restored, key)) state[key] = restored[key];
     for (const key of ["custom", "relic", "advance", "simulation", "target"]) if (restored[key] && typeof restored[key] === "object") Object.assign(state[key], restored[key]);
   }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-/* 配速查询 · 角色卡：立绘、星魂、光锥、遗器、触发条件、自定义角色。 */
+/* 配速查询 · 角色卡：立绘、星魂、光锥、遗器、触发条件、自定义角色。
+ * 「角色与遗器」里有这个角色时，遗器那几项按实际装配算，收成一行（use-roster-link.ts）。 */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CharacterDialog from "./CharacterDialog.vue";
 import NumField from "./NumField.vue";
@@ -8,7 +9,22 @@ import SelectField from "./SelectField.vue";
 import { fix } from "./motion.ts";
 import { useSpeedPage } from "./page.ts";
 
-const { collapsedSteps, toggleStep, summaries, charBody, openCharacters, splash, splashSrc, splashBroken, onSplashLoad, state, numberOptions, onEidolon, splashMeta, currentCharacter, charSpeed, charTrace, coneItems, pickCone, onSuperimpose, fourPieceItems, pickFourPiece, ornamentItems, pickOrnament, onSpeedBoots, blockedSets, blockedNames, triggerMore, form, onFourUlts, onConeUlts, onUltTargetsAlly, relicNote, charInfo, characterDialog, characters, pickCharacter, isCustom, onCustomInput, markSplashBroken } = useSpeedPage();
+const { collapsedSteps, toggleStep, summaries, charBody, openCharacters, splash, splashSrc, splashBroken, onSplashLoad, state, numberOptions, onEidolon, splashMeta, currentCharacter, charSpeed, charTrace, coneItems, pickCone, onSuperimpose, fourPieceItems, pickFourPiece, ornamentItems, pickOrnament, onSpeedBoots, blockedSets, blockedNames, triggerMore, form, onFourUlts, onConeUlts, onUltTargetsAlly, relicNote, charInfo, characterDialog, characters, pickCharacter, isCustom, onCustomInput, markSplashBroken, currentCone, rosterLinked, rosterHas, rosterError, rosterManual, rosterBack, nameIn } = useSpeedPage();
+
+/** 点光锥图打开下面的光锥选择。 */
+function openCones(event: Event): void {
+  (event.currentTarget as HTMLElement).closest(".sp-char-panel")?.querySelector<HTMLButtonElement>("#lightcone-picker")?.click();
+}
+/** 收起时那一行：实际穿的套装、鞋和副词条速度。 */
+function linkedRelics(): string {
+  const relic = state.relic;
+  return [
+    relic.fourPieceId ? `4 件套 ${nameIn(fourPieceItems, relic.fourPieceId)}` : "没凑满 4 件套",
+    relic.ornamentIds?.[0] ? `饰品 ${nameIn(ornamentItems, relic.ornamentIds[0])}` : "没凑满饰品",
+    relic.speedBoots ? "速度鞋" : "不是速度鞋",
+    `副词条速度 ${fix(relic.substatSpeed || 0, 1)}`,
+  ].join(" · ");
+}
 </script>
 
 <template>
@@ -32,6 +48,10 @@ const { collapsedSteps, toggleStep, summaries, charBody, openCharacters, splash,
           <h2 class="sp-char-title">{{ currentCharacter.name || "选个角色" }}</h2>
           <div class="sp-char-path">{{ currentCharacter.pathName || "" }}<template v-if="currentCharacter.elementName"> · {{ currentCharacter.elementName }}</template></div>
           <div class="sp-char-speed">初始速度 {{ fix(charSpeed, 0) }}<template v-if="charTrace">（基础 {{ fix(currentCharacter.baseSpeed, 0) }} + 行迹 {{ fix(charTrace, 0) }}）</template></div>
+          <button type="button" class="sp-cone-chip" :class="{ empty: !currentCone }" :title="currentCone ? '点图换光锥' : '选光锥'" @click="openCones">
+            <span class="sp-cone-pic" :class="currentCone ? `r${currentCone.rarity}` : ''"><img v-if="currentCone?.art" :src="currentCone.art" alt="" loading="lazy" /><span v-else aria-hidden="true">＋</span></span>
+            <span class="sp-cone-text"><b>{{ currentCone ? currentCone.name : "没装备光锥" }}</b><small v-if="currentCone">叠影 {{ state.superimpose }}</small></span>
+          </button>
         </div>
         <div class="sp-split"></div>
         <div class="sp-form-row">
@@ -43,6 +63,13 @@ const { collapsedSteps, toggleStep, summaries, charBody, openCharacters, splash,
         </div>
         <div class="sp-split"></div>
         <h3 class="sp-cfg-heading">遗器</h3>
+        <div v-if="rosterLinked" id="roster-linked" class="sp-roster-link">
+          <p><b>按「角色与遗器」里的实际装配</b>：面板速度 {{ fix(rosterLinked.panelSpeed, 1) }}</p>
+          <p class="hint">{{ linkedRelics() }}</p>
+          <p v-for="(note, index) in rosterLinked.notes" :key="index" class="hint">{{ note }}</p>
+          <button id="roster-manual" type="button" class="sp-link" @click="rosterManual">手动改</button>
+        </div>
+        <template v-else>
         <div class="sp-form-row">
           <div class="field sp-grow">
             <label>遗器 4 件套</label>
@@ -54,6 +81,9 @@ const { collapsedSteps, toggleStep, summaries, charBody, openCharacters, splash,
           </div>
         </div>
         <label class="sp-check"><input id="speedBoots" type="checkbox" :checked="!!state.relic.speedBoots" @change="onSpeedBoots" /> 速度鞋（主词条 +25）</label>
+        <p v-if="rosterHas" class="hint sp-roster-back"><button id="fill-from-roster" type="button" class="sp-link" @click="rosterBack">改回「角色与遗器」里的实际装配</button></p>
+        </template>
+        <p v-if="rosterError" class="error-text">{{ rosterError }}</p>
         <div id="relic-warn"><p v-if="blockedSets.length" class="warnbar">⚠ {{ blockedNames }} 需要开大才生效：请把「开大次数」设成 1 或更大（目前是 0，所以没计入）。</p></div>
         <details id="sp-trigger-more" ref="triggerMore" class="sp-more">
           <summary>套装触发条件<span id="sum-trigger" class="sp-sum">{{ summaries.trigger }}</span></summary>

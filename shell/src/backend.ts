@@ -79,12 +79,16 @@ const loadStatData = (): Promise<StatData> => {
   return statData;
 };
 
-/** 配速查询「用实际装配填入」：读「角色与遗器」存档里这个角色和他身上的遗器。 */
-async function rosterSpeedConfig(characterId: string) {
+/**
+ * 配速查询按实际装配算：读「角色与遗器」存档里这个角色和他身上的遗器。
+ * optional：配速查询换角色时先问一下，有就自动用。没有这个角色、或者身上一件遗器都没有（手动添加还没配装）时返回 null，不报错。
+ */
+async function rosterSpeedConfig(characterId: string, optional: boolean) {
   const save = store.get(ROSTER) as any;
   const character = save?.characters?.[characterId];
+  const relics = (save?.relics ?? []).filter((relic: any) => relic.equippedBy === characterId);
+  if (optional && (!character || !relics.length)) return null;
   if (!character) throw new Error("「角色与遗器」里还没有这个角色：先去那里导入或添加。");
-  const relics = (save.relics ?? []).filter((relic: any) => relic.equippedBy === characterId);
   return speedConfigFromRoster(character, relics, await loadStatData(), await presetCalc());
 }
 
@@ -94,12 +98,13 @@ const ACTIONS: Record<string, Record<string, Handler>> = {
     // 页面自己在浏览器里算（speed-ui/src/calc.ts）；这几个动作留着，验收脚本和以后别的页面也能按以前的接口调用。
     catalog: async (payload) => (await presetCalc()).call("catalog", payload),
     lightcones: async (payload) => (await presetCalc()).call("lightcones", payload),
+    cone_art: async (payload) => (await presetCalc()).call("cone_art", payload),
     plan: async (payload) => (await presetCalc()).call("plan", payload),
     recommend: async (payload) => (await presetCalc()).call("recommend", payload),
     presets: async (payload) => (await presetCalc()).call("presets", payload),
     save_preset: async (payload) => { const result = (await presetCalc()).call("save_preset", payload); await store.flush(); return result; },
     delete_preset: async (payload) => { const result = (await presetCalc()).call("delete_preset", payload); await store.flush(); return result; },
-    roster_speed_config: async (payload) => rosterSpeedConfig(String(payload?.characterId ?? "")),
+    roster_speed_config: async (payload) => rosterSpeedConfig(String(payload?.characterId ?? ""), payload?.optional === true),
   },
   "honkai-star-rail/axis": { ...teamActions(store, () => store.get(PRESETS) ?? {}), roster_get: () => store.get(ROSTER) ?? null },
   "honkai-star-rail/roster": rosterActions(store, loadStatData),

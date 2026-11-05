@@ -1,5 +1,5 @@
 /* 工具箱外壳：模块导航、路由、功能懒加载和内置页面的切换。
- * 请求在 api.js，文字处理在 format.js，侧栏交互在 sidebar.js，存档备份在 backup.js，「模块状态」页的内容在 status-page.js。
+ * 请求在 api.js，文字处理在 format.js，侧栏交互在 sidebar.js，绯英和搜索在 mascot.js，存档备份在 backup.js，「模块状态」页的内容在 status-page.js。
  *
  * 这里只负责"装东西"，不含任何游戏逻辑——具体功能各自在自己的 ui.js 里。
  */
@@ -7,7 +7,8 @@
 import { callApi, getJSON } from "./api.js";
 import { setupBackup } from "./backup.js";
 import { escapeHtml, fmt } from "./format.js";
-import { CHEVRON, featureIcon, pageIcon, setupMoreSheet, setupSidebar } from "./sidebar.js";
+import { setupMascot } from "./mascot.js";
+import { CHEVRON, featureIcon, matchingFeatures, pageIcon, setupMoreSheet, setupSidebar } from "./sidebar.js";
 import { statusPageHtml } from "./status-page.js";
 import { setupWhatsNew } from "./whats-new.js";
 import { setupInstallGuide } from "./install-guide.js";
@@ -17,7 +18,6 @@ const state = {
   current: { moduleId: null, featureId: null },
   cleanup: null,
   styleEl: null,
-  filter: "",
 };
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -46,26 +46,11 @@ let whatsNewSeen = "";
 /** 首页「放到桌面」卡片收起过（install-guide.js）。 */
 let installTipDismissed = false;
 let renderInstallGuide = null;
-function saveShell() { shellState()?.save({ current: state.current, filter: state.filter, collapsed: [...navCollapsed], whatsNewSeen, installTipDismissed }); }
+/** 绯英在窗口里的位置（mascot.js），和侧栏状态存在一起。 */
+let mascotSpot = null;
+function saveShell() { shellState()?.save({ current: state.current, collapsed: [...navCollapsed], whatsNewSeen, installTipDismissed, mascot: mascotSpot }); }
 
 /* ---------------- 导航 ---------------- */
-
-function matches(module, feature, needle) {
-  // feature.json 写了 menu:false 的功能平时不在菜单里，只有搜索时才列出。
-  if (!needle) return feature.menu !== false;
-  const haystack = [
-    module.name,
-    module.id,
-    ...(module.tags || []),
-    feature.name,
-    feature.id,
-    feature.description,
-    ...(feature.tags || []),
-  ]
-    .join(" ")
-    .toLowerCase();
-  return haystack.includes(needle);
-}
 
 const NAV_COLLAPSE_KEY = "gt-nav-collapsed";
 const navCollapsed = new Set(
@@ -83,19 +68,17 @@ function renderNav() {
   const nav = $("#nav");
   const oldTip = $("#sidebar-tip");
   if (oldTip) oldTip.hidden = true;
-  const needle = state.filter.trim().toLowerCase();
-  const modules = (state.registry?.modules || []).filter((m) =>
-    (m.features || []).some((f) => matches(m, f, needle)),
-  );
+  const modules = (state.registry?.modules || [])
+    .map((module) => ({ module, features: matchingFeatures(module, "") }))
+    .filter(({ features }) => features.length);
 
   if (!modules.length) {
-    nav.innerHTML = `<div class="nav-empty">没有匹配的功能，换个词试试。</div>`;
+    nav.innerHTML = `<div class="nav-empty">没有可用的功能。</div>`;
     return;
   }
 
   nav.innerHTML = modules
-    .map((module) => {
-      const features = (module.features || []).filter((f) => matches(module, f, needle));
+    .map(({ module, features }) => {
       const items = features
         .map(
           (f) => `
@@ -108,8 +91,7 @@ function renderNav() {
         </button>`,
         )
         .join("");
-      // 搜索时全部展开；平时按用户上次的折叠状态
-      const collapsed = !needle && navCollapsed.has(module.id);
+      const collapsed = navCollapsed.has(module.id);
       return `
         <div class="nav-module${collapsed ? " collapsed" : ""}" data-module-id="${escapeHtml(module.id)}">
           <button type="button" class="nav-module-title" aria-expanded="${collapsed ? "false" : "true"}"
@@ -386,16 +368,15 @@ async function boot() {
   try { await window.GT_LOCAL_STATE.init(true); persistenceReady = true; }
   catch { /* 状态读取错误已显示；不能用默认值覆盖原文件。 */ }
   const savedShell = shellState()?.load() || {};
-  state.filter = typeof savedShell.filter === "string" ? savedShell.filter : "";
   whatsNewSeen = typeof savedShell.whatsNewSeen === "string" ? savedShell.whatsNewSeen : "";
   installTipDismissed = savedShell.installTipDismissed === true;
   renderInstallGuide = setupInstallGuide({ dismissed: installTipDismissed, dismiss: () => { installTipDismissed = true; saveShell(); } });
-  $("#search").value = state.filter;
   if (Array.isArray(savedShell.collapsed)) { navCollapsed.clear(); savedShell.collapsed.forEach(id => navCollapsed.add(id)); }
-  $("#search").addEventListener("input", (event) => {
-    state.filter = event.target.value;
-    saveShell();
-    renderNav();
+  mascotSpot = savedShell.mascot ?? null;
+  const openSearch = setupMascot({
+    root: $("#mascot"), toggle: $("#search-toggle"), panel: $("#mascot-panel"), input: $("#search"), list: $("#mascot-results"),
+    saved: mascotSpot, remember: (spot) => { mascotSpot = spot; saveShell(); },
+    modules: () => state.registry?.modules || [], open: openFeature, document, window,
   });
   $("#home-button").addEventListener("click", openHome);
   $("#home-sheet-button").addEventListener("click", openHome);
@@ -407,8 +388,7 @@ async function boot() {
   document.addEventListener("keydown", (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
-      $("#search").focus();
-      $("#search").select();
+      openSearch();
     }
   });
 

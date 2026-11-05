@@ -8,7 +8,7 @@
  *   use-effects     速度效果勾选与明细        use-hero         结论区和数字动画
  *   use-result-tabs 结果页签与各模式表        use-summaries    折叠时的一行摘要
  *   use-inputs      输入框和选择框            use-presets      我的配装
- *   use-recommend   自动推荐
+ *   use-recommend   自动推荐              use-roster-link  按「角色与遗器」的实际装配算
  * 这里只负责换角色这种要牵动好几块的操作，以及启动顺序。
  * 计算在 calc.ts（tests/pages/speed-oracle.test.ts 对拍）；页面上的 id 和旧界面一样，浏览器验收脚本靠它们。
  */
@@ -23,6 +23,7 @@ import { useInputs } from "./use-inputs.ts";
 import { usePlanRun } from "./use-plan-run.ts";
 import { usePresets } from "./use-presets.ts";
 import { useRecommend } from "./use-recommend.ts";
+import { useRosterLink } from "./use-roster-link.ts";
 import { TABS, useResultTabs } from "./use-result-tabs.ts";
 import { useSplash } from "./use-splash.ts";
 import { useSteps } from "./use-steps.ts";
@@ -51,22 +52,25 @@ export function createSpeedPage(props: SpeedPageProps) {
   const effects = useEffects(s, plan, props.root);
   const hero = useHero(plan);
   const tabs = useResultTabs(s, plan, props.root);
-  const { summaries } = useSummaries(s, gear, plan, tabs.tables);
   const inputs = useInputs(s, plan, tabs.resetTableView);
   const presets = usePresets(s, { call: props.call, root: props.root, cones: gear.cones, updateSplash: splash.updateSplash, run: plan.run });
   const recommend = useRecommend(s, props.call, plan.run);
+  const roster = useRosterLink(s, { call: props.call, updateSplash: splash.updateSplash, run: plan.run });
+  const { summaries } = useSummaries(s, gear, plan, tabs.tables, roster.rosterLinked);
 
   // ---------------- 换角色：牵动装备、配装、立绘和计算 ---------------- //
   const characterDialog = ref<InstanceType<typeof CharacterDialog> | null>(null);
   const openCharacters = (): void => { void characterDialog.value?.open(); };
   async function pickCharacter(id: string): Promise<void> {
     s.state.characterId = id;
+    s.state.rosterMode = "auto";
     s.form.presetErr = "0";
     s.form.presetEnergy = "";
     s.form.presetRotation = "auto";
     presets.writeAhaFields();
     s.state.enabled = null;
     await gear.loadCones();
+    await roster.linkRoster();
     presets.refreshPresets();
     splash.updateSplash();
     void plan.run();
@@ -88,6 +92,7 @@ export function createSpeedPage(props: SpeedPageProps) {
     await gear.loadCones();
     if (s.restored && (restoredCone === "" || gear.cones.value.some((c) => String(c.id) === String(restoredCone)))) s.state.lightconeId = restoredCone;
     s.syncForm();
+    await roster.linkRoster();
     const draft = props.draft;
     if (draft?.aha) {
       s.form.presetErr = String(draft.aha.err ?? 0);
@@ -123,8 +128,13 @@ export function createSpeedPage(props: SpeedPageProps) {
     summaries,
     ...inputs,
     presetStatus: presets.presetStatus, savedPreset: presets.savedPreset, presetNote: presets.presetNote, savingPreset: presets.savingPreset,
-    savePreset: presets.savePreset, deletePreset: presets.deletePreset, applyPreset: presets.applyPreset, fillFromRoster: presets.fillFromRoster,
+    savePreset: presets.savePreset, deletePreset: presets.deletePreset,
+    // 套用我的配速、自动推荐是用户自己选了一套遗器，不再按实际装配
+    applyPreset: () => { roster.leaveRoster(); presets.applyPreset(); },
     ...recommend,
+    applyRecommend: (item: unknown) => { roster.leaveRoster(); recommend.applyRecommend(item); },
+    rosterLinked: roster.rosterLinked, rosterHas: roster.rosterHas, rosterError: roster.rosterError, rosterManual: roster.rosterManual, rosterBack: roster.rosterBack,
+    currentCone: gear.currentCone, nameIn: gear.nameIn,
     characterDialog, openCharacters, pickCharacter, onCustomInput,
     teamLink: props.teamLink ?? null,
   };

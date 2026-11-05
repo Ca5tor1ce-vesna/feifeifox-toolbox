@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /* 角色与遗器（1.2）：导入或手填玩家实际的角色和遗器，算出和游戏一致的面板。
- * 配速查询的「用实际装配填入」和全角色行动轴的「实际装配」读的都是这里的存档（honkai-star-rail/roster）。 */
+ * 配速查询按实际装配算（自动套用）和全角色行动轴的「实际装配」读的都是这里的存档（honkai-star-rail/roster）。 */
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { fromFreeSr, isFreeSr } from "../../ui-shared/src/import/freesr.ts";
 import { fromScannerV4 } from "../../ui-shared/src/import/scanner-v4.ts";

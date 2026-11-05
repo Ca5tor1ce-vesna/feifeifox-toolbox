@@ -5,7 +5,7 @@ import NumField from "./NumField.vue";
 import SelectField from "./SelectField.vue";
 import { useSpeedPage } from "./page.ts";
 
-const { form, presetStatus, savedPreset, applyPreset, savingPreset, savePreset, deletePreset, presetNote, teamLink, fillFromRoster } = useSpeedPage();
+const { form, presetStatus, savedPreset, applyPreset, savingPreset, savePreset, deletePreset, presetNote, teamLink } = useSpeedPage();
 </script>
 
 <template>
@@ -15,9 +15,7 @@ const { form, presetStatus, savedPreset, applyPreset, savingPreset, savePreset, 
       <span id="preset-status" class="sp-preset-status">{{ presetStatus }}</span>
       <button id="apply-preset" type="button" class="sp-btn" :hidden="!savedPreset" @click="applyPreset">套用</button>
       <button id="save-preset" type="button" class="sp-btn primary" title="把当前这套（光锥/叠影/星魂/遗器/拉条/目标）存下来，下次一键套用" :disabled="savingPreset" @click="savePreset">保存</button>
-      <button id="delete-preset" type="button" class="sp-btn" :hidden="!savedPreset" @click="deletePreset">删除</button>
-      <button id="fill-from-roster" type="button" class="sp-btn" title="读「角色与遗器」里这个角色实际穿的光锥和遗器，填进上面（不会改动我的配速）" @click="fillFromRoster">用实际装配填入</button>
-    </div>
+      <button id="delete-preset" type="button" class="sp-btn" :hidden="!savedPreset" @click="deletePreset">删除</button>    </div>
     <p id="preset-note" class="hint sp-preset-note"><span v-if="presetNote.error" class="error-text">{{ presetNote.text }}</span><template v-else>{{ presetNote.text }}</template></p>
     <details class="sp-more sp-sim-save">
       <summary>队伍模拟补充参数</summary>

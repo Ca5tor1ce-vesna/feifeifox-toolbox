@@ -11,7 +11,7 @@ import { memberFromBuild } from "../../axis-ui/src/build.ts";
 import { memberFromLegacyUnit, stateFromLegacy, stateFromRecord } from "../../axis-ui/src/legacy-team.ts";
 import { buildCards, cardMatches, cardSlots, castsOf, computeAxis, droppedMembers, droppedNotice, groupMoments, newCustomMember, newElationSettings, newMember, newState, pageCharacters, restoreState, speedThreshold, toMemberInput, windowAV, type PageData, type PageState } from "../../axis-ui/src/model.ts";
 import { TEAM_PRESETS } from "../../axis-ui/src/presets.ts";
-import { ULT_CLIP_FRAMING, ultClipOf } from "../../axis-ui/src/ult-clips.ts";
+import { claimClipPlayback, releaseClipPlayback, ULT_CLIP_FRAMING, ultClipOf } from "../../axis-ui/src/ult-clips.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const dataDir = join(HERE, "..", "..", "modules", "honkai-star-rail", "data");
@@ -435,4 +435,25 @@ test("大招动画片段：表里每个角色都有文件，每个文件都在�
   assert.ok(Object.values(ULT_CLIP_FRAMING).every((y) => y >= 0 && y <= 100));
   assert.equal(ultClipOf("1502")?.src, "/modules/honkai-star-rail/assets/ult/1502.webm");
   assert.equal(ultClipOf("1511"), undefined);
+});
+
+test("大招片段同一时间只放一个；选中（循环）的不会被别的卡出场时只放一遍的抢走", () => {
+  const stopped: string[] = [];
+  const stopOf = (name: string) => () => { stopped.push(name); };
+  const [a, b, c] = [stopOf("a"), stopOf("b"), stopOf("c")];
+  // 出场时只放一遍的：后来的停掉前一个
+  assert.equal(claimClipPlayback(a), true);
+  assert.equal(claimClipPlayback(b), true);
+  assert.deepEqual(stopped, ["a"]);
+  // 点开 c（循环）：停掉 b；之后 a 出场想放一遍，不给放，c 照常
+  assert.equal(claimClipPlayback(c, true), true);
+  assert.equal(claimClipPlayback(a), false);
+  assert.deepEqual(stopped, ["a", "b"]);
+  // 另一张卡被选中或鼠标停上去（也是循环）可以换过去
+  assert.equal(claimClipPlayback(b, true), true);
+  assert.deepEqual(stopped, ["a", "b", "c"]);
+  // b 放完让出来，只放一遍的又能放了
+  releaseClipPlayback(b);
+  assert.equal(claimClipPlayback(a), true);
+  releaseClipPlayback(a);
 });

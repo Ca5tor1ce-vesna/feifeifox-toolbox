@@ -33,6 +33,9 @@ jobs:
       - name: 导入器和资料来源检查
         if: hashFiles('beta/tests/test_importers.py') != ''
         run: python -m unittest discover -s beta/tests
+        # CI 的控制台不是 UTF-8，测试打印中文会报 charmap 编码错误（2026-11-05 踩过）。
+        env:
+          PYTHONUTF8: "1"
       - name: 浏览器检查
         shell: pwsh
         run: ./tools/verify_ci_ui.ps1

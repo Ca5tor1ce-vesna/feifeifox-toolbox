@@ -34,11 +34,22 @@ export function ultClipOf(id: string): UltClip | undefined {
 }
 
 // 同一时间只放一个片段：出轴时大招接连出现，前一个还没放完就停掉，免得好几个视频一起解码拖慢滚动。
+// 循环播放的（选中的卡、鼠标停着的卡）优先：别的卡出场时只放一遍的片段抢不走它，
+// 否则刚点开的卡会被旁边后出场的卡停掉、再也不放（2026-11-05 CI 上慢，偶尔这样）。
 let stopCurrent: (() => void) | null = null;
-export function claimClipPlayback(stop: () => void): void {
-  if (stopCurrent && stopCurrent !== stop) stopCurrent();
+let currentLoops = false;
+/** 要开始放片段时先占位；返回 false 表示正有循环播放的片段，这次只放一遍的就不放了。 */
+export function claimClipPlayback(stop: () => void, loop = false): boolean {
+  if (stopCurrent && stopCurrent !== stop) {
+    if (currentLoops && !loop) return false;
+    stopCurrent();
+  }
   stopCurrent = stop;
+  currentLoops = loop;
+  return true;
 }
 export function releaseClipPlayback(stop: () => void): void {
-  if (stopCurrent === stop) stopCurrent = null;
+  if (stopCurrent !== stop) return;
+  stopCurrent = null;
+  currentLoops = false;
 }

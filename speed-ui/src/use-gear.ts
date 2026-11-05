@@ -30,6 +30,14 @@ export function useGear(s: PlanState, call: Call) {
   const ornamentItems = setOptions(catalog.ornamentSets || []);
   const nameIn = (items: PickerItem[], id: unknown): string => items.find((item) => String(item.id) === String(id))?.name || "";
 
+  // 角色卡右边显示当前光锥（2026-11-05 群里建议）：原画单独取一次，取不到就用小图标
+  const coneArt = shallowRef<Record<string, string>>({});
+  let artLoaded = false;
+  const currentCone = computed(() => {
+    const cone = cones.value.find((item) => String(item.id) === String(state.lightconeId));
+    return cone ? { id: String(cone.id), name: cone.name as string, rarity: Number(cone.rarity), art: coneArt.value[cone.id] || cone.icon || "" } : null;
+  });
+
   async function loadCones(): Promise<void> {
     // 自定义角色没有命途：不传 path，列出全部光锥
     const data = await call("lightcones", isCustom.value ? {} : { path: currentCharacter.value?.path });
@@ -37,10 +45,14 @@ export function useGear(s: PlanState, call: Call) {
       (a: any, b: any) => b.rarity - a.rarity || Number(b.speedRelated) - Number(a.speedRelated) || a.name.localeCompare(b.name, "zh"),
     );
     state.lightconeId = cones.value[0]?.id || "";
+    if (!artLoaded) {
+      artLoaded = true;
+      coneArt.value = (await call("cone_art").catch(() => null))?.art ?? {};
+    }
   }
 
   const relicNote = `套装效果来自官方文案，选中即自动计入：4 件套可选 ${(catalog.fourPieceSets || []).length} 个、位面饰品可选 ${(catalog.ornamentSets || []).length} 个。带条件的效果不会自动算，会单独列出来。`;
   const charInfo = catalog.dataInfo?.generatedAt ? `数据更新于 ${String(catalog.dataInfo.generatedAt).slice(0, 10)}` : "";
 
-  return { cones, coneItems, fourPieceItems, ornamentItems, nameIn, loadCones, relicNote, charInfo };
+  return { cones, coneItems, currentCone, fourPieceItems, ornamentItems, nameIn, loadCones, relicNote, charInfo };
 }

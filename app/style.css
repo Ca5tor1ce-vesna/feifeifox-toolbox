@@ -276,7 +276,7 @@ input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
   #app:not(#_) .sidebar-links::before { content: "作者"; color: var(--muted); font-size: 12px; }
   #app:not(#_) .sidebar-links a { border-bottom: 0; color: #5d4552; }
   #app:not(#_) .sidebar-links .sidebar-credits { font-size: 12px; }
-  /* 顶栏只放功能名：收起按钮、搜索、模块名和作者信息都不要 */
+  /* 顶栏只放功能名：收起按钮、模块名和作者信息都不要 */
   /* 全面屏 / 刘海：顶栏避开状态栏（index.html 用了 viewport-fit=cover） */
   #app:not(#_) #topbar { height: calc(52px + env(safe-area-inset-top)); flex-wrap: nowrap; gap: 8px; padding: env(safe-area-inset-top) 14px 0; }
   /* B站 App 全屏打开（页面铺到状态栏下面）时，App 的头像、关注、分享、关闭按钮浮在页面最上面约 90px 的位置（2026-11-04 用户截图），
@@ -284,7 +284,12 @@ input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
      App 自己留了顶栏、页面从状态栏下面开始时不加（index.html 判断后加 bili-overlay） */
   html.bili-overlay #app:not(#_) #topbar { height: max(92px, calc(env(safe-area-inset-top) + 56px)); padding: 0; }
   html.bili-overlay #app:not(#_) #topbar > * { display: none; }
-  #app:not(#_) #sidebar-toggle, #app:not(#_) .search-wrap, #app:not(#_) .crumb .sub { display: none; }
+  #app:not(#_) #sidebar-toggle, #app:not(#_) .crumb .sub { display: none; }
+  /* 绯英小一点；搜索框撑满宽度，字号不到 16px 时 iPhone 聚焦会放大页面 */
+  #app:not(#_) .search-mascot { width: 72px; height: 92px; }
+  #app:not(#_) .mascot-panel { left: 10px; right: 10px; width: auto; max-height: min(52dvh, 420px); }
+  #app:not(#_) #search { padding-right: 13px; font-size: 16px; }
+  #app:not(#_) .search-kbd { display: none; }
   #app:not(#_) .crumb { gap: 9px; }
   #app:not(#_) .crumb-title { font-size: 19px; flex: 0 1 auto; }
   #app:not(#_) .crumb-icon svg { width: 21px; height: 21px; }
@@ -367,7 +372,49 @@ input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
 .crumb-title { margin: 0; font-size: 24px; font-weight: 800; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; flex: 0 0 auto; }
 /* 位置不够时先缩副标题（模块名和数据版本），功能名完整显示 */
 .crumb .sub { color: var(--muted); font-weight: 400; margin-left: 6px; font-size: 13px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.search-wrap { position: relative; margin-left: auto; width: 284px; flex: 0 1 284px; min-width: 160px; }
+/* 绯英浮在页面上，可以拖到任何地方，点她弹出搜索（mascot.js）。层级低于页面自己的弹层（50 以上）和对话框 */
+#mascot { display: contents; }
+#app.more-open #mascot { display: none; }
+.search-mascot { position: fixed; z-index: 35; width: 96px; height: 124px; padding: 0; border: 0; border-radius: 12px; background: none; cursor: grab; touch-action: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.search-mascot[hidden] { display: none; }
+.search-mascot:focus-visible { box-shadow: var(--focus); }
+#mascot.is-dragging .search-mascot { cursor: grabbing; }
+.mascot-figure { position: absolute; inset: 0; transform-origin: 50% 100%; animation: mascot-breathe 3.6s ease-in-out infinite, mascot-sway 6.4s ease-in-out infinite; transition: translate .16s ease; }
+.search-mascot:hover .mascot-figure { translate: 0 -3px; }
+#mascot.is-open .mascot-figure { animation: mascot-breathe 3.6s ease-in-out infinite, mascot-sway 6.4s ease-in-out infinite, mascot-hop .36s ease-out; }
+#mascot.is-dragging .mascot-figure { transform-origin: 50% 12%; scale: 1.06; animation: mascot-dangle .7s ease-in-out infinite; }
+.search-mascot img { position: absolute; inset: 0; width: 100%; height: 100%; visibility: hidden; pointer-events: none; }
+/* 表情跟着搜索走：平时站着，打开搜索星星眼，搜到了笑，搜不到叹气。几张一起加载，换表情不闪 */
+.search-mascot .mood-idle, #mascot.is-open .mood-search, #mascot.has-match .mood-smile, #mascot.no-match .mood-sigh { visibility: visible; }
+#mascot.is-open .mood-idle, #mascot.has-match .mood-search, #mascot.no-match .mood-search { visibility: hidden; }
+/* 站着那张切成三块：两只耳朵的上半截单独抖。切口在蝴蝶结上面，中间的呆毛留在身体上；耳朵比切口多留一点，转动时不露缝 */
+.idle-body { clip-path: polygon(37.5% 0, 51.2% 0, 51.2% 21.3%, 100% 21.3%, 100% 100%, 0 100%, 0 21.3%, 37.5% 21.3%); }
+.ear-left { --flick: -1; clip-path: inset(0 62.5% 78% 0); transform-origin: 31% 21.3%; animation: mascot-ear 7s ease-in-out infinite; }
+.ear-right { --flick: 1; clip-path: inset(0 0 78% 51.2%); transform-origin: 61% 21.3%; animation: mascot-ear 9.5s ease-in-out -3s infinite; }
+/* 小人本身看不出能搜索，角上放个放大镜；图读不出来时也还知道这里是搜索 */
+.search-mascot svg { position: absolute; right: 0; bottom: 8px; width: 24px; height: 24px; padding: 4px; border-radius: 50%; background: var(--accent); color: #fff; box-shadow: 0 0 0 2px #fff9fb; }
+@keyframes mascot-breathe { 0%, 100% { scale: 1 1; } 50% { scale: 1.012 .982; } }
+@keyframes mascot-sway { 0%, 100% { rotate: -1.2deg; } 50% { rotate: 1.2deg; } }
+@keyframes mascot-hop { 0%, 100% { translate: 0 0; } 40% { translate: 0 -10px; } }
+@keyframes mascot-dangle { 0%, 100% { rotate: -7deg; } 50% { rotate: 7deg; } }
+@keyframes mascot-ear { 0%, 84%, 100% { rotate: 0deg; } 87% { rotate: calc(var(--flick) * 9deg); } 90% { rotate: calc(var(--flick) * -3deg); } 93% { rotate: calc(var(--flick) * 6deg); } 96% { rotate: calc(var(--flick) * -1deg); } }
+.mascot-panel { position: fixed; z-index: 35; display: flex; flex-direction: column; gap: 8px; width: 300px; max-height: min(60vh, 420px); padding: 10px; border: 1px solid var(--border); border-radius: 14px; background: #fffafd; box-shadow: 0 16px 40px #70405c2e; animation: gt-fade-in .16s ease-out; }
+.mascot-panel[hidden] { display: none; }
+.search-box { position: relative; flex: 0 0 auto; }
+.mascot-results { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; min-height: 0; overflow-x: hidden; overflow-y: auto; }
+.mascot-hit { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px; border: 0; border-radius: 9px; background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.mascot-hit:hover, .mascot-hit.is-active { background: var(--accent-soft); }
+.mascot-hit .icon { flex: 0 0 22px; display: grid; place-items: center; color: var(--accent); }
+.mascot-hit .icon svg { width: 20px; height: 20px; }
+.mascot-hit .text { min-width: 0; }
+.mascot-hit b { display: block; font-size: 14px; line-height: 1.3; }
+.mascot-hit small { display: block; overflow: hidden; color: var(--muted); font-size: 12px; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
+.mascot-empty { padding: 10px 8px; color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) {
+  .mascot-figure, .ear-left, .ear-right, #mascot.is-open .mascot-figure, #mascot.is-dragging .mascot-figure, .mascot-panel { animation: none; }
+  .mascot-figure { transition: none; }
+  .search-mascot:hover .mascot-figure { translate: none; }
+}
 #search {
   width: 100%;
   height: 38px;
@@ -631,7 +678,7 @@ code {
   .home-links { font-size: 14px; }
 }
 
-#local-save-status { position: fixed; right: 18px; bottom: 8px; z-index: 20; max-width: min(90vw, 520px); font-size: 11px; color: var(--muted); background: var(--panel); border-radius: 6px; padding: 3px 8px; pointer-events: none; }
+#local-save-status { position: fixed; right: 18px; bottom: 8px; z-index: 36; max-width: min(90vw, 520px); font-size: 11px; color: var(--muted); background: var(--panel); border-radius: 6px; padding: 3px 8px; pointer-events: none; }
 #local-save-status:empty { display: none; }
 #local-save-status.is-error { color: var(--bad); border: 1px solid var(--bad); pointer-events: auto; }
 

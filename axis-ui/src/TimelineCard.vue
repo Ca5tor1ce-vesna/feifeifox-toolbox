@@ -66,8 +66,7 @@ const stop = (): void => {
 };
 const play = (loop: boolean): void => {
   const element = video.value;
-  if (!element || reduced) return;
-  claimClipPlayback(stop);
+  if (!element || reduced || !claimClipPlayback(stop, loop)) return;
   element.loop = loop;
   if (!loop || element.paused) element.currentTime = 0;
   element.play().then(() => { playing.value = !element.paused; }).catch(() => { playing.value = false; });

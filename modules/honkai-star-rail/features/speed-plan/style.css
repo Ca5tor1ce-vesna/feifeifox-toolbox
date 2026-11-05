@@ -138,6 +138,23 @@
 .sp-split { height: 1px; background: var(--border); margin: 19px 0; opacity: .55; }
 .sp-config .sp-form-row + .sp-split { margin: 15px 0 0; }
 .sp-cfg-heading { margin: 15px 0 15px; font-size: 16px; font-weight: 800; color: var(--text); }
+/* 立绘右边的当前光锥（2026-11-05 群里建议）：小图 + 名字 + 叠影，点了打开下面的光锥选择 */
+.sp-cone-chip { display: flex; align-items: center; gap: 10px; max-width: 100%; margin-top: 12px; padding: 0; border: 0; background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.sp-cone-pic { flex: none; display: grid; place-items: center; width: 46px; height: 64px; overflow: hidden; border-radius: 8px; background: var(--panel-2, #f6eef2); color: var(--accent); font-size: 18px; }
+.sp-cone-pic.r5 { background: linear-gradient(160deg, #f5dcaa, #fbf1dc); }
+.sp-cone-pic.r4 { background: linear-gradient(160deg, #e0cdf4, #f3ebfb); }
+.sp-cone-chip.empty .sp-cone-pic { border: 1px dashed var(--border); background: none; }
+/* 光锥原画自带一圈卡框，放大一点让它落到框外 */
+.sp-cone-pic img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.06); }
+.sp-cone-chip:hover .sp-cone-pic { box-shadow: 0 0 0 2px var(--accent); }
+.sp-cone-text { display: grid; gap: 2px; min-width: 0; }
+.sp-cone-text b { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+.sp-cone-text small { font-size: 12px; color: var(--muted); }
+/* 按「角色与遗器」实际装配算时，遗器那几项收成这一块 */
+.sp-roster-link { padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 7%, transparent); font-size: 13px; }
+.sp-roster-link p { margin: 0 0 4px; }
+.sp-roster-link .hint { margin: 0 0 4px; font-size: 12px; line-height: 1.6; }
+.sp-roster-back { margin: 10px 0 0; }
 .sp-check { display: flex; align-items: center; gap: 9px; margin-top: 15px; color: #594556; font-size: 13px; cursor: pointer; }
 .sp .sp-check input, .sp .effect-row input[type="checkbox"] {
   flex: none; width: 34px; height: 20px; margin: 0; border: 0; border-radius: 999px;

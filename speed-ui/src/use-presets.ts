@@ -119,25 +119,5 @@ export function usePresets(s: PlanState, host: PresetHost) {
     void host.run();
   }
 
-  /** 「用实际装配填入」：读「角色与遗器」里这个角色的实际装配，换算成配速查询的配置填进来（只填入，不改「我的配速」）。 */
-  async function fillFromRoster(): Promise<void> {
-    try {
-      const filled = await host.call("roster_speed_config", { characterId: state.characterId });
-      const config = filled.config;
-      state.lightconeId = config.lightconeId || "";
-      state.superimpose = config.superimpose ?? 1;
-      state.eidolon = config.eidolon ?? 0;
-      state.enabled = null;
-      state.relic = { ...state.relic, ...config.relic };
-      syncForm();
-      host.updateSplash();
-      await host.run();
-      const notes = (filled.notes || []).join("");
-      presetOverride.value = { text: `已按「角色与遗器」里的实际装配填入：面板速度 ${Number(filled.panelSpeed).toFixed(1)}。${notes}`, error: false };
-    } catch (err) {
-      presetOverride.value = { text: (err as Error).message, error: true };
-    }
-  }
-
-  return { presetStatus, savedPreset, presetNote, savingPreset, refreshPresets, writeAhaFields, currentConfig, loadPresets, savePreset, deletePreset, applyPreset, fillFromRoster };
+  return { presetStatus, savedPreset, presetNote, savingPreset, refreshPresets, writeAhaFields, currentConfig, loadPresets, savePreset, deletePreset, applyPreset };
 }

@@ -5,13 +5,14 @@ import NumField from "./NumField.vue";
 import { fix } from "./motion.ts";
 import { useSpeedPage } from "./page.ts";
 
-const { summaries, state, form, substatLimit, onSubstat, substatInvalid, onCustomPct, onCustomFlat, onAdvCustom, advanceMoreOpen, advanceToggleHidden, toggleBox, advanceBox, result, effectGroups, enabledSet, effectTitle, toggleEffect, effectsNeedNote, effectMoreOpen, effectBox, describeEffect } = useSpeedPage();
+const { rosterLinked, summaries, state, form, substatLimit, onSubstat, substatInvalid, onCustomPct, onCustomFlat, onAdvCustom, advanceMoreOpen, advanceToggleHidden, toggleBox, advanceBox, result, effectGroups, enabledSet, effectTitle, toggleEffect, effectsNeedNote, effectMoreOpen, effectBox, describeEffect } = useSpeedPage();
 </script>
 
 <template>
   <section class="sp-panel-card sp-bonus" data-step="bonus">
     <div class="sp-compact-head"><strong>加成与拉条</strong></div>
-    <div class="sp-bonus-main">
+    <!-- 按实际装配算时，副词条速度已经从遗器里读出来了，不用填 -->
+    <div v-if="!rosterLinked" class="sp-bonus-main">
       <NumField id="substat" label="副词条速度合计" :value="form.substat" min="0" :max="String(substatLimit)" step="any" :plus-disabled="Number(form.substat) >= substatLimit" @input="onSubstat" />
       <p id="substat-limit" class="hint" :class="{ 'error-text': substatInvalid }" aria-live="polite">五星遗器理论上限 {{ substatLimit }} 速（{{ state.relic.speedBoots ? "速度鞋不含速度副词条" : "不穿速度鞋，六件均可含速度副词条" }}）。{{ substatInvalid ? "当前数值超出上限，请调整。" : "" }}</p>
     </div>
@@ -19,7 +20,7 @@ const { summaries, state, form, substatLimit, onSubstat, substatInvalid, onCusto
       <summary>其它加成<span id="sum-other" class="sp-sum">{{ summaries.other }}</span></summary>
       <div class="sp-bonus-grid">
         <NumField id="customPct" label="其它速度 %" :value="form.customPct" step="1" @input="onCustomPct" />
-        <NumField id="customFlat" label="其它固定速度" :value="form.customFlat" step="1" @input="onCustomFlat" />
+        <NumField v-if="!rosterLinked" id="customFlat" label="其它固定速度" :value="form.customFlat" step="1" @input="onCustomFlat" />
         <NumField id="advCustom" label="其它拉条 %" :value="form.advCustom" step="5" @input="onAdvCustom" />
       </div>
       <button type="button" class="sp-link" data-toggle="sp-advance-more" :aria-expanded="advanceMoreOpen" :hidden="advanceToggleHidden" @click="toggleBox('advance')">查看拉条效果</button>

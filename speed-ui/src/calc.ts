@@ -1083,6 +1083,13 @@ export function createApi(data: any, storage?: any) {
     return { lightcones: out, path: path === undefined ? null : path };
   }
 
+  /** 光锥原画（角色卡上显示光锥用，2026-11-05 加）。单独一个动作：lightcones 的输出有冻结的对拍基准，不往里加字段。 */
+  function coneArt() {
+    const art: Record<string, string> = {};
+    for (const cone of lightconesData()) if (cone.portrait) art[cone.id] = cone.portrait;
+    return { art };
+  }
+
   function resolveCharacter(p: any) {
     if (pyStrNum(p.characterId) === CUSTOM_ID) return customCharacter(p);
     const character = find(characters(), p.characterId);
@@ -2151,6 +2158,7 @@ export function createApi(data: any, storage?: any) {
   const ACTIONS: Record<string, (payload: any) => any> = {
     catalog: catalog,
     lightcones: lightcones,
+    cone_art: coneArt,
     plan: plan,
     recommend: recommend,
     presets: presets,
