@@ -154,9 +154,30 @@ async fn fetch_showcase(uid: String) -> Result<String, String> {
         .map_err(|e| format!("UID 查询没有完成：{e}"))?
 }
 
+/// WebView2 浏览器参数：wry 默认的那几个（去掉小菜单和 SmartScreen、允许自动播放大招片段），
+/// 再接上 WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS 环境变量里的。
+/// 这个变量 WebView2 本来就认，但应用自己传了参数时，有的运行时版本只用应用的、不管环境变量和注册表策略
+/// （2026-11-06 CI 上 156 版调试端口加不进去，本机 157 会两边合并），所以由 exe 自己合并好再传。
+fn browser_args(extra: Option<String>) -> String {
+    let mut args = String::from("--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --autoplay-policy=no-user-gesture-required");
+    if let Some(extra) = extra.map(|s| s.trim().to_string()).filter(|s| !s.is_empty()) {
+        args.push(' ');
+        args.push_str(&extra);
+    }
+    args
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![read_store, write_store, open_external, fetch_showcase])
+        // 窗口按 tauri.conf.json 里的配置建（那里 create 为 false），只是多传浏览器参数。
+        .setup(|app| {
+            let config = app.config().app.windows.first().cloned().ok_or("tauri.conf.json 里没有窗口配置")?;
+            tauri::WebviewWindowBuilder::from_config(app.handle(), &config)?
+                .additional_browser_args(&browser_args(std::env::var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS").ok()))
+                .build()?;
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("绯绯狐工具箱启动失败");
 }
@@ -181,6 +202,15 @@ mod tests {
         assert!(status_message(424, 0).contains("维护"));
         assert!(status_message(429, 30).contains("30 秒"));
         assert!(status_message(503, 0).contains("稍后再试"));
+    }
+
+    #[test]
+    fn browser_args_keep_defaults_and_append_env() {
+        let base = browser_args(None);
+        assert!(base.contains("--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection"));
+        assert!(base.contains("--autoplay-policy=no-user-gesture-required"));
+        assert_eq!(browser_args(Some("  ".into())), base);
+        assert_eq!(browser_args(Some("--remote-debugging-port=9452".into())), format!("{base} --remote-debugging-port=9452"));
     }
 
     #[test]

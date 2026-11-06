@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 
 import { matchName, parseLabel, parseLevelLine, parseStatValue } from "../../ui-shared/src/import/record-card/match.ts";
+import { notImage } from "../../roster-ui/src/ocr.ts";
 
 const DATA = join(import.meta.dirname, "..", "..", "modules", "honkai-star-rail", "data");
 const json = (name: string): any => JSON.parse(readFileSync(join(DATA, name), "utf-8"));
@@ -76,4 +77,11 @@ test("副词条反推：标了强化次数时按它定出现次数（»2 的速�
   // 8.1% 在游戏里是 8.0999…%，显示 8.0%：要认成出现 3 次、1 档。
   const crit = inferSubAffix(0.025920001, 0.0032400002, 8.0, true, false);
   assert.deepEqual([crit?.count, crit?.step], [3, 1]);
+});
+
+test("选图：没带文件类型的不算「不是图片」，解码时才知道；明确不是图片的直接拦下", () => {
+  assert.equal(notImage({ type: "" }), false);
+  assert.equal(notImage({ type: "image/png" }), false);
+  assert.equal(notImage({ type: "image/heic" }), false);
+  assert.equal(notImage({ type: "application/pdf" }), true);
 });

@@ -21,7 +21,7 @@ const data: GameData = { axis: json("axis_data.json"), characters: json("charact
 const battle = (input: BattleInput) => createBattle({ useTechnique: false, ...input }, data);
 const near = (actual: number, expected: number, message = "") =>
   assert.ok(Math.abs(actual - expected) < 1e-7, `${message} 期望 ${expected}，实际 ${actual}`);
-const zero = (id: string, extra: Partial<MemberInput> = {}): MemberInput => ({ id, traceSpd: 0, initialEnergy: 0, ...extra });
+const zero = (id: string, extra: Partial<MemberInput> = {}): MemberInput => ({ id, traceSpd: 0, initialEnergy: 0, enhanced: false, ...extra });
 const cone = (id: string, superimpose = 1) => ({ lightcone: { id, superimpose } });
 const set4 = (id: string) => ({ relics: [{ id, pieces: 4 as const }] });
 const set2 = (id: string) => ({ relics: [{ id, pieces: 2 as const }] });
@@ -31,7 +31,7 @@ const PRIEST = "1110"; // 玲可 100 速，上限 100，战技指定我方单体
 const SHAMAN = "1215"; // 寒鸦 110 速，上限 140，终结技指定我方单体
 const MAGE = "1003"; // 姬子 96 速，上限 120
 const ROGUE = "1305"; // 真理医生 103 速，上限 140
-const WARLOCK = "1004"; // 瓦尔特 102 速，上限 120
+const WARLOCK = "1004"; // 瓦尔特 102 速，上限 120。这里只看装备，按原版（强化版开局另有回能）
 const WARRIOR = "1221"; // 云璃 94 速，上限 240
 const KNIGHT = "1104"; // 杰帕德 92 速，上限 100
 const ALLY = "1211"; // 白露 98 速，上限 100
@@ -499,11 +499,29 @@ test("蕃息：普攻后下一次行动提前 12%，战技不触发", () => {
   near(skill.units[0].remDist, 10000);
 });
 
-test("舞！舞！舞！：开大后我方全体提前 16%，S5 24%，走完整一场时不吃自己回合内的", () => {
+test("舞！舞！舞！：开大后我方全体提前 16%，S5 24%", () => {
   const engine = opening(zero(SHAMAN, { ...cone("21018"), initialEnergy: 140 }), zero(ALLY, SLOW));
   near(engine.units[0].remDist, 8400);
   near(engine.units[1].remDist, 8400);
   near(opening(zero(SHAMAN, { ...cone("21018", 5), initialEnergy: 140 })).units[0].remDist, 7600);
+});
+
+test("舞！舞！舞！：装备者自己行动完开大，自己也吃这次拉条（回合结束后结算，和风套一样）", () => {
+  // 攻略 BV1sW421P7t8（10:26）实测：未强化花火、风套 + 翁瓦克，158 速四轮八动；再带舞！舞！舞！159 速四轮九动。
+  // 也就是自己放完战技满能开大，舞！舞！舞！给自己的那口照样算。以前「在自己回合里开大」时整个跳过自己，只有 8 动。
+  const sparkle = (speed: number, withCone: boolean) => {
+    const probe = battle({ team: [zero("1306")], maxAV: 1 });
+    const base = probe.units[0].speed();
+    const engine = battle({
+      team: [zero("1306", { enhanced: false, initialEnergy: undefined, flatSpd: speed - base, err: 19.4, relics: [{ id: "110", pieces: 4 }, { id: "308", pieces: 2 }], ...(withCone ? cone("21018", 5) : {}) })],
+      maxAV: 450,
+      useTechnique: true,
+    });
+    engine.run();
+    return engine.timeline.filter((row) => row.type === "skill" || row.type === "basic").length;
+  };
+  assert.equal(sparkle(158, false), 8, "风翁 158 速四轮八动");
+  assert.equal(sparkle(159, true), 9, "再带舞！舞！舞！159 速四轮九动");
 });
 
 test("让告别，更美一些：忆灵消失时提前 12%，只触发一次，开大重置", () => {
@@ -690,6 +708,18 @@ test("分类标出的光锥和遗器都有处理，或者确认过只有伤害�
 });
 
 // 1.2：成员带上「实际装配」的真实属性（measured）时，看属性的条件按真实值判断。
+test("当一颗星照亮夜空：每次助战技（队友用的也算）装备者 +6", () => {
+  // 4.6.54 版本资料：「当装备者施放助战技时，恢复6点能量」；攻略实测 BV1cBMe69Ejk：队友用助战技也算姬子•启行施放。
+  // 姬子•启行 1 速不行动，瓦尔特（开拓同行）98.04 回合开始用 1 次助战技：+18，带专武再 +6。
+  const himeko = (withCone: boolean) => {
+    const engine = battle({ team: [zero("1510", { baseSpd: 1, ...(withCone ? cone("23060") : {}) }), zero("1004", { rotation: "basic" })], maxAV: 100 });
+    engine.run();
+    return engine.units[0].energy;
+  };
+  near(himeko(false), 18);
+  near(himeko(true), 18 + 6);
+});
+
 test("翁瓦克 + 实际装配：速度 119.9 不触发并写明，120 触发", () => {
   const slow = opening(zero(PRIEST, { ...set2("308"), baseSpd: 119.9, measured: { elation: 0 } }));
   near(slow.units[0].remDist, 10000);

@@ -8,6 +8,7 @@ import { callApi, getJSON } from "./api.js";
 import { setupBackup } from "./backup.js";
 import { escapeHtml, fmt } from "./format.js";
 import { setupMascot } from "./mascot.js";
+import { setupTheme } from "./theme.js";
 import { CHEVRON, featureIcon, matchingFeatures, pageIcon, setupMoreSheet, setupSidebar } from "./sidebar.js";
 import { statusPageHtml } from "./status-page.js";
 import { setupWhatsNew } from "./whats-new.js";
@@ -372,6 +373,7 @@ async function boot() {
   installTipDismissed = savedShell.installTipDismissed === true;
   renderInstallGuide = setupInstallGuide({ dismissed: installTipDismissed, dismiss: () => { installTipDismissed = true; saveShell(); } });
   if (Array.isArray(savedShell.collapsed)) { navCollapsed.clear(); savedShell.collapsed.forEach(id => navCollapsed.add(id)); }
+  setupTheme({ buttons: [...document.querySelectorAll("[data-theme-toggle]")], document, window });
   mascotSpot = savedShell.mascot ?? null;
   const openSearch = setupMascot({
     root: $("#mascot"), toggle: $("#search-toggle"), panel: $("#mascot-panel"), input: $("#search"), list: $("#mascot-results"),

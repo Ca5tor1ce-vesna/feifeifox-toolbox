@@ -23,6 +23,8 @@ export function useRosterLink(s: PlanState, host: LinkHost) {
   /** 「角色与遗器」里这个角色有没有穿着遗器（手动模式下决定要不要给「改回实际装配」）。 */
   const rosterHas = ref(false);
   const rosterError = ref("");
+  /** 用不上实际装配的原因：还没导入任何角色 / 没有这个角色 / 这个角色没穿遗器；能用或自定义角色时为空。 */
+  const rosterMissing = ref<"" | "empty" | "character" | "relics">("");
   let seq = 0;
 
   /**
@@ -35,6 +37,7 @@ export function useRosterLink(s: PlanState, host: LinkHost) {
     if (isCustom.value) {
       rosterLinked.value = null;
       rosterHas.value = false;
+      rosterMissing.value = "";
       return false;
     }
     let filled: any;
@@ -44,10 +47,13 @@ export function useRosterLink(s: PlanState, host: LinkHost) {
       if (mine !== seq) return false;
       rosterLinked.value = null;
       rosterHas.value = false;
+      rosterMissing.value = "";
       rosterError.value = `没能读「角色与遗器」里的装配：${(err as Error).message}`;
       return false;
     }
     if (mine !== seq) return false;
+    rosterMissing.value = filled?.missing ?? "";
+    if (filled?.missing) filled = null;
     rosterHas.value = !!filled;
     if (!filled || state.rosterMode === "manual") {
       rosterLinked.value = null;
@@ -83,5 +89,5 @@ export function useRosterLink(s: PlanState, host: LinkHost) {
     }
   }
 
-  return { rosterLinked, rosterHas, rosterError, linkRoster, rosterManual, leaveRoster, rosterBack };
+  return { rosterLinked, rosterHas, rosterError, rosterMissing, linkRoster, rosterManual, leaveRoster, rosterBack };
 }

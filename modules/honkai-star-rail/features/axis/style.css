@@ -307,3 +307,24 @@
   .axis-card.is-ult .axis-card-ult { letter-spacing: .04em; }
   .axis-card.is-ult .axis-card-body b { font-size: 14px; }
 }
+/* 伤害总览 */
+.axis-damage { margin-bottom: 12px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
+.axis-damage-preview { margin: 0 0 8px; color: var(--warn); font-size: 12px; font-weight: 700; }
+.axis-damage-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.axis-damage-bar { display: flex; gap: 2px; height: 8px; margin: 10px 0 8px; overflow: hidden; border-radius: 4px; background: var(--panel-2); }
+.axis-damage-bar i { min-width: 0; }
+.axis-damage i.is-slot-0 { background: var(--accent); }
+.axis-damage i.is-slot-1 { background: var(--accent-2); }
+.axis-damage i.is-slot-2 { background: var(--warn); }
+.axis-damage i.is-slot-3 { background: var(--good); }
+.axis-damage-units { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: 13px; }
+.axis-damage-units li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto 52px; gap: 8px; align-items: center; }
+.axis-damage-units i { width: 10px; height: 10px; border-radius: 3px; }
+.axis-damage-units span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.axis-damage-units small, .axis-damage-units em { color: var(--muted); font-size: 12px; font-style: normal; text-align: right; }
+.axis-damage-units b { font-variant-numeric: tabular-nums; text-align: right; }
+.axis-damage-note { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+.axis-card-damage { flex: none; margin-left: 8px; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--accent-strong); position: relative; z-index: 1; }
+.axis-card.is-ult .axis-card-damage, .axis-card.is-aha .axis-card-damage { color: #fff; }
+.axis-detail-damage { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+.axis-detail-damage b { color: var(--accent-strong); font-size: 13px; }

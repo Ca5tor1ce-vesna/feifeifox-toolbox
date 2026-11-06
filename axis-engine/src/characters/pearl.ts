@@ -103,13 +103,14 @@ export class PearlKit extends Kit {
     const count = el.elationUnits().length;
     const pct = count === 1 ? 10 : count === 2 ? 15 : 30;
     const target = engine.unitAt(this.aesteSlot);
+    engine.targetAlly(self, target, "终结技");
     // E2：除真珠和【美学底本】外的其他欢愉角色也拉条。
     const e2Allies = self.eidolon >= 2 ? el.elationUnits().filter((ally) => ally !== self && ally.slot !== this.aesteSlot) : [];
     const details = ["全队好活当赏 +20", "【深度学习】充能 3", `欢愉 ${count} 人 → 【美学底本】拉条 ${fmt(pct, 0)}%`];
     if (count >= 4) details.push("4 欢愉：【美学底本】额外回合（+60 笑点，E2 +120）");
     if (e2Allies.length) details.push(`E2：${e2Allies.map((ally) => ally.name).join("、")} 也拉条 ${fmt(pct, 0)}%`);
     engine.record("note", self, "鉴映灵魂的底色", { details });
-    if (target) engine.advance(target, pct);
+    if (target) engine.advance(target, pct, { source: self });
     if (count >= 4 && target) {
       const label = "真珠终结技·【美学底本】额外回合";
       el.extraTurnWithGrants(target, label, {
@@ -136,7 +137,7 @@ export class PearlKit extends Kit {
         },
       });
     }
-    for (const ally of e2Allies) engine.advance(ally, pct);
+    for (const ally of e2Allies) engine.advance(ally, pct, { source: self });
   }
 
   mechanics = () => ({ depthCharges: this.depth, barrierArmed: this.barrier, aesteSlot: this.aesteSlot });

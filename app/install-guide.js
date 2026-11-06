@@ -21,7 +21,8 @@ export function installSteps(env, hasPrompt) {
     case "exe":
       return { title: "把工具箱放到桌面", canPrompt: false, steps: ["找到 FeifeiFoxToolbox.exe（解压出来的文件夹里）。", "右键它 →「发送到」→「桌面快捷方式」（Windows 11 先点「显示更多选项」）。", "整个文件夹别挪位置，存档在它旁边的 userdata 里。"] };
     case "bili-app":
-      return { title: "放到手机桌面", canPrompt: false, steps: ["B站 App 里没法直接加到桌面：点右上角的「…」，选「用浏览器打开」（不同版本叫法可能不一样）。", "在浏览器里打开后，再按浏览器的「添加到主屏幕」。", "也可以在 B站 App 里收藏这个页面，下次从收藏夹进来。"] };
+      // 2026-11-06 用户给的实际操作：Toy 右上角「分享」→「添加快捷方式到桌面」（以前写的「没法直接加」不对）。
+      return { title: "放到手机桌面", canPrompt: false, steps: ["点页面右上角的「分享」按钮。", "在弹出的分享面板里选「添加快捷方式到桌面」。", "之后点桌面上的图标就能直接打开工具箱。"] };
     case "ios-safari":
       return { title: "放到 iPhone / iPad 主屏幕", canPrompt: false, steps: ["用 Safari 打开本页。", "点底部的「分享」按钮（方框带向上箭头）。", "往下找「添加到主屏幕」，点「添加」。"] };
     case "android":
@@ -44,7 +45,7 @@ export function phoneSteps() {
     title: "放到手机桌面",
     canPrompt: false,
     steps: [
-      "用手机浏览器打开同一个网址；如果是在 B站 App 里打开的，先点右上角的「…」，选「用浏览器打开」。",
+      "在 B站 App 里打开的：点右上角的「分享」→「添加快捷方式到桌面」。",
       "iPhone / iPad：用 Safari，点底部的「分享」→「添加到主屏幕」。",
       "安卓：点浏览器的「⋮」菜单 →「添加到主屏幕」或「安装应用」。",
     ],

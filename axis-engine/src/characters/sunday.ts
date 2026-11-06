@@ -23,8 +23,9 @@ export class SundayKit extends Kit {
     const { engine, self } = this;
     const details: string[] = [];
     const target = engine.unitAt(engine.resolveTarget(self));
+    engine.targetAlly(self, target, "战技");
     if (target) {
-      engine.advance(target, 100);
+      engine.advance(target, 100, { source: self });
       details.push(`${target.name} 拉条 100%`);
     }
     if (self.equip.hasSundayLc && target) {
@@ -38,6 +39,7 @@ export class SundayKit extends Kit {
 
   onUltimate({ engine, self }: KitContext): void {
     const target = engine.unitAt(engine.resolveTarget(self));
+    engine.targetAlly(self, target, "终结技");
     const gain = target ? Math.max(40, 0.2 * target.maxEnergy) : 40;
     const details = [target ? `指定目标回复 ${fmt(gain)} 固定能量（不吃 ERR）` : "没有合法目标"];
     if (target && self.equip.hasSundayLc) details.push(`专武：自身能量 +${fmt(SUNDAY_LC_ENERGY)} × (1+ERR)`);

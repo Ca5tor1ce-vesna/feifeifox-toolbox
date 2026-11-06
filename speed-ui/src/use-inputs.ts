@@ -43,6 +43,7 @@ export function useInputs(s: PlanState, plan: PlanRun, resetTableView: () => voi
 
   function onSuperimpose(value: string): void { state.superimpose = Number(value); state.enabled = null; schedule(); }
   function onEidolon(value: string): void { state.eidolon = Number(value); state.enabled = null; schedule(); }
+  function onEnhanced(value: string): void { state.enhanced = value !== "off"; state.enabled = null; schedule(); }
   function pickCone(id: string): void { state.lightconeId = id; state.enabled = null; schedule(); }
   function pickFourPiece(id: string): void { state.relic.fourPieceId = id; schedule(); }
   function pickOrnament(id: string): void { state.relic.ornamentIds = [id, ""]; schedule(); }
@@ -69,6 +70,6 @@ export function useInputs(s: PlanState, plan: PlanRun, resetTableView: () => voi
   return {
     substatLimit, substatInvalid, numberOptions,
     onFourUlts, onSubstat, onCustomPct, onCustomFlat, onConeUlts, onAdvCustom, onFirstUlt, onActions, onCustomAV,
-    onSpeedBoots, onUltTargetsAlly, onExcludeLastUlt, onSuperimpose, onEidolon, pickCone, pickFourPiece, pickOrnament, onMode, onTargetT, quickAV,
+    onSpeedBoots, onUltTargetsAlly, onExcludeLastUlt, onSuperimpose, onEidolon, onEnhanced, pickCone, pickFourPiece, pickOrnament, onMode, onTargetT, quickAV,
   };
 }

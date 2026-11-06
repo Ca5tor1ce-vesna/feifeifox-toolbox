@@ -3,6 +3,7 @@
  * 只写影响我方行动轴的部分；依赖敌方（受击、消灭、击破、敌方状态）或概率的效果，
  * 引擎是确定性的且不模拟敌方，列进 notSimulated，结果里会提示用户。
  */
+import type { SkillPoints } from "../modules/skill-points.ts";
 import type { Unit } from "../unit.ts";
 import { simple, type CharacterSpec, type SimpleKit } from "./declarative.ts";
 
@@ -10,6 +11,8 @@ import { simple, type CharacterSpec, type SimpleKit } from "./declarative.ts";
 /** 布洛妮娅 E2：等着行动后提速的战技目标。 */
 const bronyaE2 = new WeakMap<SimpleKit, Unit>();
 /** 停云的【赐福】：目标和剩余回合；施放时目标正在自己回合里，这一回合不算。 */
+/** 花火强化版：战技给的暴击伤害效果在谁身上、还剩几回合（按目标自己的回合数）。 */
+const sparkleBuff = new WeakMap<SimpleKit, Map<Unit, number>>();
 const tingyunBlessing = new WeakMap<SimpleKit, { unit: Unit; turns: number; armed: boolean }>();
 /** 寒鸦的终结技效果：持有者和剩余回合，规则同上。 */
 const hanyaUlt = new WeakMap<SimpleKit, { unit: Unit; turns: number; armed: boolean }>();
@@ -36,7 +39,7 @@ const specs: CharacterSpec[] = [
       {
         on: "skill",
         do: (k) => {
-          const target = k.otherTarget();
+          const target = k.targeted("战技");
           if (target) k.speed("战技【收债人】", target, "flat", 30, 3);
         },
       },
@@ -70,10 +73,12 @@ const specs: CharacterSpec[] = [
   },
   {
     id: "1102",
-    notSimulated: ["天赋额外回合（消灭敌方后）", "E4 消灭回能"],
+    notSimulated: ["天赋额外回合（消灭敌方后）", "E4 消灭回能", "强化版：敌方生命值 ≤50% 时自动施放战技"],
+    // 战技提速 25%：原版持续 2 回合，强化版（3.4）3 回合（4.6.54 版本资料）。
     rules: [
       { on: "basic", do: (k) => k.advanceSelf("行迹【涟漪】", 20) },
-      { on: "skill", do: (k) => k.speed("战技", k.self, "pct", 25, 2) },
+      { on: "skill", enhanced: false, do: (k) => k.speed("战技", k.self, "pct", 25, 2) },
+      { on: "skill", enhanced: true, do: (k) => k.speed("战技（强化）", k.self, "pct", 25, 3) },
     ],
   },
   {
@@ -95,17 +100,19 @@ const specs: CharacterSpec[] = [
   {
     id: "1009",
     notSimulated: ["E4 能量恢复效率（蓄能取决于命中的敌方）"],
-    rules: [{ on: "ultimate", do: (k) => k.speedTeam("终结技", "flat", 57, 2) }],
+    // 技能数值按游戏里练得到的等级：终结技 Lv10 +50，E5 Lv12 +52.8（以前取了 Lv15 的 57）。
+    rules: [{ on: "ultimate", do: (k) => k.speedTeam("终结技", "flat", k.self.eidolon >= 5 ? 52.8 : 50, 2) }],
   },
   {
     id: "1101",
     rules: [
-      { on: "basic", do: (k) => k.advanceSelf("天赋", 37.5) },
+      // 天赋 Lv10 提前 30%，E3 Lv12 33%（以前取了 Lv15 的 37.5%）。
+      { on: "basic", do: (k) => k.advanceSelf("天赋", k.self.eidolon >= 3 ? 33 : 30) },
       // 对自身施放时无法触发立即行动。
       {
         on: "skill",
         do: (k) => {
-          const target = k.otherTarget();
+          const target = k.targeted("战技");
           if (target) k.advanceUnit("战技：立即行动", target, 100);
         },
       },
@@ -119,11 +126,17 @@ const specs: CharacterSpec[] = [
         },
       },
     ],
-    setup: (k) => k.engine.on("actionDone", ({ unit }) => {
-      if (bronyaE2.get(k) !== unit) return;
-      bronyaE2.delete(k);
-      k.speed("E2：战技目标行动后", unit, "pct", 30, 1);
-    }),
+    // E2 的「行动后」：施放终结技也算行动（攻略视频 BV1n2oqYxE76 3:50：被拉的队友在自己回合前先开大，这时就触发加速，
+    // 加速持续 1 回合，到他自己那回合结束就没了）。以前只认普通行动。
+    setup: (k) => {
+      const trigger = (unit: Unit, label: string) => {
+        if (bronyaE2.get(k) !== unit) return;
+        bronyaE2.delete(k);
+        k.speed(label, unit, "pct", 30, 1);
+      };
+      k.engine.on("actionDone", ({ unit }) => trigger(unit, "E2：战技目标行动后"));
+      k.engine.on("ultimate", ({ unit }) => trigger(unit, "E2：战技目标施放终结技后"));
+    },
   },
   {
     id: "1202",
@@ -132,9 +145,12 @@ const specs: CharacterSpec[] = [
       { on: "technique", do: (k) => k.gain("秘技", 50) },
       { on: "turnStart", do: (k) => k.gain("行迹【亨通】", 5) },
       // 【赐福】持续 3 回合，只对最新的战技目标生效。
+      { on: "skill", do: (k) => void k.targeted("战技") },
+      { on: "ultimate", do: (k) => void k.targeted("终结技") },
       { on: "skill", do: (k) => tingyunBlessing.set(k, { unit: k.target(), turns: 3, armed: !k.target().inTurn }) },
       { on: "skill", do: (k) => k.speed("行迹【驻晴】", k.self, "pct", 20, 1) },
-      { on: "ultimate", do: (k) => k.gainFor("终结技", k.target(), k.self.eidolon >= 6 ? 60 : 50) },
+      // 终结技给的能量不吃目标的能量恢复效率（攻略视频 BV18z4y187BB 2:24；早期文案没写「固定」）。
+      { on: "ultimate", do: (k) => k.restoreFor("终结技", k.target(), k.self.eidolon >= 6 ? 60 : 50, { fixed: true }) },
     ],
     setup: (k) => {
       k.engine.on("turnEnd", ({ unit }) => {
@@ -150,20 +166,17 @@ const specs: CharacterSpec[] = [
     },
   },
   {
-    id: "1207",
-    notSimulated: ["行迹【气壮】回能（【鸣弦号令】层数取决于秘技和战技）", "E2 回能（队友满能条件）"],
-    rules: [{ on: "battleStart", eidolon: 1, do: (k) => k.speedTeam("E1", "pct", 10, 2) }],
-  },
-  {
     id: "1215",
-    notSimulated: ["行迹【还阳】回能（战技点恢复有概率）"],
+    // 行迹【还阳】的能量（战技点恢复时触发）写在战技点系统的未计入里。
     rules: [
       { on: "skill", eidolon: 2, do: (k) => k.speed("E2", k.self, "pct", 20, 1) },
       {
         on: "ultimate",
         do: (k) => {
           const target = k.target();
-          k.speed("终结技", target, "flat", k.self.speed() * 0.225, 2);
+          k.targeted("终结技");
+          // 终结技 Lv10 是寒鸦速度的 20%，E5 Lv12 21%（以前取了 Lv15 的 22.5%）。
+          k.speed("终结技", target, "flat", k.self.speed() * (k.self.eidolon >= 5 ? 0.21 : 0.2), 2);
           hanyaUlt.set(k, { unit: target, turns: 2, armed: !target.inTurn });
         },
       },
@@ -195,7 +208,8 @@ const specs: CharacterSpec[] = [
         on: "battleStart",
         do: (k) => {
           for (const unit of k.engine.units) {
-            if (unit !== k.self) k.speed("天赋", unit, "pct", 11, null);
+            // 天赋 Lv10 +10%，E3 Lv12 +10.4%（以前取了 Lv15 的 11%）。
+            if (unit !== k.self) k.speed("天赋", unit, "pct", k.self.eidolon >= 3 ? 10.4 : 10, null);
           }
         },
       },
@@ -204,47 +218,93 @@ const specs: CharacterSpec[] = [
   },
   {
     id: "1306",
+    // 强化版（3.4）：秘技开局 +20 能量；战技的暴击伤害效果持续 2 回合（4.6.54 版本资料）。
+    // 战技点相关的条目统一写在 modules/skill-points.ts 的未计入里。
     rules: [
       { on: "basic", do: (k) => k.gain("行迹【岁时记】", 10) },
+      { on: "technique", enhanced: true, do: (k) => k.gain("秘技（强化）", 20) },
+      // 终结技：为我方恢复 6 个战技点（溢出记录最多 10 点不模拟）。
+      { on: "ultimate", do: (k) => k.engine.findModule<SkillPoints>("skill-points")?.restore(k.self, 6, "终结技") },
       // 对自身施放时无法触发行动提前。
       {
         on: "skill",
         do: (k) => {
-          const target = k.otherTarget();
+          const target = k.targeted("战技");
           if (target) k.advanceUnit("战技", target, 50);
+          if (k.self.enhanced) sparkleBuff.get(k)?.set(target ?? k.self, 2);
         },
       },
     ],
+    setup: (k) => {
+      if (!k.self.enhanced) return;
+      const buffs = new Map<Unit, number>();
+      sparkleBuff.set(k, buffs);
+      k.engine.on("turnEnd", ({ unit }) => {
+        const left = buffs.get(unit);
+        if (left) buffs.set(unit, left - 1);
+      });
+      // 强化版：持有她暴伤效果的角色消耗战技点时，花火 +1 能量。
+      // 开了战技点系统就按真实消耗记账；没开时沿用「施放战技」这个近似。
+      if (k.engine.findModule("skill-points")) {
+        k.engine.on("spChanged", ({ spend, amount }) => {
+          if (!spend || amount === 0) return;
+          k.gain(`行迹【岁时记】（强化）：消耗 ${Math.abs(amount)} 点战技点`, Math.abs(amount));
+        });
+      } else {
+        k.engine.on("actionDone", ({ unit, casts }) => {
+          if (!casts.includes("skill") || !(buffs.get(unit)! > 0)) return;
+          k.gain(`行迹【岁时记】（强化）：${unit.name} 消耗战技点`, 1);
+        });
+      }
+    },
   },
   {
     id: "1403",
-    notSimulated: ["行迹回能（每击中 1 个目标，取决于敌方数量）", "天赋追击回能"],
+    notSimulated: ["行迹回能（每击中 1 个目标，取决于敌方数量）"],
     rules: [{ on: "battleStart", do: (k) => k.gain("行迹", 30) }],
-  },
-  {
-    id: "1412",
-    notSimulated: ["持有【军功】角色攻击时的回能（待接入攻击事件）"],
-    rules: [
-      {
-        on: "skill",
-        do: (k) => {
-          k.speed("行迹【征服者】", k.self, "flat", 20, 3);
-          const target = k.otherTarget();
-          if (target) k.speed("行迹【征服者】", target, "flat", 20, 3);
-        },
-      },
-      { on: "skill", eidolon: 1, do: (k) => k.gainFor("E1", k.target(), 2) },
-    ],
+    // 天赋：我方其他角色施放终结技后，缇宝追加攻击（基础回能 5）；每个角色最多触发 1 次，缇宝开大时重置。
+    // E6：缇宝开大后也发动一次。不依赖敌方（4.6.54 版本资料；攻略视频 BV1HaAieBEsf 3:00 演示每人一次）。
+    setup: (k) => {
+      const used = new Set<Unit>();
+      const followUp = (label: string) => {
+        k.self.followUps += 1;
+        k.engine.record("fua", k.self, label, { details: ["基础回能 5 × (1+ERR)"] });
+        k.engine.gainEnergy(k.self, 5, { reason: label });
+        k.engine.attack(k.self, "fua");
+      };
+      k.engine.on("ultimate", ({ unit }) => {
+        if (unit === k.self) {
+          used.clear();
+          if (k.self.eidolon >= 6) followUp("E6：缇宝开大后的天赋追加攻击");
+          return;
+        }
+        if (used.has(unit)) return;
+        used.add(unit);
+        followUp(`天赋【好忙好忙的缇宝】：${unit.name}开大后追加攻击`);
+      });
+    },
   },
 
   // ---- 虚无 ---- //
   {
     id: "1004",
-    notSimulated: ["E2 回能（天赋：攻击减速状态的敌方）", "禁锢延后敌方"],
-    rules: [{ on: "ultimate", do: (k) => k.gain("行迹【审判】", 10) }],
+    notSimulated: ["E2 回能（天赋：攻击减速状态的敌方）", "禁锢、【失重】延后敌方"],
+    // 原版：行迹【审判】开大额外 +10。强化版（3.4）：行迹【惩戒】开局 +30，【裁决】开大额外 +5（4.6.54 版本资料）。
+    rules: [
+      { on: "ultimate", enhanced: false, do: (k) => k.gain("行迹【审判】", 10) },
+      { on: "battleStart", enhanced: true, do: (k) => k.gain("行迹【惩戒】（强化）", 30) },
+      { on: "ultimate", enhanced: true, do: (k) => k.gain("行迹【裁决】（强化）", 5) },
+    ],
   },
-  { id: "1005", notSimulated: ["天赋追击（队友攻击目标后）的回能", "持续伤害相关回能"] },
-  { id: "1006", notSimulated: ["E1 回能（取决于敌方负面状态）"] },
+  {
+    id: "1006",
+    notSimulated: ["E1 回能（取决于敌方负面状态）"],
+    // 强化版（3.4）行迹【注入】：战斗开始 +20，自己回合开始 +5（4.6.54 版本资料）。原版没有。
+    rules: [
+      { on: "battleStart", enhanced: true, do: (k) => k.gain("行迹【注入】（强化）", 20) },
+      { on: "turnStart", enhanced: true, do: (k) => k.gain("行迹【注入】（强化）：回合开始", 5) },
+    ],
+  },
   { id: "1106", notSimulated: ["天赋回能（敌方负面状态条件）", "E1 消灭回能", "E2 速度提高（解除敌方增益）"] },
   {
     id: "1108",
@@ -265,6 +325,7 @@ const specs: CharacterSpec[] = [
     notSimulated: ["E2 弱点击破回能"],
     rules: [{ on: "ultimate", eidolon: 2, do: (k) => k.advanceAll("E2", 24) }],
   },
+  // 强化版（3.4）E4 去掉了「每次【揭露】最多 1 次」的限制，仍然看敌方状态。
   { id: "1307", notSimulated: ["E4 回能（敌方【揭露】状态）"] },
   { id: "1406", notSimulated: ["天赋追击（队友攻击目标后）回能"] },
   { id: "1410" },
@@ -286,7 +347,7 @@ const specs: CharacterSpec[] = [
     ],
   },
   { id: "1214", notSimulated: ["天赋追击（敌方条件）及其回能"] },
-  { id: "1312", notSimulated: ["天赋回能（战技点消耗，引擎不模拟战技点）"] },
+  { id: "1312" },
   {
     id: "8001",
     notSimulated: ["E1 消灭回能"],

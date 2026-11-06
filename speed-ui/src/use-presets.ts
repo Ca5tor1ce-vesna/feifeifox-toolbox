@@ -58,6 +58,7 @@ export function usePresets(s: PlanState, host: PresetHost) {
       lightconeId: state.lightconeId,
       superimpose: state.superimpose,
       eidolon: state.eidolon,
+      enhanced: state.enhanced !== false,
       enabledEffects: state.enabled,
       relic: state.relic,
       advance: state.advance,
@@ -109,6 +110,7 @@ export function usePresets(s: PlanState, host: PresetHost) {
     state.lightconeId = config.lightconeId || "";
     state.superimpose = config.superimpose ?? 1;
     state.eidolon = config.eidolon ?? 0;
+    state.enhanced = config.enhanced !== false;
     state.enabled = config.enabledEffects ?? null;
     state.relic = { ...state.relic, ...(config.relic || {}) };
     state.advance = { ...state.advance, ...(config.advance || {}) };

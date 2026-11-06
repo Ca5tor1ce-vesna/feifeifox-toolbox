@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import AxisHead, { type Head } from "./AxisHead.vue";
+import { formatDamage, type RowDamage } from "./damage.ts";
 import { AHA_NAME, TYPE_NAMES, type AxisCard, type Row } from "./model.ts";
 
 // 点开一张卡看到的细节：原来「显示详细」里的说明行、回能和资源都在这里，逐动改普攻/战技、开大也在这里。
-const props = defineProps<{ card: AxisCard; icons: Record<number, string>; splashes: Record<number, string>; heads: Record<number, Head>; manualIds: Set<number> }>();
+const props = defineProps<{ damage: Record<string, RowDamage> | null; card: AxisCard; icons: Record<number, string>; splashes: Record<number, string>; heads: Record<number, Head>; manualIds: Set<number> }>();
 const emit = defineEmits<{ override: [row: Row]; toggleUltimate: [row: Row] }>();
 
 const main = computed(() => props.card.main);
@@ -64,6 +65,10 @@ const canUltimate = (row: Row): boolean => row.action !== undefined && row.slot 
         <ul v-if="row.details.length">
           <li v-for="text in row.details" :key="text">{{ text }}</li>
         </ul>
+        <div v-if="damage?.[row.key]" class="axis-detail-damage">
+          <b>伤害 {{ formatDamage(damage[row.key].expected) }}</b>
+          <span v-for="zone in damage[row.key].zones" :key="zone.zone">{{ zone.zone }} ×{{ zone.factor.toFixed(2) }}</span>
+        </div>
         <div v-if="chipsOf(row).length" class="axis-detail-chips">
           <span v-for="chip in chipsOf(row)" :key="chip">{{ chip }}</span>
         </div>

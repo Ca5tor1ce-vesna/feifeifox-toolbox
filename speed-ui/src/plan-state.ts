@@ -21,6 +21,8 @@ export function createPlanState(catalog: any, draft?: SpeedDraft | null) {
     lightconeId: null,
     superimpose: 1,
     eidolon: 0,
+    // 3.4 老角色加强：有强化版的角色默认按强化算，false 按原版
+    enhanced: true,
     enabled: null, // null = 用默认勾选
     relic: { speedBoots: true, fourPieceId: "", fourPieceUlts: 0, ultTargetsAlly: false, ornamentIds: ["", ""], substatSpeed: 0, customPct: 0, customFlat: 0 },
     advance: { coneUlts: 0, custom: 0, excludeLastUlt: false },
@@ -32,7 +34,7 @@ export function createPlanState(catalog: any, draft?: SpeedDraft | null) {
   });
   const restored = draft?.state;
   if (restored && (restored.characterId === CUSTOM_ID || characters.some((c) => String(c.id) === String(restored.characterId)))) {
-    for (const key of ["characterId", "lightconeId", "superimpose", "eidolon", "enabled", "rosterMode"]) if (Object.hasOwn(restored, key)) state[key] = restored[key];
+    for (const key of ["characterId", "lightconeId", "superimpose", "eidolon", "enhanced", "enabled", "rosterMode"]) if (Object.hasOwn(restored, key)) state[key] = restored[key];
     for (const key of ["custom", "relic", "advance", "simulation", "target"]) if (restored[key] && typeof restored[key] === "object") Object.assign(state[key], restored[key]);
   }
 

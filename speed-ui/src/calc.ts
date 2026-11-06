@@ -863,15 +863,22 @@ function collectEffects(character: any, cone: any, superimpose: any) {
   return { speed: dedup(speed), advance: dedup(advance) };
 }
 
-/** 星魂效果只保留 rank <= 当前星魂档位的。 */
-function filterByEidolon(character: any, eidolon: any) {
+/**
+ * 星魂效果只保留 rank <= 当前星魂档位的。
+ * 技能数值按练得到的等级（0 魂：战技/终结技/天赋 10 级，普攻 6 级）；3 魂 / 5 魂加了这个技能的等级时，
+ * 数据里带 levelUp（加完等级的数值和原文），到了档位就换上。
+ */
+function filterByEidolon(character: any, eidolon: any, enhanced = true) {
   const out: any[] = [];
   for (const raw of character.effects || []) {
+    // 有强化版的角色（3.4 老角色加强）：只在一版里有的效果按开关取（数据里标了 enhanced）。
+    if (raw.enhanced !== undefined && raw.enhanced !== null && raw.enhanced !== enhanced) continue;
     if (raw.source === "星魂") {
       const rank = raw.rank;
       if (rank === undefined || rank === null || toInt(rank) > eidolon) continue;
     }
-    out.push(raw);
+    const up = raw.levelUp;
+    out.push(up && toInt(up.rank) <= eidolon ? Object.assign({}, raw, { value: up.value, text: up.text || raw.text }) : raw);
   }
   return out;
 }
@@ -1090,6 +1097,11 @@ export function createApi(data: any, storage?: any) {
     return { art };
   }
 
+  /** 有强化版的角色（3.4 老角色加强，数据里标了 enhanceable）。目录接口的形状是冻结的，单独给。 */
+  function enhanceable() {
+    return { ids: characters().filter((item: any) => item.enhanceable).map((item: any) => String(item.id)) };
+  }
+
   function resolveCharacter(p: any) {
     if (pyStrNum(p.characterId) === CUSTOM_ID) return customCharacter(p);
     const character = find(characters(), p.characterId);
@@ -1128,7 +1140,7 @@ export function createApi(data: any, storage?: any) {
 
     // 效果清单（星魂按档位过滤后再抽取）
     const filtered = Object.assign({}, character);
-    filtered.effects = filterByEidolon(character, eidolon);
+    filtered.effects = filterByEidolon(character, eidolon, p.enhanced !== false);
     const collected = collectEffects(filtered, cone, superimpose);
     const speedEffects = collected.speed;
     const advanceEffects = collected.advance;
@@ -2159,6 +2171,7 @@ export function createApi(data: any, storage?: any) {
     catalog: catalog,
     lightcones: lightcones,
     cone_art: coneArt,
+    enhanceable,
     plan: plan,
     recommend: recommend,
     presets: presets,

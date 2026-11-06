@@ -106,14 +106,25 @@ const TOY_TEXT = [
 ];
 export const toyText = (text) => TOY_TEXT.reduce((out, [pattern, to]) => out.replace(pattern, to), text);
 
+/**
+ * 页面打包后中文常被写成 `站` 这种转义，按原文替换和扫描都看不到（2026-11-06「B站 App」就这样漏进了 Toy 包）。
+ * 把中日文和全角标点的转义还原成原字：在 JS 的字符串、模板、正则和标识符里两种写法等价。前面是 `\\` 的（字面反斜杠）不动。
+ */
+export const unescapeCjk = (text) =>
+  text.replace(/(?<!\\)\\u([0-9A-Fa-f]{4})/g, (match, hex) => {
+    const code = parseInt(hex, 16);
+    return (code >= 0x2e80 && code <= 0x9fff) || (code >= 0xff00 && code <= 0xffef) ? String.fromCharCode(code) : match;
+  });
+
 /** Toy 站点里的网页文件逐个换掉平台标识，换完再扫一遍，还有就报错。 */
 function applyToyText(dir) {
   const left = [];
   for (const name of walk(dir).filter((n) => /\.(html|js|css|json)$/i.test(n))) {
     const path = join(dir, name);
-    const text = readFileSync(path, "utf-8");
+    const raw = readFileSync(path, "utf-8");
+    const text = /\.js$/i.test(name) ? unescapeCjk(raw) : raw;
     const out = toyText(text);
-    if (out !== text) writeFileSync(path, out, "utf-8");
+    if (out !== raw) writeFileSync(path, out, "utf-8");
     const hit = out.match(TOY_BRAND);
     if (hit) left.push(`${name}（${hit[0]}）`);
   }

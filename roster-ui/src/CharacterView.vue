@@ -112,7 +112,8 @@ const coneItems = computed<GridItem[]>(() => {
   }));
   return [{ id: "", name: "不穿光锥", groups: "mine" }, ...rows];
 });
-const coneGroups = computed(() => [{ key: "mine", label: `${info.value?.pathName ?? "同命途"}和推荐` }, { key: "", label: "全部光锥" }]);
+// 别的命途的光锥也能选：被动不生效，但白值（生命、攻击、防御）照算（2026-11-06 群里问「能不能带高白值光锥」，原来就能选，只是不好找）
+const coneGroups = computed(() => [{ key: "mine", label: `${info.value?.pathName ?? "同命途"}和推荐` }, { key: "", label: "全部光锥（别的命途只算白值）" }]);
 const cone = computed(() => {
   const id = r.selected.value?.lightcone?.id;
   const c = id ? props.catalog.lightcones.get(id) : null;

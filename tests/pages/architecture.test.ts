@@ -70,10 +70,53 @@ test("登记的越界引用都还存在（搬走了就把登记删掉）", () =>
   assert.deepEqual([...KNOWN].filter((key) => !used.has(key)), []);
 });
 
+/**
+ * ui-shared 里组件分两层（2026-11-06 用户定）：components/ 是通用组件，不认识游戏数据；hsr/ 是崩铁业务组件，
+ * 把游戏数据转成通用组件要的选项。通用组件不能反过来引用业务组件、面板计算或导入解析，否则就不通用了。
+ */
+const GAME_SPECIFIC = ["ui-shared/src/hsr/", "ui-shared/src/stats/", "ui-shared/src/import/"];
+
+test("通用组件不引用业务组件和游戏数据（ui-shared/src/components 不碰 hsr、stats、import）", () => {
+  const hits = tracked
+    .filter((file) => file.startsWith("ui-shared/src/components/") && SOURCE.test(file))
+    .flatMap((file) => [...read(file).matchAll(RELATIVE_IMPORT)].map((match) => ({ file, target: posix.normalize(posix.join(posix.dirname(file), match[1])) })))
+    .filter(({ target }) => GAME_SPECIFIC.some((prefix) => target.startsWith(prefix)))
+    .map(({ file, target }) => `${file} 引用了 ${target}`);
+  assert.deepEqual(hits, []);
+});
+
 test("引擎不依赖界面框架", () => {
   const hits = tracked
     .filter((file) => file.startsWith("axis-engine/") && SOURCE.test(file))
     .filter((file) => /from\s*["'](vue|reka-ui|motion-v)["']/.test(read(file)));
+  assert.deepEqual(hits, []);
+});
+
+/**
+ * 不用浏览器自带的弹框和弹窗：B站 Toy 把页面放在 iframe 里，exe 是 WebView2 窗口，这些功能会被静默拦掉，
+ * 点了没反应（2026-11-06：遗器「删」用 window.confirm，在 Toy 里删不掉）。确认和提示用外壳的 window.GT_DIALOG。
+ * 自己定义的同名函数（function confirm）和别的对象的方法（安装提示的 .prompt()）不算。
+ */
+const NATIVE_POPUPS = /(?<![.\w$])(?<!function\s+)(?:window\.)?(?:alert|confirm|prompt)\s*\(|\bwindow\.open\s*\(|\bbeforeunload\b/;
+
+test("不用浏览器自带的弹框和弹窗（alert / confirm / prompt / window.open / beforeunload）", () => {
+  const hits = tracked
+    .filter((file) => file.split("/")[0] in ALLOWED && SOURCE.test(file))
+    .flatMap((file) => read(file).split("\n").map((line, index) => ({ file, line: index + 1, text: line })))
+    .filter(({ text }) => !/^\s*(\/\/|\*|\/\*)/.test(text) && NATIVE_POPUPS.test(text))
+    .map(({ file, line, text }) => `${file}:${line} ${text.trim().slice(0, 80)}`);
+  assert.deepEqual(hits, []);
+});
+
+/** 文件框藏起来（hidden / display:none）再用脚本去点，B站 App 里的 Toy 点了没反应（2026-11-06 识图导入）。 */
+const HIDDEN_FILE_INPUT = /<input\b(?=[^>]*\btype="file")(?=[^>]*(?:\shidden\b|display:\s*none))[^>]*>/;
+
+test("文件框盖在按钮上让人直接点，不藏起来再用脚本去点", () => {
+  const hits = tracked
+    .filter((file) => file.split("/")[0] in ALLOWED && /\.(vue|html)$/.test(file))
+    .flatMap((file) => read(file).split("\n").map((line, index) => ({ file, line: index + 1, text: line })))
+    .filter(({ text }) => HIDDEN_FILE_INPUT.test(text))
+    .map(({ file, line, text }) => `${file}:${line} ${text.trim().slice(0, 80)}`);
   assert.deepEqual(hits, []);
 });
 

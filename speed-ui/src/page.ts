@@ -116,7 +116,8 @@ export function createSpeedPage(props: SpeedPageProps) {
   // 区块组件按名字取用；新加的东西放进对应的部分，再在这里列出来。
   return {
     theme: s.theme, state: s.state, form: s.form, characters: s.characters, currentCharacter: s.currentCharacter, isCustom: s.isCustom,
-    coneItems: gear.coneItems, fourPieceItems: gear.fourPieceItems, ornamentItems: gear.ornamentItems, relicNote: gear.relicNote, charInfo: gear.charInfo,
+    cones: gear.cones, coneNote: gear.coneNote, fourPieceSets: gear.fourPieceSets, ornamentSets: gear.ornamentSets, describeSet: gear.describeSet,
+    fourPieceItems: gear.fourPieceItems, ornamentItems: gear.ornamentItems, relicNote: gear.relicNote, charInfo: gear.charInfo,
     splash: splash.splash, splashMeta: splash.splashMeta, splashSrc: splash.splashSrc, splashBroken: splash.splashBroken, heroArtBroken: splash.heroArtBroken,
     onSplashLoad: splash.onSplashLoad, charSpeed: splash.charSpeed, charTrace: splash.charTrace, markSplashBroken: splash.markSplashBroken, markHeroArtBroken: splash.markHeroArtBroken,
     collapsedSteps: steps.collapsedSteps, charBody: steps.charBody, toggleStep: steps.toggleStep,
@@ -133,8 +134,8 @@ export function createSpeedPage(props: SpeedPageProps) {
     applyPreset: () => { roster.leaveRoster(); presets.applyPreset(); },
     ...recommend,
     applyRecommend: (item: unknown) => { roster.leaveRoster(); recommend.applyRecommend(item); },
-    rosterLinked: roster.rosterLinked, rosterHas: roster.rosterHas, rosterError: roster.rosterError, rosterManual: roster.rosterManual, rosterBack: roster.rosterBack,
-    currentCone: gear.currentCone, nameIn: gear.nameIn,
+    rosterLinked: roster.rosterLinked, rosterHas: roster.rosterHas, rosterError: roster.rosterError, rosterMissing: roster.rosterMissing, rosterManual: roster.rosterManual, rosterBack: roster.rosterBack,
+    currentCone: gear.currentCone, nameIn: gear.nameIn, enhanceableIds: gear.enhanceableIds,
     characterDialog, openCharacters, pickCharacter, onCustomInput,
     teamLink: props.teamLink ?? null,
   };

@@ -10,6 +10,7 @@ import { memberFromBuild, type ResolvedBuild, type SavedBuild } from "./build.ts
 import { memberFromRoster } from "./roster-member.ts";
 import type { RelicPiece, RosterCharacter, RosterSave, StatData } from "../../ui-shared/src/stats/types.ts";
 import CharacterPicker from "./CharacterPicker.vue";
+import DamagePanel from "./DamagePanel.vue";
 import ElationPanel from "./ElationPanel.vue";
 import ElationSettingsPanel from "./ElationSettingsPanel.vue";
 import EventList from "./EventList.vue";
@@ -320,7 +321,7 @@ onBeforeUnmount(() => {
     <section class="card axis-setup">
       <header class="axis-setup-head">
         <h2>全角色行动轴</h2>
-        <p class="muted">选角色就能出轴，配置都可以不填。只模拟我方，不算伤害。</p>
+        <p class="muted">选角色就能出轴，配置都可以不填。只模拟我方{{ view?.damage ? "" : "，不算伤害" }}。</p>
       </header>
 
       <div class="axis-battle-config">
@@ -360,6 +361,7 @@ onBeforeUnmount(() => {
             :item="byId.get(member.id)"
             :view="view?.units[slot]"
             :teammates="state.team.flatMap((mate, index) => index === slot ? [] : [{ slot: index, name: mate.custom?.name || byId.get(mate.id)?.name || mate.id }])"
+            :assist-team="state.team.some((mate) => mate.id === '1510')"
             :lightcones="data.lightcones"
             :caverns="caverns"
             :ornaments="ornaments"
@@ -426,6 +428,7 @@ onBeforeUnmount(() => {
           <h3>行动轴</h3>
           <span class="axis-result-summary">{{ summary }}</span>
         </div>
+        <DamagePanel v-if="view.damage" :damage="view.damage" />
         <EventList v-model:filter="state.rowFilter" @update:filter="onChange" :view="view" :icons="icons" :splashes="splashes" :heads="heads" :clips="clips" :manual-ids="manualIds" :active-key="activeKey" :reveal-key="revealKey" @override="override" @toggle-ultimate="toggleUltimate" @select="selectRow" />
       </template>
     </section>

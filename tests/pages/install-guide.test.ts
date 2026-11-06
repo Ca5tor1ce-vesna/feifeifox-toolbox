@@ -37,6 +37,10 @@ test("每种环境都有步骤；只有安卓和电脑浏览器收到可安装�
   assert.equal(installSteps("desktop-browser", true).canPrompt, true);
   assert.equal(installSteps("ios-safari", true).canPrompt, false);
   assert.equal(installSteps("installed", false).steps.length, 0);
+  // B站 App 里：右上角「分享」→「添加快捷方式到桌面」（2026-11-06 用户给的实际操作）
+  const app = installSteps("bili-app", false).steps.join(" ");
+  assert.match(app, /分享/);
+  assert.match(app, /添加快捷方式到桌面/);
 });
 
 test("电脑浏览器里多一个「手机」页：苹果和安卓都讲到，exe 和手机上不加", () => {

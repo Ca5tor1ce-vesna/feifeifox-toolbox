@@ -67,6 +67,11 @@ export class Worn {
 
   gain(amount: number, options: { fixed?: boolean; target?: Unit } = {}): void {
     const target = options.target ?? this.unit;
+    // 用特殊资源开大的角色（【残梦】【飞黄】【隐藏分】等）不吃能量恢复。
+    if (target.energyType !== "standard") {
+      this.note(`${target.name} 用${target.energyName ? `【${target.energyName}】` : "特殊资源"}开大，不吃能量恢复`);
+      return;
+    }
     this.note(`${target.name} 能量 +${fmt(amount, 1)}${options.fixed ? "（固定）" : ""}`);
     this.engine.gainEnergy(target, amount, { fixed: options.fixed, reason: this.name });
   }
@@ -404,7 +409,13 @@ export const LIGHTCONE_EFFECTS: Record<string, GearEffect> = {
       });
     },
   },
-  23060: { name: "当一颗星照亮夜空", notSimulated: ["施放助战技时回能（助战技不模拟）"] },
+  23060: {
+    name: "当一颗星照亮夜空",
+    // 装备者施放助战技时回能。攻略实测 BV1cBMe69Ejk 2:36：队友用助战技、协议送的也算（都算姬子•启行施放）。
+    apply: (w) => w.engine.on("assist", ({ owner }) => {
+      if (owner === w.unit) w.gain(w.p[1]);
+    }),
+  },
   23062: staticErr("所见即我", 1),
   23063: {
     name: "你将起身歌唱",

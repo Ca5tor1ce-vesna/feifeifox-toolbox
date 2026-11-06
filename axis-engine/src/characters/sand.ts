@@ -137,8 +137,10 @@ export class SandKit extends Kit {
   }
 
   onUltimate({ engine, self }: KitContext): void {
-    const pct = this.el.cfg.ultSpdPct;
-    engine.record("note", self, "胜局，凌越飓浪之上", { details: ["笑点 +6", "热意 +8", `自身速度 +${fmt(pct, 0)}%（4 回合）`, "基础回能返还 +5 × (1+ERR)"] });
+    // 终结技 Lv10 是 30%；E5 终结技等级 +2 → Lv12 33.6%。设置还是默认的 30 时按星魂换，改过就听设置。
+    const setting = this.el.cfg.ultSpdPct;
+    const pct = setting === 30 && self.eidolon >= 5 ? 33.6 : setting;
+    engine.record("note", self, "胜局，凌越飓浪之上", { details: ["笑点 +6", "热意 +8", `自身速度 +${fmt(pct, 1).replace(/\.0$/, "")}%（4 回合）`, "基础回能返还 +5 × (1+ERR)"] });
     this.el.gainPunchline(6);
     this.gainFervor(8);
     engine.addSpeedBuff(self, { kind: "pct", value: pct, turns: 4, label: "胜局，凌越飓浪之上" });

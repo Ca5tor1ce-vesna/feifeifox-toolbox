@@ -1,13 +1,14 @@
 /* 配速查询 · 折叠区块标题后面的一行摘要（角色、光锥、遗器、其它加成、目标……）。只读状态，不改任何东西。 */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { computed, type Ref } from "vue";
-import type { PickerItem } from "./Picker.vue";
+import type { PickerItem } from "../../ui-shared/src/components/picker-item.ts";
 import { fix } from "./motion.ts";
 import type { PlanState } from "./plan-state.ts";
 import type { PlanRun } from "./use-plan-run.ts";
 
 interface GearView {
   cones: Ref<any[]>;
+  enhanceableIds: Ref<Set<string>>;
   fourPieceItems: PickerItem[];
   ornamentItems: PickerItem[];
   nameIn: (items: PickerItem[], id: unknown) => string;
@@ -26,7 +27,7 @@ export function useSummaries(s: PlanState, gear: GearView, plan: PlanRun, tables
     const v = res?.verdict;
     const first = Number(state.simulation.firstUltAction);
     return {
-      char: `${character.name || "—"} · ${state.eidolon} 魂 · 初始 ${fix(character.effectiveBaseSpeed ?? character.baseSpeed, 0)} 速`,
+      char: `${character.name || "—"} · ${state.eidolon} 魂${gear.enhanceableIds.value.has(String(state.characterId)) && state.enhanced === false ? " · 原版" : ""} · 初始 ${fix(character.effectiveBaseSpeed ?? character.baseSpeed, 0)} 速`,
       cone: cone ? `${cone.name} · 叠影 ${state.superimpose}` : "不装备光锥",
       relic: [
         state.relic.fourPieceId ? gear.nameIn(gear.fourPieceItems, state.relic.fourPieceId) : "无 4 件套",

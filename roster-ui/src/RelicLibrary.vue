@@ -48,8 +48,12 @@ async function save(relic: Partial<RelicPiece>): Promise<void> {
   await r.saveRelic(relic);
   if (!r.error.value) editing.value = null;
 }
+/**
+ * 用外壳自己画的确认框（GT_DIALOG），不用 window.confirm：
+ * B站 Toy 的 iframe 不让弹浏览器自带的框，confirm 直接返回 false，看起来就是删不掉（2026-11-06 反馈）。
+ */
 async function remove(relic: RelicPiece): Promise<void> {
-  if (window.confirm("删除这件遗器？删了只能重新导入或手动再加。")) await r.deleteRelic(relic.id);
+  if (await window.GT_DIALOG("删除这件遗器？删了只能重新导入或手动再加。", true)) await r.deleteRelic(relic.id);
 }
 </script>
 

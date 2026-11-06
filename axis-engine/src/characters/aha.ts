@@ -108,6 +108,7 @@ export class AhaKit extends Kit {
     const { engine, self } = this;
     const details: string[] = [];
     const target = engine.unitAt(this.lingshiPrefer);
+    engine.targetAlly(self, target, "战技");
     if (this.lingshiSlot === null && target) {
       this.lingshiSlot = target.slot;
       details.push(`指定 ${target.name} 为【「欢愉」令使】（欢愉度 +20%）`);

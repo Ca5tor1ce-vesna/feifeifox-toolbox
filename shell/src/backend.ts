@@ -87,7 +87,10 @@ async function rosterSpeedConfig(characterId: string, optional: boolean) {
   const save = store.get(ROSTER) as any;
   const character = save?.characters?.[characterId];
   const relics = (save?.relics ?? []).filter((relic: any) => relic.equippedBy === characterId);
-  if (optional && (!character || !relics.length)) return null;
+  // 配速查询自己来问（optional）时用不上实际装配，告诉它是哪种原因，页面写给用户看（2026-11-06：导入过数据却看到手填区，以为没用）。
+  if (optional && (!character || !relics.length)) {
+    return { missing: !Object.keys(save?.characters ?? {}).length ? "empty" : !character ? "character" : "relics" };
+  }
   if (!character) throw new Error("「角色与遗器」里还没有这个角色：先去那里导入或添加。");
   return speedConfigFromRoster(character, relics, await loadStatData(), await presetCalc());
 }

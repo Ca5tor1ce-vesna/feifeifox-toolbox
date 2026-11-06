@@ -26,6 +26,7 @@
     "roster-ui/src/**/*.ts",
     "roster-ui/src/**/*.vue",
     "shell/src/**/*.ts",
-    "ui-shared/src/**/*.ts"
+    "ui-shared/src/**/*.ts",
+    "types/browser-globals.d.ts"
   ]
 }

@@ -4,6 +4,7 @@
  *
  * 这一版只模拟我方：AxisEvents 里的敌方事件不会发出。
  */
+import type { DamageLedger } from "./damage/ledger.ts";
 import { fmt } from "./format.ts";
 import type {
   ActionKind,
@@ -94,6 +95,11 @@ export class AxisEngine {
     module.install(this);
   }
 
+  /** 取已安装的模块（角色 kit 用，比如战技点系统的抵扣与记账接口）。 */
+  findModule<T extends BattleModule>(id: string): T | undefined {
+    return this.modules.get(id) as T | undefined;
+  }
+
   // ----------------------------- 钩子 ----------------------------- //
 
   /**
@@ -109,7 +115,8 @@ export class AxisEngine {
     this.handlers.set(name, list);
   }
 
-  private emit<K extends keyof AxisEvents>(name: K, payload: AxisEvents[K]): void {
+  /** 发事件。模块（如战技点）也需要发自己的事件，所以这里是公开的。 */
+  emit<K extends keyof AxisEvents>(name: K, payload: AxisEvents[K]): void {
     for (const entry of this.handlers.get(name) ?? []) (entry.handler as Handler<K>)(payload);
   }
 
@@ -209,9 +216,16 @@ export class AxisEngine {
    * 拉条。打在正在行动的单位上时，自身来源挂起到回合结束后再扣，
    * 外部来源不生效（舞！舞！舞！原文如此）。
    * 【阿哈时刻】的额外回合是「在回合中但距离大于 0」，这时照常立即扣减。
+   * source：给别的队友拉条时传施放者，用来判断施放者是不是被禁止给队友拉条（【特邀嘉宾】）。
+   * 给自己的召唤物拉条不传。
    */
-  advance(actor: Actor, pct: number, options: { selfSource?: boolean } = {}): void {
+  advance(actor: Actor, pct: number, options: { selfSource?: boolean; source?: Unit } = {}): void {
     if (pct <= 0) return;
+    const source = options.source;
+    if (source && actor !== source && source.allyAdvanceBlock) {
+      this.record("note", source, "无法给其他队友拉条", { details: [`${source.name} 持有${source.allyAdvanceBlock}：${actor.name} 的行动提前 ${fmt(pct, 0)}% 不生效`] });
+      return;
+    }
     if (actor.inTurn && actor.remDist <= 0) {
       if (options.selfSource) actor.pendingAdvance += pct;
       return;
@@ -219,11 +233,25 @@ export class AxisEngine {
     actor.remDist = Math.max(0, actor.remDist - (DIST_BASE * pct) / 100);
   }
 
-  /** 全队拉条：正在自己行动的施放者不吃自己那口。 */
+  /** 技能选中了另一名我方角色（选自己或没有目标不算）。只在技能真正施放时调用一次。 */
+  targetAlly(caster: Unit, target: Unit | null | undefined, ability: string): void {
+    if (!target || target === caster) return;
+    this.emit("allyTargeted", { caster, target, ability });
+  }
+
+  /** 助战技发动了一次（姬子•启行的模块调用）。 */
+  assisted(owner: Unit, user: Unit, free: boolean): void {
+    this.emit("assist", { owner, user, free });
+  }
+
+  /**
+   * 全队拉条。施放者正在自己回合里（自己行动完满能开大）时，自己那口按自身来源挂起，回合结束后再扣，和风套一样；
+   * 别的正在行动的队友照常不吃（攻略 BV1fH4y1j74t：已经在行动回合内的不再有变化）。
+   * 以前这里直接跳过施放者，花火带舞！舞！舞！自己行动完开大就少拉一口（攻略 BV1sW421P7t8：风翁 158 速四轮八动，再带舞舞舞 159 速九动）。
+   */
   advanceAllies(source: Unit, pct: number): void {
     for (const unit of this.units) {
-      if (unit === source && unit.inTurn) continue;
-      this.advance(unit, pct, { selfSource: unit === source });
+      this.advance(unit, pct, { selfSource: unit === source, source });
     }
   }
 
@@ -349,12 +377,25 @@ export class AxisEngine {
   // ----------------------------- 回合 ----------------------------- //
 
   private act(unit: Unit, extra: boolean): void {
-    const kind = unit.script[unit.actions] ?? unit.rotation;
+    if (unit.skipAction) {
+      // 这一动已经用掉了（比如非开拓同行用了助战技）：不出招、不占逐动覆盖的序号，照常算「行动后」。
+      this.record("note", unit, "这一动用掉了", { details: [unit.skipAction], extra });
+      unit.skipAction = null;
+      this.emit("actionDone", { unit, casts: [], extra });
+      return;
+    }
+    let kind = unit.script[unit.actions] ?? unit.rotation;
     unit.actions += 1;
+    // 出招改写：模块可以拦下这一动（战技点不足时不能放战技）。
+    for (const module of this.modules.values()) {
+      const next = module.beforeAct?.({ engine: this, unit, kind });
+      if (next && next !== kind) kind = next;
+    }
     const context = { engine: this, self: unit, kind, extra };
     const outerCasts = this.casts;
     const casts: string[] = [];
     this.casts = casts;
+    this.emit("skillStart", { unit, kind, extra });
     if (unit.kit?.act) unit.kit.act(context);
     else this.defaultAct(unit, kind, extra);
     unit.kit?.afterAct?.(context);
@@ -566,7 +607,9 @@ export class AxisEngine {
       const items = unsupported.map((item) => `${item.unit}：${item.mechanic}`).join("；");
       warnings.push(`未计入（这一版不模拟敌方和概率效果）：${items}`);
     }
+    const damage = this.module<DamageLedger>("damage")?.report();
     return {
+      ...(damage ? { damage } : {}),
       maxAV: this.maxAV,
       timeline: this.timeline,
       units: this.units.map((unit) => ({

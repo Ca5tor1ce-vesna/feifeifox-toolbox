@@ -76,6 +76,23 @@ test("没有实际装配（后端返回 null）：不改任何东西，也不给
   assert.equal(s.state.relic.substatSpeed, 12);
 });
 
+test("用不上实际装配时说明原因：还没导入 / 没这个角色 / 没穿遗器；能用时清掉", async () => {
+  for (const missing of ["empty", "character", "relics"] as const) {
+    const { s, link } = setup({ missing });
+    s.state.characterId = "1001";
+    s.state.relic.substatSpeed = 12;
+    assert.equal(await link.linkRoster(), false);
+    assert.equal(link.rosterMissing.value, missing);
+    assert.equal(link.rosterLinked.value, null);
+    assert.equal(link.rosterHas.value, false, "没有可改回的实际装配");
+    assert.equal(s.state.relic.substatSpeed, 12, "手填的不动");
+  }
+  const { s, link } = setup(FILLED);
+  s.state.characterId = "1505";
+  await link.linkRoster();
+  assert.equal(link.rosterMissing.value, "");
+});
+
 test("手动改后不再套；套用别的配装也算手动；「改回」重新套上并重算", async () => {
   const { s, link, runs } = setup(FILLED);
   s.state.characterId = "1505";

@@ -3,7 +3,7 @@
  * （页面里是随包的 features/roster/ocr/，测试里是 node_modules），不留默认的 CDN 地址。
  * Tesseract 模块由调用方传进来：页面打包浏览器版，测试用 node 版。
  */
-import type { OcrEngine } from "./recognize.ts";
+import type { OcrEngine } from "./card-common.ts";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface TesseractModule {
@@ -45,10 +45,15 @@ export async function createEngine(tesseract: TesseractModule, paths: EnginePath
   await digits.setParameters({ tessedit_pageseg_mode: SINGLE_BLOCK, tessedit_char_whitelist: "0123456789.%+" });
   await zhDigits.setParameters({ tessedit_pageseg_mode: SINGLE_BLOCK, tessedit_char_whitelist: "0123456789.%+" });
   const run = async (worker: any, image: Uint8Array): Promise<string> => (await worker.recognize(image)).data.text as string;
+  // 英文 worker 只在认国际服的英文战绩图时才建（中文图用不着，省一份内存）。
+  let en: Promise<any> | null = null;
+  const english = () => (en ??= tesseract.createWorker("eng", 1, { ...common, langPath: paths.engLangPath })
+    .then(async (worker) => { await worker.setParameters({ tessedit_pageseg_mode: SINGLE_BLOCK }); return worker; }));
   return {
     text: (image) => run(zh, image),
     digits: (image) => run(digits, image),
     digitsAlt: (image) => run(zhDigits, image),
-    close: async () => { await Promise.all([zh.terminate(), digits.terminate(), zhDigits.terminate()]); },
+    textEn: async (image) => run(await english(), image),
+    close: async () => { await Promise.all([zh.terminate(), digits.terminate(), zhDigits.terminate(), ...(en ? [(await en).terminate()] : [])]); },
   };
 }

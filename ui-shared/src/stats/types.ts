@@ -73,6 +73,8 @@ export type Pair = [number, number];
 export interface CharacterStats {
   id: string;
   name: string;
+  /** 英文名（识别国际服的英文战绩图用；开拓者都是 Trailblazer）。 */
+  nameEn?: string;
   /** 命途（英文，和光锥的 path 对得上才算光锥被动）。 */
   path: string;
   element: string;
@@ -83,6 +85,7 @@ export interface CharacterStats {
 export interface ConeStats {
   id: string;
   name: string;
+  nameEn?: string;
   path: string;
   promotions: { hp: Pair; atk: Pair; def: Pair }[];
   /** 下标是叠影 0~4。 */

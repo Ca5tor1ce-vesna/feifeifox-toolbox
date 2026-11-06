@@ -175,6 +175,7 @@ const revealStyle = (moment: AxisMoment) => (revealing.value ? { "--axis-delay":
                 <div class="axis-moment-cards">
                   <template v-for="card in moment.cards" :key="card.key">
                     <TimelineCard
+                      :damage="view.damage?.rows ?? null"
                       :card="card"
                       :icons="icons"
                       :splashes="splashes"
@@ -185,7 +186,7 @@ const revealStyle = (moment: AxisMoment) => (revealing.value ? { "--axis-delay":
                       :aria-pressed="card.key === activeKey"
                       @click="select(card)"
                     />
-                    <CardDetail v-if="!wide && card.key === activeKey" :key="card.key" :card="card" :icons="icons" :splashes="splashes" :heads="heads" :manual-ids="manualIds" @override="emit('override', $event)" @toggle-ultimate="emit('toggleUltimate', $event)" />
+                    <CardDetail v-if="!wide && card.key === activeKey" :key="card.key" :damage="view.damage?.rows ?? null" :card="card" :icons="icons" :splashes="splashes" :heads="heads" :manual-ids="manualIds" @override="emit('override', $event)" @toggle-ultimate="emit('toggleUltimate', $event)" />
                   </template>
                 </div>
               </div>
@@ -196,7 +197,7 @@ const revealStyle = (moment: AxisMoment) => (revealing.value ? { "--axis-delay":
       </div>
 
       <aside v-if="wide" class="axis-detail-side" aria-live="polite">
-        <CardDetail v-if="activeCard" :key="activeCard.key" :card="activeCard" :icons="icons" :splashes="splashes" :heads="heads" :manual-ids="manualIds" @override="emit('override', $event)" @toggle-ultimate="emit('toggleUltimate', $event)" />
+        <CardDetail v-if="activeCard" :key="activeCard.key" :damage="view.damage?.rows ?? null" :card="activeCard" :icons="icons" :splashes="splashes" :heads="heads" :manual-ids="manualIds" @override="emit('override', $event)" @toggle-ultimate="emit('toggleUltimate', $event)" />
         <p v-else class="axis-detail-hint">点轴上的卡片，这里显示那一刻的细节：回能、资源、触发了什么，也能把这一动改成普攻或战技。</p>
       </aside>
     </div>

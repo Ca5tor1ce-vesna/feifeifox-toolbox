@@ -2,6 +2,7 @@
  * 新排轴页的页面状态和结果整理。这里不碰 DOM，能直接在 Node 里测。
  * 引擎只认 MemberInput；页面状态里多的是用户的选择（遗器栏、逐动覆盖），这里负责翻译。
  */
+import { activeDamage, damageView, type DamageSetup, type DamageView } from "./damage.ts";
 import { createBattle, type CustomCharacter, DEFAULT_MANUAL_ULTIMATES, type GameData, type MemberInput } from "../../axis-engine/src/battle.ts";
 import { CATALOG } from "../../axis-engine/src/catalog.ts";
 import { hasKit } from "../../axis-engine/src/characters/index.ts";
@@ -13,6 +14,10 @@ import type { ActionKind, AxisEvent, UnsupportedMechanic } from "../../axis-engi
 export interface PageMember {
   id: string;
   eidolon: number;
+  /** 3.4 老角色加强：false 按原版算；没填（undefined）按强化版。只对有强化版的角色有意义。 */
+  enhanced?: boolean;
+  /** 姬子•启行在队里时用不用助战技：没填按默认（能白用的队友里第一个用的那位用）。 */
+  assist?: "use" | "never";
   /** 副词条和鞋子的固定速度。光锥和套装给的速度引擎自己算，不要填这里。 */
   flatSpd: number;
   err: number;
@@ -34,6 +39,8 @@ export interface PageMember {
   custom: CustomCharacter | null;
   /** 读取「实际装配」时的真实属性（欢愉度），条件效果按它判断；没读过是 undefined。 */
   measured?: { elation: number } | null;
+  /** 读取「实际装配」时的面板，算伤害用；没读过是 undefined。 */
+  panel?: Readonly<Record<string, number>> | null;
 }
 
 /** 欢愉队的可调参数。队伍里有对应角色才显示，平时用不着理解。 */
@@ -246,6 +253,8 @@ export function toMemberInput(member: PageMember): MemberInput {
   return {
     id: member.id,
     eidolon: member.eidolon,
+    enhanced: member.enhanced,
+    assist: member.assist,
     flatSpd: member.flatSpd,
     err: member.err,
     initAdv: member.initAdv,
@@ -338,6 +347,8 @@ export interface AxisView {
   truncated: boolean;
   /** 队伍里有欢愉角色才有。 */
   elation: ElationView | null;
+  /** 开了伤害才有。 */
+  damage: DamageView | null;
 }
 
 export interface ElationView {
@@ -428,7 +439,7 @@ function elationView(engine: AxisEngine, rows: Row[], maxAV: number, mode: Mode)
 }
 
 /** 跑一场。输入有问题时抛可读的错误，由页面显示，不留上一次的结果。 */
-export function computeAxis(state: PageState, data: PageData): AxisView {
+export function computeAxis(state: PageState, data: PageData, damage: DamageSetup | null = activeDamage()): AxisView {
   const mode = modeOf(state, data);
   const maxAV = windowAV(state, mode);
   const engine = createBattle({
@@ -440,6 +451,7 @@ export function computeAxis(state: PageState, data: PageData): AxisView {
     // 不勾时交给引擎按队伍判断：带了星神★阿哈就用她的底速。
     // 「按星神★阿哈的底速算」只在有她的模块时生效；正服没有她，旧存档里打开过也不算。
     elation: { ...state.elation, useAeonAha: state.elation.useAeonAha && hasKit("1511") ? true : null },
+    damage: damage ? { model: damage.model, stats: Object.fromEntries(state.team.flatMap((member) => (member.panel ? [[member.id, member.panel]] : []))) } : undefined,
   }, data.game);
   const result = engine.run();
   const catalog = new Map(data.characters.map((item) => [String(item.id), item]));
@@ -471,6 +483,7 @@ export function computeAxis(state: PageState, data: PageData): AxisView {
     unsupported: result.unsupported,
     truncated: result.truncated,
     elation: elationView(engine, rows, maxAV, mode),
+    damage: result.damage ? damageView(result.damage, rows.map((row) => row.key), TYPE_NAMES, maxAV, units.filter((_, slot) => !state.team[slot].panel).map((unit) => unit.name), !!damage?.preview) : null,
   };
 }
 

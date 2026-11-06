@@ -50,7 +50,7 @@ export class RobinKit extends Kit {
     if (self.eidolon >= 2) details.push("E2：【协奏】期间我方全体速度 +16%");
     engine.record("note", self, "知更鸟终结技", { details });
     for (const unit of engine.units) {
-      if (unit !== self) engine.advance(unit, 100);
+      if (unit !== self) engine.advance(unit, 100, { source: self });
     }
     // 专武：开大时移除【歌咏】。
     if (self.equip.hasRobinLc) {

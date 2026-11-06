@@ -12,7 +12,7 @@ import type { FeatureCtx, FeaturePersistence as Persistence } from "../../ui-sha
 
 export type { FeatureCtx };
 
-const LOCAL_ACTIONS = new Set(["catalog", "lightcones", "cone_art", "plan", "recommend"]);
+const LOCAL_ACTIONS = new Set(["catalog", "lightcones", "cone_art", "enhanceable", "plan", "recommend"]);
 export const DATA_NAMES = ["characters", "lightcones", "relic_sets", "modes", "data_info"] as const;
 
 /** 本地算的动作和发给外壳的动作走同一个口子。参数先过一遍 JSON，和以前发给后端时完全一样（比如 NaN 变成 null）。 */

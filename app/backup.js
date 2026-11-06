@@ -23,7 +23,6 @@ export function setupBackup() {
       await window.GT_DIALOG(`导出失败：${err.message}`);
     }
   });
-  importButton.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", async () => {
     const files = [...fileInput.files];
     fileInput.value = "";

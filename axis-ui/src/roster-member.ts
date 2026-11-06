@@ -42,5 +42,6 @@ export function memberFromRoster(
   const ownErr = panel.err.sources.filter((s) => !s.label.startsWith("光锥·") && !/·[24] 件$/.test(s.label)).reduce((sum, s) => sum + s.value, 0);
   member.err = Math.round(ownErr * 100 * 1e4) / 1e4;
   member.measured = { elation: panel.elation.total };
+  member.panel = Object.fromEntries(Object.entries(panel).map(([stat, value]) => [stat, value.total]));
   return member;
 }

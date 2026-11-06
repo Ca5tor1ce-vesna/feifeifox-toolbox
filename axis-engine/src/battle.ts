@@ -2,6 +2,8 @@
  * 新页面的入口：只给角色 id 就能算，其余都有默认值。
  * 游戏数据由调用方传入（axis_data.json、characters.json），引擎本身不读文件，桌面版和单文件网页版都能用。
  */
+import { DamageLedger } from "./damage/ledger.ts";
+import type { DamageOptions } from "./damage/types.ts";
 import { CATALOG } from "./catalog.ts";
 import { SIG_LC } from "./characters/aha.ts";
 import { simple } from "./characters/declarative.ts";
@@ -10,11 +12,16 @@ import { AxisEngine } from "./engine.ts";
 import { Elation, type ElationConfig } from "./modules/elation.ts";
 import { Equipment } from "./modules/equipment.ts";
 import { LIGHTCONE_EFFECTS } from "./modules/gear-effects.ts";
-import type { ActionKind, BattleModule, CycleStructure, EnergyType, UnitGear, UnitSpec } from "./types.ts";
+import { SkillPoints } from "./modules/skill-points.ts";
+import type { ActionKind, AssistPreference, BattleModule, CycleStructure, EnergyType, UnitGear, UnitSpec } from "./types.ts";
 
 export interface MemberInput {
   id: string;
   eidolon?: number;
+  /** 3.4 老角色加强（瓦尔特、卡芙卡、银狼、希儿、刃、镜流、藿藿、花火、黑天鹅、流萤）：游戏里可以不强化。不填按强化算。 */
+  enhanced?: boolean;
+  /** 姬子•启行在队里时，这位队友用不用助战技。不填按默认（能白用的队友里第一个用的那位用）。 */
+  assist?: AssistPreference;
   /** 不填就用资料里的基础速度。 */
   baseSpd?: number;
   /** 不填就用资料里的行迹速度。 */
@@ -146,6 +153,10 @@ export interface BattleInput {
   dancePct?: number;
   /** 欢愉队的可调参数，只有队伍里有欢愉角色才用到。 */
   elation?: Partial<ElationConfig>;
+  /** 开伤害账本：结果里多一份 damage。不传时战斗流程和结果都不变。 */
+  damage?: DamageOptions;
+  /** 是否结算战技点（全队共享，上限 5、开局 3）。默认不结算，别的机制不受影响。 */
+  useSkillPoints?: boolean;
 }
 
 interface AxisCharacter {
@@ -205,6 +216,11 @@ const ENERGY_NAMES: Record<string, string> = {
   1506: "隐藏分",
   1511: "愿力",
 };
+/**
+ * 有「强化版」的角色（3.4 老角色加强，游戏里可选）。2026-11-06 用户决定：两个工具都给开关，默认强化。
+ * 强化前后各技能的基础回能总量一样（4.6.54 版本资料），差别在行迹、天赋里的回能、提速这些，各角色模块按 self.enhanced 分开写。
+ */
+export const ENHANCEABLE = new Set(["1004", "1005", "1006", "1102", "1205", "1212", "1217", "1306", "1307", "1310"]);
 /** 算不出开大时点的角色的默认值：用户可以改。 */
 export const DEFAULT_MANUAL_ULTIMATES: Record<string, number[]> = { 1407: [2] };
 
@@ -282,6 +298,8 @@ function unitSpec(member: MemberInput, data: GameData, names: Map<string, GameDa
     ultimateAttacks: !NON_ATTACK_ULTIMATES.has(member.id) && !MIGRATED_KITS.has(member.id),
     energyGains: { basic: gains.Normal ?? 20, skill: gains.BPSkill ?? 30, ultimate: gains.Ultra ?? 5 },
     eidolon: member.eidolon ?? 0,
+    enhanced: ENHANCEABLE.has(member.id) ? member.enhanced !== false : false,
+    assist: member.assist,
     elation: entry?.elation ?? local?.pathName === "欢愉",
     targetSlot: member.targetSlot ?? null,
     equipment: { hasSigLc, ...member.equipment },
@@ -294,13 +312,14 @@ export function createBattle(input: BattleInput, data: GameData): AxisEngine {
   const names = new Map(data.characters.map((item) => [String(item.id), item]));
   const units = input.team.map((member) => unitSpec(member, data, names));
   const modules: BattleModule[] = units.some((unit) => unit.elation) ? [new Elation({ ...ELATION_DEFAULTS, ...input.elation })] : [];
+  if (input.useSkillPoints) modules.push(new SkillPoints());
   return new AxisEngine({
     maxAV: input.maxAV ?? 300,
     units,
     cycle: input.cycle,
     useTechnique: input.useTechnique ?? true,
     enemyCount: input.enemyCount,
-    modules,
+    modules: input.damage ? [new DamageLedger(input.damage), ...modules] : modules,
     lateModules: [new Equipment({ dancePct: input.dancePct ?? 24 })],
   });
 }

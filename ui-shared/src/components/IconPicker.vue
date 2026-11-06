@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { computed, inject, onBeforeUnmount, onMounted, ref } from "vue";
-import { focusOnPointerDevice } from "../../ui-shared/src/feature.ts";
+import { focusOnPointerDevice } from "../feature.ts";
+import type { PickerItem } from "./picker-item.ts";
 
-// 带图的下拉（光锥 / 遗器）：按钮显示当前项，点开是可搜索的列表。弹层挂在页面根上，按按钮位置摆，放不下就朝上。
-// 弹层一直在页面里，只切换 hidden；打开是同步的，点开后马上就能选（和以前一样）。
-export interface PickerItem {
-  id: string;
-  name: string;
-  meta?: string;
-  title?: string;
-  icon?: string;
-}
-const props = defineProps<{ buttonId: string; items: PickerItem[]; value: string; placeholder: string; searchPlaceholder: string }>();
+// 通用组件：带图、可搜索的下拉。不认识游戏数据，只认 PickerItem；把游戏数据转成选项是业务组件（ui-shared/src/hsr/）的事。
+// 按钮显示当前项，点开是可搜索的列表。弹层挂在页面根上（页面 provide 的 popupRoot，没有就挂 body），按按钮位置摆，放不下就朝上。
+// 弹层一直在页面里，只切换 hidden；打开是同步的，点开后马上就能选。样式在外壳的 app/style.css（.picker-*），各页面共用。
+// buttonClass：按钮要套哪个页面的输入框样式（配速查询 sp-control，行动轴 input）。
+const props = defineProps<{ buttonId: string; items: PickerItem[]; value: string; placeholder: string; searchPlaceholder: string; buttonClass?: string }>();
 const emit = defineEmits<{ pick: [id: string] }>();
 const popupRoot = inject<HTMLElement | string>("popupRoot", "body");
 
@@ -71,8 +67,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <button :id="props.buttonId" ref="button" type="button" class="picker-button sp-control" @click.stop="toggle">
-    <img v-if="current?.icon" :src="current.icon" alt="" loading="lazy" @error="hideBroken" /><span v-else class="sp-noimg"></span>
+  <button :id="props.buttonId" ref="button" type="button" class="picker-button" :class="props.buttonClass" @click.stop="toggle">
+    <img v-if="current?.icon" :src="current.icon" alt="" loading="lazy" @error="hideBroken" /><span v-else class="picker-noimg"></span>
     <span class="pb-name">{{ current ? current.name : props.placeholder }}</span>
     <span class="pb-caret">▾</span>
   </button>
@@ -81,7 +77,7 @@ onBeforeUnmount(() => {
       <input ref="search" v-model="query" class="input picker-search" :placeholder="props.searchPlaceholder" />
       <div class="picker-list">
         <button v-for="item in visible" :key="item.id" type="button" class="picker-item" :class="{ active: String(item.id) === String(props.value) }" :data-id="item.id" :title="item.title || item.meta || ''" @click="choose(item.id)">
-          <img v-if="item.icon" :src="item.icon" alt="" loading="lazy" @error="hideBroken" /><span v-else class="sp-noimg"></span>
+          <img v-if="item.icon" :src="item.icon" alt="" loading="lazy" @error="hideBroken" /><span v-else class="picker-noimg"></span>
           <span class="pi-name">{{ item.name }}</span>
           <span class="pi-meta">{{ item.meta || "" }}</span>
         </button>

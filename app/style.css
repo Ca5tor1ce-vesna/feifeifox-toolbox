@@ -284,7 +284,7 @@ input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
      App 自己留了顶栏、页面从状态栏下面开始时不加（index.html 判断后加 bili-overlay） */
   html.bili-overlay #app:not(#_) #topbar { height: max(92px, calc(env(safe-area-inset-top) + 56px)); padding: 0; }
   html.bili-overlay #app:not(#_) #topbar > * { display: none; }
-  #app:not(#_) #sidebar-toggle, #app:not(#_) .crumb .sub { display: none; }
+  #app:not(#_) #sidebar-toggle, #app:not(#_) #theme-toggle, #app:not(#_) .crumb .sub { display: none; }
   /* 绯英小一点；搜索框撑满宽度，字号不到 16px 时 iPhone 聚焦会放大页面 */
   #app:not(#_) .search-mascot { width: 72px; height: 92px; }
   #app:not(#_) .mascot-panel { left: 10px; right: 10px; width: auto; max-height: min(52dvh, 420px); }
@@ -343,6 +343,10 @@ input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
 .sidebar-links .sidebar-credits { color: var(--muted); opacity: .85; }
 /* 存档备份（导出 / 导入），在作者链接上面。 */
 .sidebar-backup { display: flex; gap: 6px; padding: 0 12px 8px; }
+.file-pick { position: relative; display: flex; flex: 1; min-width: 0; }
+.file-pick > button { flex: 1; width: 100%; }
+.file-pick > input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 100px; }
+.file-pick:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
 .sidebar-backup button { flex: 1; min-width: 0; padding: 4px 6px; font-size: 12px; }
 
 /* ---------------- 主区 ---------------- */
@@ -366,6 +370,11 @@ input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
   background: #fff9fbba;
   flex: 0 0 auto;
 }
+.theme-toggle { flex: 0 0 auto; display: grid; place-items: center; width: 38px; height: 38px; margin-left: auto; padding: 0; border-radius: 9px; color: #bb5079; }
+.theme-toggle svg { width: 20px; height: 20px; }
+/* 白天显示月亮（点了变夜晚），夜晚显示太阳 */
+.theme-sun, html.night .theme-moon { display: none; }
+html.night .theme-sun { display: block; }
 .crumb { display: flex; align-items: center; gap: 13px; white-space: nowrap; overflow: hidden; min-width: 0; font-size: 20px; font-weight: 800; }
 .crumb-icon { display: grid; color: var(--accent); }
 .crumb-icon svg { width: 25px; height: 25px; }
@@ -374,7 +383,8 @@ input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
 .crumb .sub { color: var(--muted); font-weight: 400; margin-left: 6px; font-size: 13px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* 绯英浮在页面上，可以拖到任何地方，点她弹出搜索（mascot.js）。层级低于页面自己的弹层（50 以上）和对话框 */
 #mascot { display: contents; }
-#app.more-open #mascot { display: none; }
+/* 页面弹层在 .view 里，层级比她低：弹层开着时她先藏起来，免得挡住保存之类的按钮 */
+#app.more-open #mascot, #app:has(.rs-modal, .axis-picker-backdrop) #mascot { display: none; }
 .search-mascot { position: fixed; z-index: 35; width: 96px; height: 124px; padding: 0; border: 0; border-radius: 12px; background: none; cursor: grab; touch-action: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 .search-mascot[hidden] { display: none; }
 .search-mascot:focus-visible { box-shadow: var(--focus); }
@@ -558,6 +568,39 @@ textarea.input { height: auto; padding: var(--s1) 10px; }
 .input.wide { min-width: 190px; }
 .input.narrow { min-width: 72px; width: 96px; }
 .input.tiny { min-width: 56px; width: 72px; }
+
+/* 通用组件：带图、可搜索的下拉（ui-shared/src/components/IconPicker.vue），各页面共用。按钮再套页面自己的输入框样式（buttonClass）。 */
+.picker-button { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; padding: 4px 30px 4px 10px; text-align: left; font: inherit; font-size: 14px; cursor: pointer; }
+.picker-button img, .picker-button .picker-noimg { width: 31px; height: 31px; border-radius: 5px; object-fit: cover; flex: none; }
+.picker-button .picker-noimg { display: none; }
+.picker-button .pb-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.picker-button .pb-caret { position: absolute; right: 12px; top: 50%; width: 13px; height: 13px; margin-top: -6.5px; font-size: 0; background: no-repeat center / 13px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 9 7 7 7-7' fill='none' stroke='%23a38b99' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E"); }
+
+.picker-popup {
+  position: fixed; z-index: 50; padding: 12px;
+  background: #fffdfd; border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: 0 12px 35px #70405c25;
+  animation: picker-pop 0.12s ease-out;
+}
+.picker-popup.hidden { display: none; }
+.picker-search { width: 100%; height: 36px; margin-bottom: 8px; padding: 0 10px; border: 1px solid var(--field-edge); border-radius: 7px; background: #fff; outline: none; font: inherit; font-size: 13px; }
+.picker-list { max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.picker-item {
+  display: flex; align-items: center; gap: 10px; padding: 7px; border-radius: 7px; border: 0;
+  background: transparent; color: var(--text); font: inherit; font-size: 13px; cursor: pointer; text-align: left; min-width: 0;
+}
+.picker-item:hover { background: #fff6f9; }
+.picker-item.active { background: #fff0f5; color: var(--accent); }
+.picker-item img, .picker-item .picker-noimg { width: 31px; height: 31px; border-radius: 5px; object-fit: cover; flex: 0 0 auto; }
+.picker-item .picker-noimg { display: grid; place-items: center; color: #aa8b9a; }
+.picker-item .picker-noimg::before { content: "—"; }
+.picker-item .pi-name { flex: 0 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 64px; }
+.picker-item .pi-meta { flex: 1 1 auto; color: var(--muted); font-size: 11.5px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+@keyframes picker-pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .picker-popup { animation: none; } }
+@media (pointer: coarse) {
+  .picker-item { padding: 10px 8px; }
+}
 
 input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
 

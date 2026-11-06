@@ -9,11 +9,12 @@ import CharacterView from "./CharacterView.vue";
 import ImportBar from "./ImportBar.vue";
 import ImportReview from "./ImportReview.vue";
 import type { CardItem, Review } from "./review.ts";
+import type { RelicIcons } from "../../ui-shared/src/import/record-card/intl.ts";
 import { closeEngine, recognizeFile } from "./ocr.ts";
 import RelicLibrary from "./RelicLibrary.vue";
 import { useRoster, type Call, type Catalog } from "./use-roster.ts";
 
-const props = defineProps<{ call: Call; data: StatData; catalog: Catalog; isExe: boolean; ocrBase: string }>();
+const props = defineProps<{ call: Call; data: StatData; catalog: Catalog; isExe: boolean; ocrBase: string; loadIcons: () => Promise<RelicIcons> }>();
 const r = useRoster(props.call, props.data);
 const tab = ref<"characters" | "relics">("characters");
 const review = ref<Review | null>(null);
@@ -52,7 +53,7 @@ async function onImages(files: File[]): Promise<void> {
     if (review.value?.kind !== "cards") return; // 用户放弃了
     live[i].status = "working";
     try {
-      live[i].result = await recognizeFile(files[i], props.data, props.ocrBase, (p) => { live[i].progress = p; });
+      live[i].result = await recognizeFile(files[i], props.data, props.ocrBase, props.loadIcons, (p) => { live[i].progress = p; });
       live[i].status = "done";
     } catch (e) {
       live[i].status = "failed";
@@ -100,7 +101,7 @@ async function confirm(): Promise<void> {
     <details class="card rs-help" :open="!r.characters.value.length">
       <summary>怎么导入</summary>
       <ul>
-        <li><b>手机</b>：在米游社的「星穹铁道战绩」里打开角色，生成分享图并保存原图，然后点「识图导入」，可以一次选多张。</li>
+        <li><b>手机</b>：在米游社的「星穹铁道战绩」里打开角色，生成分享图并保存原图，然后点「识图导入」（国际服战绩页生成的横版角色图也认，英文、繁体中文界面都行），可以一次选多张（在 B站 App 里一次选一张）。点了没弹出相册的话，换手机浏览器或电脑打开工具箱再导。</li>
         <li><b>电脑</b>：用 Reliquary Archiver、GGScanner 等扫描工具导出 v4 格式的 JSON，点「导入扫描文件」；FreeSR 格式的 freesr-data.json 也认，游戏里不可能出现的遗器（手改过的）会跳过。</li>
         <li v-if="isExe"><b>UID</b>：输入 UID，直接读游戏里公开的展柜角色。</li>
         <li v-else><b>UID 查询</b>：只有 exe 能用（网页读不到游戏展柜），网页版请用上面两种方式。</li>

@@ -8,6 +8,11 @@
 .rs-top h2 { margin-bottom: 2px; }
 .rs-top-text p { margin: 0; }
 .rs-import { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.rs-file { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; }
+.rs-file > input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 100px; }
+.rs-file.disabled { opacity: 0.5; }
+.rs-file.disabled > input { cursor: default; }
+.rs-file:focus-within { outline: 2px solid var(--accent, currentColor); outline-offset: 2px; }
 .rs-uid { display: flex; gap: 6px; }
 .rs-uid .input { width: 130px; }
 

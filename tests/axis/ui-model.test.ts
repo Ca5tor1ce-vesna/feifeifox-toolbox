@@ -109,7 +109,8 @@ test("召唤物的行归到主人名下；未计入和其他提醒分开", () =>
   assert.ok(lord.length > 0);
   assert.ok(lord.every((row) => row.slot === 0));
   const rin = computeAxis(stateOf("1508"), data);
-  assert.ok(rin.unsupported.some((item) => item.mechanic.includes("战技点")));
+  // 战技点相关的条目统一由战技点系统登记（默认不开），这里只核对「未计入」和提醒确实分开。
+  assert.ok(rin.unsupported.some((item) => item.mechanic.includes("连携")));
   assert.ok(!rin.warnings.some((text) => text.startsWith("未计入")));
 });
 
@@ -137,15 +138,15 @@ test("终结技靠特殊资源的角色，这一列写资源名", () => {
 });
 
 test("银狼LV.999 的隐藏分按含溢出的合计显示", () => {
-  // 开局 60 当场开大：进入【无敌玩家】时隐藏分不清空，再 +20（隐藏关卡），之后每次强化普攻 +5，都进溢出。
-  // 能开大的那部分封顶 60，合计要超过 60 才对；第一次强化普攻时合计 = 60 + 20 = 80。
+  // 开局 140（60 + 溢出 80）当场开大：消耗 60 剩 80（溢出的保留，2026-11-05 用户确认），再 +20（隐藏关卡），之后每次强化普攻 +5。
+  // 能开大的那部分封顶 60，合计要超过 60 才对；第一次强化普攻时合计 = 80 + 20 = 100。
   const state = stateOf("1506");
-  state.team[0].initialEnergy = 60;
+  state.team[0].initialEnergy = 140;
   const rows = computeAxis(state, pageData).rows.filter((item) => item.slot === 0 && item.energy !== null);
   const first = rows.find((item) => item.type === "enhanced_basic")!;
   assert.equal(first.energyName, "隐藏分");
-  assert.equal(first.energy, 80);
-  assert.ok(rows.some((item) => item.energy! > 80));
+  assert.equal(first.energy, 100);
+  assert.ok(rows.some((item) => item.energy! > 100));
 });
 
 test("机制按队伍出现：有欢愉角色才有【阿哈时刻】，它不属于任何角色", () => {
@@ -293,6 +294,9 @@ test("队伍存档：新格式原样读回，旧格式走转换，坏数据不�
   assert.deepEqual(stateFromRecord({ name: "坏", team: [{ id: "不存在" }], config: {} }, pageData).team, []);
 });
 
+// 改过的条目：2026-11-06 aha_quad、feiying_aha、wolf_sparkle 三个预设——【阿哈时刻】里不再中途插终结技，
+// 首个分歧都是旧基准在阿哈时刻那一刻先放了某人的终结技，新的先把其余人的欢愉技放完。
+// 2026-11-06 sandu_duel：星期日带舞！舞！舞！在自己回合里开大，自己那口拉条以前跳过、现在回合结束后结算（和风套一样），首个分歧是星期日下一动提前。
 test("预设和旧引擎逐事件一致（基准来自下线前的旧页面，不证明机制正确）", () => {
   const baseline = JSON.parse(readFileSync(join(HERE, "..", "fixtures", "axis_preset_timelines.json"), "utf-8")) as Record<string, [number, string, number | null][]>;
   assert.deepEqual(Object.keys(baseline).sort(), Object.keys(TEAM_PRESETS).sort());
@@ -319,6 +323,40 @@ test("欢愉设置生效：提高【阿哈时刻】速度后间隔变短", () =>
   const base = stateOf("1505");
   const faster = { ...stateOf("1505"), elation: { ...newElationSettings(), ahaSpdPct: 50 } };
   near(computeAxis(faster, pageData).elation!.speed, computeAxis(base, pageData).elation!.speed * 1.5);
+});
+
+test("助战技设置：传给引擎、存档读回来还在，默认不存字段", () => {
+  const state = stateOf("1510", "1313", "1004");
+  state.team[2].assist = "never";
+  assert.equal(toMemberInput(state.team[2]).assist, "never");
+  assert.equal(toMemberInput(state.team[1]).assist, undefined, "默认不填，引擎按默认规则");
+  const restored = restoreState(JSON.parse(JSON.stringify(state)), pageData);
+  assert.equal(restored.team[2].assist, "never");
+  // 瓦尔特设了「不用」，助战技轮到星期日
+  const names = computeAxis(state, pageData).rows.filter((row) => row.label === "助战技【开拓，与你同行】").map((row) => row.name);
+  assert.ok(names.length > 0 && names.every((name) => name === "星期日"), names.join("、"));
+});
+
+test("卡片：姬子•启行的助战技、协议切换、补次数说明挂在对的卡上", () => {
+  // 2026-11-06 页面实测：协议切换记在姬子身上，却在瓦尔特行动前，被挂到了前一张（希儿）的卡上；
+  // 战技补满次数的说明在开大之前没挂到战技卡上。应该：助战技和协议跟着使用者那一动，补次数跟着姬子的战技。
+  const cards = buildCards(computeAxis(stateOf("1510", "1313", "1004", "1102"), pageData).rows);
+  const cardWith = (label: string) => cards.find((card) => card.notes.some((row) => row.label === label));
+  const walt = cardWith("同行协议：歼破")!;
+  assert.equal(walt.main!.name, "瓦尔特", "协议切换跟着瓦尔特那一动");
+  assert.ok(walt.notes.some((row) => row.label === "助战技【开拓，与你同行】"));
+  // 默认只有先动的瓦尔特用；把瓦尔特设成「不用」再看星期日那边的【裁决】。
+  const sundayOnly = stateOf("1510", "1313", "1004", "1102");
+  sundayOnly.team[2].assist = "never";
+  sundayOnly.useTechnique = true; // 页面默认开秘技：姬子秘技 +30，星期日那次助战技正好让她满能
+  const sundayCards = buildCards(computeAxis(sundayOnly, pageData).rows);
+  assert.equal(sundayCards.find((card) => card.notes.some((row) => row.label === "同行协议：裁决"))!.main!.name, "星期日");
+  // 星期日用助战技给姬子 +18 正好让她满能当场开大：助战技这条也要跟着星期日那一动，不能被插进来的终结技挤到前一张卡（2026-11-06 页面实测）。
+  const sundayAssist = sundayCards.find((card) => card.notes.some((row) => row.label === "助战技【开拓，与你同行】" && row.name === "星期日"))!;
+  assert.equal(sundayAssist.main!.name, "星期日", "助战技跟着星期日那一动");
+  const refill = cardWith("战技【升起领航的烽火】")!;
+  assert.equal(refill.main!.name, "姬子•启行");
+  assert.equal(refill.main!.type, "skill", "补次数跟着她的战技卡，不在终结技卡上");
 });
 
 test("卡片：每条事件都归进一张卡，同一时刻的追击、欢愉技并到主动作上", () => {
@@ -424,17 +462,18 @@ test("存档里读不进来的角色要告诉用户", () => {
   assert.equal(droppedNotice([]), "");
 });
 
-test("大招动画片段：表里每个角色都有文件，每个文件都在表里，阿哈之外的正服角色都有", () => {
+test("大招动画片段：表里每个角色都有文件，每个文件都在表里，正服角色都有", () => {
   const dir = join(HERE, "..", "..", "modules", "honkai-star-rail", "assets", "ult");
   const files = readdirSync(dir).filter((name) => name.endsWith(".webm")).map((name) => name.replace(".webm", "")).sort();
   assert.deepEqual(Object.keys(ULT_CLIP_FRAMING).sort(), files);
   const characters = (json("characters.json") as { id: string | number }[]).map((item) => String(item.id));
   assert.ok(Object.keys(ULT_CLIP_FRAMING).every((id) => characters.includes(id)), "表里有不存在的角色");
-  // 星神★阿哈等她正式上线再补（2026-11-04 用户决定）
-  assert.deepEqual(characters.filter((id) => ULT_CLIP_FRAMING[id] === undefined), ["1511"]);
+  // 星神★阿哈 2026-11-06 创作体验服开放后补上了
+  assert.deepEqual(characters.filter((id) => ULT_CLIP_FRAMING[id] === undefined), []);
   assert.ok(Object.values(ULT_CLIP_FRAMING).every((y) => y >= 0 && y <= 100));
   assert.equal(ultClipOf("1502")?.src, "/modules/honkai-star-rail/assets/ult/1502.webm");
-  assert.equal(ultClipOf("1511"), undefined);
+  assert.equal(ultClipOf("1511")?.src, "/modules/honkai-star-rail/assets/ult/1511.webm");
+  assert.equal(ultClipOf("9999"), undefined);
 });
 
 test("大招片段同一时间只放一个；选中（循环）的不会被别的卡出场时只放一遍的抢走", () => {
@@ -456,4 +495,14 @@ test("大招片段同一时间只放一个；选中（循环）的不会被别�
   releaseClipPlayback(b);
   assert.equal(claimClipPlayback(a), true);
   releaseClipPlayback(a);
+});
+
+test("每张【阿哈时刻】卡都挂着全部欢愉角色的欢愉技（2026-11-06：以前中途插大，卡上只剩真珠）", () => {
+  const state = { ...newState(), customAV: 300, team: ["1511", "1503", "1502", "1505"].map(newMember) };
+  const cards = buildCards(computeAxis(state, pageData).rows).filter((card) => card.kind === "aha");
+  assert.ok(cards.length >= 5);
+  for (const card of cards) {
+    const casters = card.follows.filter((row) => row.type === "elation_skill").map((row) => row.slot);
+    assert.deepEqual([...casters].sort(), [0, 1, 2, 3], `${card.av.toFixed(2)} 的阿哈时刻`);
+  }
 });

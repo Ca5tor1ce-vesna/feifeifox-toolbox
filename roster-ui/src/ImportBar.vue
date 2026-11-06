@@ -4,9 +4,9 @@ import { ref } from "vue";
 
 const props = defineProps<{ isExe: boolean; busy: boolean; uid: string }>();
 const emit = defineEmits<{ scan: [file: File]; images: [files: File[]]; uid: [uid: string] }>();
-const scanInput = ref<HTMLInputElement | null>(null);
-const imageInput = ref<HTMLInputElement | null>(null);
 const uidText = ref(props.uid);
+// 安卓 App 里的内置网页（B站 App 打开的 Toy 等）给文件框带「多选」时，有的手机点了没反应；那里一次选一张。
+const multiPick = !(/Android/i.test(navigator.userAgent) && /; wv\)|BiliApp|MicroMessenger|QQ\//i.test(navigator.userAgent));
 
 function pickScan(event: Event): void {
   const file = (event.target as HTMLInputElement).files?.[0];
@@ -22,10 +22,15 @@ function pickImages(event: Event): void {
 
 <template>
   <div class="rs-import">
-    <button type="button" class="btn" :disabled="busy" @click="imageInput?.click()">识图导入</button>
-    <button type="button" class="btn secondary" :disabled="busy" @click="scanInput?.click()">导入扫描文件</button>
-    <input ref="imageInput" type="file" accept="image/*" multiple hidden @change="pickImages" />
-    <input ref="scanInput" type="file" accept=".json,application/json" hidden @change="pickScan" />
+    <!-- 文件框透明地盖在按钮上，点按钮就是点文件框本身。不用脚本去点隐藏的文件框：手机 App 里的内置网页常常不认。 -->
+    <label class="btn rs-file" :class="{ disabled: busy }">
+      识图导入
+      <input type="file" accept="image/*" :multiple="multiPick" :disabled="busy" aria-label="识图导入：选战绩分享图" @change="pickImages" />
+    </label>
+    <label class="btn secondary rs-file" :class="{ disabled: busy }">
+      导入扫描文件
+      <input type="file" accept=".json,application/json" :disabled="busy" aria-label="导入扫描文件" @change="pickScan" />
+    </label>
     <form v-if="isExe" class="rs-uid" @submit.prevent="emit('uid', uidText.trim())">
       <input v-model="uidText" class="input" inputmode="numeric" maxlength="10" placeholder="游戏 UID" aria-label="游戏 UID" />
       <button type="submit" class="btn secondary" :disabled="busy || !uidText.trim()">{{ uid ? "刷新展柜" : "查询展柜" }}</button>

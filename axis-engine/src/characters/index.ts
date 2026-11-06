@@ -1,6 +1,7 @@
 import type { CharacterKit } from "../types.ts";
 import { AhaKit } from "./aha.ts";
 import { AventurineKit } from "./aventurine.ts";
+import { CerydraKit } from "./cerydra.ts";
 import { FeiyingKit } from "./feiying.ts";
 import { PearlKit } from "./pearl.ts";
 import { RobinKit } from "./robin.ts";
@@ -27,6 +28,7 @@ export const KITS: Record<string, () => CharacterKit> = {
   1506: () => new SilverWolf999Kit(),
   1313: () => new SundayKit(),
   1309: () => new RobinKit(),
+  1412: () => new CerydraKit(),
   ...SIMPLE_KITS,
   ...STATEFUL_KITS,
   ...SUMMON_KITS,

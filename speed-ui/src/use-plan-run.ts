@@ -32,6 +32,7 @@ export function usePlanRun(s: PlanState, host: RunHost) {
       lightconeId: state.lightconeId || null,
       superimpose: state.superimpose,
       eidolon: state.eidolon,
+      enhanced: state.enhanced !== false,
       enabledEffects: state.enabled,
       relic: state.relic,
       advance: state.advance,

@@ -1,3 +1,4 @@
+import type { DamageReport } from "./damage/types.ts";
 import type { AxisEngine } from "./engine.ts";
 import type { SummonActor, Unit } from "./unit.ts";
 
@@ -12,6 +13,9 @@ export interface CycleStructure {
 }
 
 /** 带持续回合的属性增益。err 是能量恢复效率（%），名字沿用最早只有速度时的叫法。 */
+/** 姬子•启行的助战技谁来用：auto 按默认（能白用的队友里第一个用的那位），use 有次数就用，never 不用。 */
+export type AssistPreference = "auto" | "use" | "never";
+
 export interface SpeedBuff {
   kind: "pct" | "flat" | "err";
   value: number;
@@ -84,6 +88,11 @@ export interface CharacterKit {
 export interface BattleModule {
   id: string;
   install: (engine: AxisEngine) => void;
+  /**
+   * 这一动开始前改写要出的招（比如战技点不足时把战技改回普攻）。
+   * 返回 undefined 表示不改；返回别的动作就按返回的结算。
+   */
+  beforeAct?: (context: { engine: AxisEngine; unit: Unit; kind: ActionKind }) => ActionKind | undefined;
 }
 
 /** 身上的光锥和遗器。params 是当前叠影的数值，active 表示命途相符、效果生效。 */
@@ -122,6 +131,10 @@ export interface UnitSpec {
   ultimateAttacks?: boolean;
   energyGains?: Partial<Record<ActionKind | "ultimate", number>>;
   eidolon?: number;
+  /** 按强化版算（只对有强化版的角色有意义）。 */
+  enhanced?: boolean;
+  /** 姬子•启行的助战技：auto 按默认规则，use 有次数就用，never 不用。 */
+  assist?: AssistPreference;
   /** 命途中文名，有些机制按命途生效。 */
   path?: string;
   elation?: boolean;
@@ -197,6 +210,8 @@ export interface AxisResult {
   notes: string[];
   unsupported: UnsupportedMechanic[];
   truncated: boolean;
+  /** 开了伤害账本才有（BattleInput.damage）。 */
+  damage?: DamageReport;
 }
 
 /**
@@ -210,7 +225,18 @@ export interface AxisEvents {
   battleTraits: { unit: Unit };
   openingAdvance: { unit: Unit };
   turnStart: { unit: Unit };
+  /** 这一动刚开始、还没结算。刻律德菈的【奇袭】要靠它在原技能之前插一次副本。 */
+  skillStart: { unit: Unit; kind: ActionKind; extra: boolean };
+  /**
+   * 战技点变化（只在开启战技点系统时发出）。amount 是逻辑变化：
+   * 扣【爆点】这类「视为消耗战技点」的效果也按消耗发，即使 SP 数值没动。
+   */
+  spChanged: { unit: Unit; amount: number; reason: string; spend: boolean; restore: boolean };
   attack: { unit: Unit; kind: string; extra: boolean };
+  /** 队友的技能（战技、终结技、忆灵技）选中了另一名我方角色（单体或扩散圈能选到的）。白厄靠它拿【火种】。 */
+  allyTargeted: { caster: Unit; target: Unit; ability: string };
+  /** 姬子•启行的助战技发动了一次。owner 是姬子•启行，user 是使用者（送的那次是她自己），free 表示协议送的。 */
+  assist: { owner: Unit; user: Unit; free: boolean };
   ultimate: { unit: Unit };
   turnEnd: { unit: Unit; buffsExpired: boolean };
   /** 这一动结束。casts 是实际施放的普攻、战技（含强化），角色模块可能改掉请求的出招。 */

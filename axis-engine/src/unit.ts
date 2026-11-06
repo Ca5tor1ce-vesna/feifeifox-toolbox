@@ -1,4 +1,4 @@
-import type { ActionKind, CharacterKit, EnergyType, SpeedBuff, UnitGear, UnitSpec } from "./types.ts";
+import type { ActionKind, AssistPreference, CharacterKit, EnergyType, SpeedBuff, UnitGear, UnitSpec } from "./types.ts";
 
 export const DIST_BASE = 10000;
 
@@ -61,6 +61,11 @@ export class Unit implements Actor {
   readonly script: readonly ActionKind[];
   readonly energyGains: Record<ActionKind | "ultimate", number>;
   readonly eidolon: number;
+  /** 按强化版算（3.4 老角色加强）；没有强化版的角色恒为 false。 */
+  readonly enhanced: boolean;
+  readonly assist: AssistPreference;
+  /** 这一动被别的东西用掉了（写原因），轮到行动时只记一笔、不出招。非开拓同行用助战技时会这样。 */
+  skipAction: string | null = null;
   readonly path: string;
   readonly elation: boolean;
   readonly targetSlot: number | null;
@@ -74,6 +79,8 @@ export class Unit implements Actor {
   inTurn = false;
   paused = false;
   castingUltimate = false;
+  /** 不能给其他队友拉条时写原因（知更鸟•晴歌的【特邀嘉宾】），null 表示不受限。给自己和自己的召唤物拉条不受影响。 */
+  allyAdvanceBlock: string | null = null;
   energy: number;
   energyTotal = 0;
   /** 战斗中变化的能量恢复效率（知更鸟专武的【歌咏】）。 */
@@ -116,6 +123,8 @@ export class Unit implements Actor {
     this.script = spec.script ?? [];
     this.energyGains = { basic: 20, skill: 30, ultimate: 5, ...spec.energyGains };
     this.eidolon = spec.eidolon ?? 0;
+    this.enhanced = spec.enhanced ?? false;
+    this.assist = spec.assist ?? "auto";
     this.path = spec.path ?? "";
     this.elation = spec.elation ?? false;
     this.targetSlot = spec.targetSlot ?? null;

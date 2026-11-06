@@ -254,6 +254,7 @@
    "21064"
   ],
   "signatureCone": "23065",
+  "nameEn": "Aeon ★ Aha",
   "order": 0,
   "iconHd": "/modules/honkai-star-rail/assets/hd/19fb68de845693f3.webp",
   "splashHd": "/modules/honkai-star-rail/assets/hd/fb6aac140eecb1be.webp"
@@ -493,6 +494,7 @@
    "21064"
   ],
   "signatureCone": "23055",
+  "nameEn": "Pearl",
   "order": 1,
   "releaseAt": 1790586000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/fac97741543fd039.webp",
@@ -705,6 +707,7 @@
    "22000"
   ],
   "signatureCone": "23059",
+  "nameEn": "Mortenax Blade",
   "order": 7,
   "releaseAt": 1780304400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/a28afce8f90160fe.webp",
@@ -928,6 +931,7 @@
    "22009"
   ],
   "signatureCone": "23058",
+  "nameEn": "Evanescia",
   "order": 8,
   "releaseAt": 1778662800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/637f00d24d6ea96b.webp",
@@ -1154,25 +1158,18 @@
     "source": "技能",
     "name": "胜局，凌越飓浪之上",
     "kind": "pct",
-    "value": 12.0,
+    "value": 30.0,
     "apply": "self",
     "durationTurns": 4,
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "并使自身速度提高12%，持续4回合"
-   },
-   {
-    "source": "技能",
-    "name": "",
-    "kind": "pct",
-    "value": 39.0,
-    "apply": "self",
-    "durationTurns": 4,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "并使自身速度提高39%，持续4回合"
+    "text": "并使自身速度提高30%，持续4回合",
+    "levelUp": {
+     "rank": 5,
+     "value": 33.6,
+     "text": "并使自身速度提高33.6%，持续4回合"
+    }
    },
    {
     "source": "技能",
@@ -1193,6 +1190,7 @@
    "21066"
   ],
   "signatureCone": "23064",
+  "nameEn": "Aventurine • Waveflair",
   "order": 2,
   "releaseAt": 1789203600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/147e3998a4184c53.webp",
@@ -1405,6 +1403,7 @@
    "23016"
   ],
   "signatureCone": "23056",
+  "nameEn": "Ashveil",
   "order": 12,
   "releaseAt": 1774432800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/91eb745ab8c280a2.webp",
@@ -1683,7 +1682,7 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "使除知更鸟•晴歌外的指定我方单体角色行动提前100%并固定恢复等同于24.0%能量上限的能量"
+    "text": "使除知更鸟•晴歌外的指定我方单体角色行动提前100%并固定恢复等同于20.0%能量上限的能量"
    }
   ],
   "recommendedCones": [
@@ -1692,6 +1691,7 @@
    "24005"
   ],
   "signatureCone": "23063",
+  "nameEn": "Robin • Summeretto",
   "order": 3,
   "releaseAt": 1787734800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/80060caea627daf4.webp",
@@ -1954,6 +1954,7 @@
    "24005"
   ],
   "signatureCone": "23042",
+  "nameEn": "Hyacine",
   "order": 25,
   "releaseAt": 1747818000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/ca8383888ecaaa1c.webp",
@@ -2179,6 +2180,7 @@
    "24004"
   ],
   "signatureCone": "23061",
+  "nameEn": "Rin Tohsaka",
   "order": 4,
   "releaseAt": 1784883600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/4080944710b3ac52.webp",
@@ -2404,6 +2406,7 @@
    "24000"
   ],
   "signatureCone": "23062",
+  "nameEn": "Gilgamesh",
   "order": 5,
   "releaseAt": 1784883600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/8c0a2eeebb9de1c9.webp",
@@ -2616,6 +2619,7 @@
    "24004"
   ],
   "signatureCone": "23060",
+  "nameEn": "Himeko • Nova",
   "order": 6,
   "releaseAt": 1784106000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/edeff01906513658.webp",
@@ -2841,6 +2845,7 @@
    "21032"
   ],
   "signatureCone": "23048",
+  "nameEn": "Cerydra",
   "order": 19,
   "releaseAt": 1756803600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/86c6377768cd2c4a.webp",
@@ -3053,6 +3058,7 @@
    "24004"
   ],
   "signatureCone": "23041",
+  "nameEn": "Anaxa",
   "order": 26,
   "releaseAt": 1746003600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/fa949392fa75d5ce.webp",
@@ -3265,6 +3271,7 @@
    "23005"
   ],
   "signatureCone": "23023",
+  "nameEn": "Aventurine",
   "order": 49,
   "releaseAt": 1713344400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/094ecdd50676bd33.webp",
@@ -3477,6 +3484,7 @@
    "22009"
   ],
   "signatureCone": "23053",
+  "nameEn": "Sparxie",
   "order": 13,
   "releaseAt": 1770976800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/c7288aee77dc8914.webp",
@@ -3736,6 +3744,7 @@
    "21053"
   ],
   "signatureCone": "23051",
+  "nameEn": "Dan Heng • Permansor Terrae",
   "order": 17,
   "releaseAt": 1760173200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/132078f09961df4a.webp",
@@ -3997,6 +4006,7 @@
    "21057"
   ],
   "signatureCone": "23049",
+  "nameEn": "Evernight",
   "order": 18,
   "releaseAt": 1758790800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/035c8f350acfe4ce.webp",
@@ -4274,6 +4284,7 @@
    "21050"
   ],
   "signatureCone": "23052",
+  "nameEn": "Cyrene",
   "order": 16,
   "releaseAt": 1762336800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/92c9605096fea29a.webp",
@@ -4510,6 +4521,7 @@
    "21058"
   ],
   "signatureCone": "23044",
+  "nameEn": "Phainon",
   "order": 23,
   "releaseAt": 1751446800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/7a096222834c6bc5.webp",
@@ -4750,6 +4762,7 @@
    "21064"
   ],
   "signatureCone": "23054",
+  "nameEn": "Yao Guang",
   "order": 14,
   "releaseAt": 1770976800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/b64ca696a51e795f.webp",
@@ -4961,6 +4974,7 @@
    "21018"
   ],
   "signatureCone": "23038",
+  "nameEn": "Tribbie",
   "order": 29,
   "releaseAt": 1740564000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/1315055bd7fab293.webp",
@@ -5173,6 +5187,7 @@
    "21025"
   ],
   "signatureCone": "23034",
+  "nameEn": "Sunday",
   "order": 35,
   "releaseAt": 1733306400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/beec83e4895cc5ca.webp",
@@ -5398,6 +5413,7 @@
    "24001"
   ],
   "signatureCone": "23031",
+  "nameEn": "Feixiao",
   "order": 38,
   "releaseAt": 1725958800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/19201b4ad61c46be.webp",
@@ -5639,6 +5655,7 @@
    "22009"
   ],
   "signatureCone": "23057",
+  "nameEn": "Silver Wolf LV.999",
   "order": 9,
   "releaseAt": 1776848400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/004ad8da0498bc47.webp",
@@ -5887,6 +5904,7 @@
    "21015"
   ],
   "signatureCone": "23050",
+  "nameEn": "The Dahlia",
   "order": 15,
   "releaseAt": 1765101600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/7b375ccc163811aa.webp",
@@ -6148,6 +6166,7 @@
    "21057"
   ],
   "signatureCone": "23040",
+  "nameEn": "Castorice",
   "order": 27,
   "releaseAt": 1744189200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/a01e4c5c8efebc83.webp",
@@ -6177,6 +6196,7 @@
    }
   ],
   "effectiveBaseSpeed": 109.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -6388,30 +6408,6 @@
     "rank": null,
     "superimpose": null,
     "text": "进入「完全燃烧」状态，自身行动提前100%并获得强化普攻和强化战技"
-   },
-   {
-    "source": "技能",
-    "name": "指令-天火轰击",
-    "kind": "advance",
-    "value": 25.0,
-    "apply": "self",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "使自身下一次行动提前25%"
-   },
-   {
-    "source": "技能",
-    "name": "火萤Ⅳ型-完全燃烧",
-    "kind": "advance",
-    "value": 100.0,
-    "apply": "self",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "进入「完全燃烧」状态，自身行动提前100%并获得强化普攻和强化战技"
    }
   ],
   "recommendedCones": [
@@ -6420,6 +6416,7 @@
    "21042"
   ],
   "signatureCone": "23025",
+  "nameEn": "Firefly",
   "order": 44,
   "releaseAt": 1718787600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/75634c9f2ac0043f.webp",
@@ -6449,6 +6446,7 @@
    }
   ],
   "effectiveBaseSpeed": 103.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -6656,6 +6654,7 @@
    "21007"
   ],
   "signatureCone": "23017",
+  "nameEn": "Huohuo",
   "order": 60,
   "releaseAt": 1700042400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/0c51b0724af035b5.webp",
@@ -6674,6 +6673,7 @@
   "traceSpeedPct": 0.0,
   "traceSpeedDetails": [],
   "effectiveBaseSpeed": 115.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -6872,7 +6872,20 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "使希儿的速度提高25%，并对指定敌方单体造成等同于希儿180%攻击力的量子属性伤害，速度提高效果持续3回合"
+    "text": "使希儿的速度提高25%，并对指定敌方单体造成等同于希儿360%攻击力的量子属性伤害，速度提高效果持续3回合",
+    "enhanced": true
+   },
+   {
+    "source": "行迹",
+    "name": "涟漪",
+    "kind": "advance",
+    "value": 20.0,
+    "apply": "self",
+    "durationTurns": 0,
+    "maxStacks": 0,
+    "rank": null,
+    "superimpose": null,
+    "text": "施放普攻后，希儿的下一次行动提前20%"
    },
    {
     "source": "技能",
@@ -6880,35 +6893,12 @@
     "kind": "pct",
     "value": 25.0,
     "apply": "self",
-    "durationTurns": 3,
+    "durationTurns": 2,
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "使希儿的速度提高25%，并对指定敌方单体造成等同于希儿180%攻击力的量子属性伤害，速度提高效果持续3回合"
-   },
-   {
-    "source": "行迹",
-    "name": "涟漪",
-    "kind": "advance",
-    "value": 20.0,
-    "apply": "self",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "施放普攻后，希儿的下一次行动提前20%"
-   },
-   {
-    "source": "行迹",
-    "name": "涟漪",
-    "kind": "advance",
-    "value": 20.0,
-    "apply": "self",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "施放普攻后，希儿的下一次行动提前20%"
+    "text": "使希儿的速度提高25%，并对指定敌方单体造成等同于希儿220%攻击力的量子属性伤害，速度提高效果持续2回合",
+    "enhanced": false
    }
   ],
   "recommendedCones": [
@@ -6917,6 +6907,7 @@
    "23012"
   ],
   "signatureCone": "23001",
+  "nameEn": "Seele",
   "order": 82,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/d5b87c518a6e1ba7.webp",
@@ -6935,6 +6926,7 @@
   "traceSpeedPct": 0.0,
   "traceSpeedDetails": [],
   "effectiveBaseSpeed": 102.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -7133,7 +7125,7 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "攻击命中时有65%的基础概率使受到攻击的敌方目标速度降低10%，持续2回合"
+    "text": "攻击命中时有75%的基础概率使受到攻击的敌方目标速度降低10%，持续2回合"
    },
    {
     "source": "技能",
@@ -7145,7 +7137,7 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "禁锢状态下，敌方目标行动延后6.0%，速度降低10%"
+    "text": "禁锢状态下，敌方目标行动延后12.0%，速度降低10%"
    },
    {
     "source": "技能",
@@ -7157,55 +7149,8 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "处于【失重】状态下的敌方目标防御力降低40%，速度降低5%"
-   },
-   {
-    "source": "技能",
-    "name": "画地为牢",
-    "kind": "pct",
-    "value": -10.0,
-    "apply": "enemy",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "禁锢状态下，敌方目标行动延后20%，速度降低10%"
-   },
-   {
-    "source": "技能",
-    "name": "虚空断界",
-    "kind": "pct",
-    "value": -10.0,
-    "apply": "enemy",
-    "durationTurns": 2,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "攻击命中时有65%的基础概率使受到攻击的敌方目标速度降低10%，持续2回合"
-   },
-   {
-    "source": "技能",
-    "name": "拟似黑洞",
-    "kind": "pct",
-    "value": -10.0,
-    "apply": "enemy",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "禁锢状态下，敌方目标行动延后6.0%，速度降低10%"
-   },
-   {
-    "source": "技能",
-    "name": "时空扭曲",
-    "kind": "pct",
-    "value": -5.0,
-    "apply": "enemy",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "处于【失重】状态下的敌方目标防御力降低40%，速度降低5%"
+    "text": "处于【失重】状态下的敌方目标防御力降低40%，速度降低5%",
+    "enhanced": true
    },
    {
     "source": "技能",
@@ -7226,6 +7171,7 @@
    "21001"
   ],
   "signatureCone": "23004",
+  "nameEn": "Welt",
   "order": 77,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/919ed744fbdf4143.webp",
@@ -7450,6 +7396,7 @@
    "24006",
    "22007"
   ],
+  "nameEn": "Trailblazer",
   "order": 10,
   "releaseAt": 1776848400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/5419723582b0ddfa.webp",
@@ -7661,6 +7608,7 @@
    "21024"
   ],
   "signatureCone": "23027",
+  "nameEn": "Boothill",
   "order": 45,
   "releaseAt": 1716973200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/bbedc1fe27739fb9.webp",
@@ -7901,6 +7849,7 @@
    "21045"
   ],
   "signatureCone": "23033",
+  "nameEn": "Rappa",
   "order": 36,
   "releaseAt": 1729674000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/e74fde14fef58c33.webp",
@@ -7919,6 +7868,7 @@
   "traceSpeedPct": 0.0,
   "traceSpeedDetails": [],
   "effectiveBaseSpeed": 101.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -8108,30 +8058,6 @@
   "releaseOrder": 36,
   "effects": [
    {
-    "source": "技能",
-    "name": "梦游鱼",
-    "kind": "advance",
-    "value": 50.0,
-    "apply": "self",
-    "durationTurns": 1,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "使指定我方单体的暴击伤害提高，提高数值等同于花火12.0%暴击伤害+27.0%，持续1回合，并使该目标行动提前50%"
-   },
-   {
-    "source": "技能",
-    "name": "梦游鱼",
-    "kind": "advance",
-    "value": 50.0,
-    "apply": "self",
-    "durationTurns": 2,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "使指定我方单体的暴击伤害提高，提高数值等同于花火12.0%暴击伤害+27.0%，持续2回合，并使该目标行动提前50%"
-   },
-   {
     "source": "星魂",
     "name": "悬置怀疑",
     "kind": "pct",
@@ -8141,7 +8067,34 @@
     "maxStacks": 0,
     "rank": 1,
     "superimpose": null,
-    "text": "持有【谜诡】的我方目标攻击力提高40%，战斗开始时或施放战技时，花火的速度提高15%，持续2回合"
+    "text": "持有【谜诡】的我方目标攻击力提高40%，战斗开始时或施放战技时，花火的速度提高15%，持续2回合",
+    "enhanced": true
+   },
+   {
+    "source": "技能",
+    "name": "梦游鱼",
+    "kind": "advance",
+    "value": 50.0,
+    "apply": "self",
+    "durationTurns": 2,
+    "maxStacks": 0,
+    "rank": null,
+    "superimpose": null,
+    "text": "使指定我方单体的暴击伤害提高，提高数值等同于花火24.0%暴击伤害+45.0%，持续2回合，并使该目标行动提前50%",
+    "enhanced": true
+   },
+   {
+    "source": "技能",
+    "name": "梦游鱼",
+    "kind": "advance",
+    "value": 50.0,
+    "apply": "self",
+    "durationTurns": 1,
+    "maxStacks": 0,
+    "rank": null,
+    "superimpose": null,
+    "text": "使指定我方单体的暴击伤害提高，提高数值等同于花火24.0%暴击伤害+45.0%，持续1回合，并使该目标行动提前50%",
+    "enhanced": false
    }
   ],
   "recommendedCones": [
@@ -8150,6 +8103,7 @@
    "23003"
   ],
   "signatureCone": "23021",
+  "nameEn": "Sparkle",
   "order": 53,
   "releaseAt": 1707213600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/fcfcc0e53c4b62e6.webp",
@@ -8168,6 +8122,7 @@
   "traceSpeedPct": 0.0,
   "traceSpeedDetails": [],
   "effectiveBaseSpeed": 102.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -8362,6 +8317,7 @@
    "24003"
   ],
   "signatureCone": "23022",
+  "nameEn": "Black Swan",
   "order": 54,
   "releaseAt": 1707213600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/39557ceda5560139.webp",
@@ -8600,6 +8556,7 @@
    "21061"
   ],
   "signatureCone": "23047",
+  "nameEn": "Hysilens",
   "order": 20,
   "releaseAt": 1755075600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/d4f5d8b99d4071d7.webp",
@@ -8810,25 +8767,35 @@
     "source": "技能",
     "name": "共舞吧，命定的衣匠",
     "kind": "pct",
-    "value": 10.0,
+    "value": 15.0,
     "apply": "self",
     "durationTurns": 0,
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "【至高之姿】状态下，阿格莱雅获得衣匠忆灵天赋的速度提高层数，每层使自身速度提高10.0%，普通攻击强化为【孤锋千吻】并且无法施放战技，衣匠免疫控制类负面状态"
+    "text": "【至高之姿】状态下，阿格莱雅获得衣匠忆灵天赋的速度提高层数，每层使自身速度提高15.0%，普通攻击强化为【孤锋千吻】并且无法施放战技，衣匠免疫控制类负面状态",
+    "levelUp": {
+     "rank": 5,
+     "value": 16.0,
+     "text": "【至高之姿】状态下，阿格莱雅获得衣匠忆灵天赋的速度提高层数，每层使自身速度提高16.0%，普通攻击强化为【孤锋千吻】并且无法施放战技，衣匠免疫控制类负面状态"
+    }
    },
    {
     "source": "技能",
     "name": "泪水锻造的匠躯",
     "kind": "flat",
-    "value": 44.0,
+    "value": 55.0,
     "apply": "self",
     "durationTurns": 0,
     "maxStacks": 6,
     "rank": null,
     "superimpose": null,
-    "text": "攻击处于【间隙织线】状态的敌人后，使自身的速度提高44点，该效果最多叠加6层"
+    "text": "攻击处于【间隙织线】状态的敌人后，使自身的速度提高55点，该效果最多叠加6层",
+    "levelUp": {
+     "rank": 3,
+     "value": 57.2,
+     "text": "攻击处于【间隙织线】状态的敌人后，使自身的速度提高57.2点，该效果最多叠加6层"
+    }
    },
    {
     "source": "技能",
@@ -8841,18 +8808,6 @@
     "rank": null,
     "superimpose": null,
     "text": "衣匠被召唤时，使自身行动提前100%"
-   },
-   {
-    "source": "技能",
-    "name": "",
-    "kind": "pct",
-    "value": 17.5,
-    "apply": "self",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "\\n【至高之姿】状态下，阿格莱雅获得衣匠忆灵天赋的速度提高层数，每层使自身速度提高17.5%，普通攻击强化为【孤锋千吻】并且无法施放战技，衣匠免疫控制类负面状态"
    }
   ],
   "recommendedCones": [
@@ -8861,6 +8816,7 @@
    "21052"
   ],
   "signatureCone": "23036",
+  "nameEn": "Aglaea",
   "order": 30,
   "releaseAt": 1738749600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/36b05124f9ef6344.webp",
@@ -9112,6 +9068,7 @@
    "22000"
   ],
   "signatureCone": "23035",
+  "nameEn": "Fugue",
   "order": 34,
   "releaseAt": 1735120800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/113722c4ef8abce0.webp",
@@ -9328,7 +9285,7 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "对敌方全体造成等同于灵砂40%攻击力的火属性伤害，同时为我方全体回复等同于灵砂10.0%攻击力+105的生命值，使【浮元】行动提前20%"
+    "text": "对敌方全体造成等同于灵砂80%攻击力的火属性伤害，同时为我方全体回复等同于灵砂14.0%攻击力+420的生命值，使【浮元】行动提前20%"
    },
    {
     "source": "技能",
@@ -9340,7 +9297,7 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "对敌方全体造成等同于灵砂90%攻击力的火属性伤害，同时为我方全体回复等同于灵砂8.0%攻击力+90的生命值，使【浮元】行动提前100%"
+    "text": "对敌方全体造成等同于灵砂150%攻击力的火属性伤害，同时为我方全体回复等同于灵砂12.0%攻击力+360的生命值，使【浮元】行动提前100%"
    }
   ],
   "recommendedCones": [
@@ -9349,6 +9306,7 @@
    "21035"
   ],
   "signatureCone": "23032",
+  "nameEn": "Lingsha",
   "order": 37,
   "releaseAt": 1727859600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/8d37276bb2f45e66.webp",
@@ -9586,6 +9544,7 @@
    "21015"
   ],
   "signatureCone": "23043",
+  "nameEn": "Cipher",
   "order": 24,
   "releaseAt": 1749632400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/7f2264bf6be02d87.webp",
@@ -9813,7 +9772,7 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "充能达到100时消耗100点充能进入【血仇】状态并回复等同于万敌15%生命上限的生命值，同时行动提前100%"
+    "text": "充能达到100时消耗100点充能进入【血仇】状态并回复等同于万敌25%生命上限的生命值，同时行动提前100%"
    }
   ],
   "recommendedCones": [
@@ -9822,6 +9781,7 @@
    "22003"
   ],
   "signatureCone": "23039",
+  "nameEn": "Mydei",
   "order": 28,
   "releaseAt": 1742378400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/3f14620cdd12968d.webp",
@@ -10070,6 +10030,7 @@
    "23000"
   ],
   "signatureCone": "23037",
+  "nameEn": "The Herta",
   "order": 31,
   "releaseAt": 1736935200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/436e440a9184c093.webp",
@@ -10088,6 +10049,7 @@
   "traceSpeedPct": 0.0,
   "traceSpeedDetails": [],
   "effectiveBaseSpeed": 107.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -10280,37 +10242,18 @@
     "source": "技能",
     "name": "等待程序响应…",
     "kind": "pct",
-    "value": -3.0,
+    "value": -6.0,
     "apply": "enemy",
     "durationTurns": 0,
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "银狼能够制造：攻击力降低5.0%、防御力降低6.0%、速度降低3.0%3种【缺陷】"
-   },
-   {
-    "source": "技能",
-    "name": "等待程序响应…",
-    "kind": "pct",
-    "value": -3.0,
-    "apply": "enemy",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "银狼能够制造：攻击力降低5.0%、防御力降低6.0%、速度降低3.0%3种【缺陷】"
-   },
-   {
-    "source": "技能",
-    "name": "",
-    "kind": "pct",
-    "value": -7.5,
-    "apply": "enemy",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "银狼能够制造：攻击力降低12.5%、防御力降低10.0%、速度降低7.5%3种【缺陷】"
+    "text": "银狼能够制造：攻击力降低10.0%、防御力降低12.0%、速度降低6.0%3种【缺陷】",
+    "levelUp": {
+     "rank": 3,
+     "value": -6.6,
+     "text": "银狼能够制造：攻击力降低11.0%、防御力降低13.2%、速度降低6.6%3种【缺陷】"
+    }
    }
   ],
   "recommendedCones": [
@@ -10319,6 +10262,7 @@
    "22000"
   ],
   "signatureCone": "23007",
+  "nameEn": "Silver Wolf",
   "order": 72,
   "releaseAt": 1686128400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/3de96f5e3d62a249.webp",
@@ -10337,6 +10281,7 @@
   "traceSpeedPct": 0.0,
   "traceSpeedDetails": [],
   "effectiveBaseSpeed": 100.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -10531,6 +10476,7 @@
    "24003"
   ],
   "signatureCone": "23006",
+  "nameEn": "Kafka",
   "order": 67,
   "releaseAt": 1689757200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/bb3400f50eaca375.webp",
@@ -10565,6 +10511,7 @@
    }
   ],
   "effectiveBaseSpeed": 105.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -10763,19 +10710,7 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "当拥有2层【朔望】时，镜流将进入【转魄】状态，额外获得1层【朔望】并使行动提前100%、暴击率提高40%，随后战技【无罅飞光】强化为【寒川映月】且仅能使用该战技"
-   },
-   {
-    "source": "技能",
-    "name": "澹月转魄",
-    "kind": "advance",
-    "value": 100.0,
-    "apply": "self",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "当拥有2层【朔望】时，镜流将进入【转魄】状态，额外获得1层【朔望】并使行动提前100%、暴击率提高40%，随后战技【无罅飞光】强化为【寒川映月】且仅能使用该战技"
+    "text": "当拥有2层【朔望】时，镜流将进入【转魄】状态，额外获得1层【朔望】并使行动提前100%、暴击率提高50%，随后战技【无罅飞光】强化为【寒川映月】且仅能使用该战技"
    },
    {
     "source": "行迹",
@@ -10787,7 +10722,8 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "施放【无罅飞光】后，下次行动提前10%"
+    "text": "施放【无罅飞光】后，下次行动提前10%",
+    "enhanced": false
    }
   ],
   "recommendedCones": [
@@ -10796,6 +10732,7 @@
    "21012"
   ],
   "signatureCone": "23014",
+  "nameEn": "Jingliu",
   "order": 63,
   "releaseAt": 1697014800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/96514d6aa74977a5.webp",
@@ -10814,6 +10751,7 @@
   "traceSpeedPct": 0.0,
   "traceSpeedDetails": [],
   "effectiveBaseSpeed": 97.0,
+  "enhanceable": true,
   "promotions": [
    {
     "hp": [
@@ -11008,6 +10946,7 @@
    "22003"
   ],
   "signatureCone": "23009",
+  "nameEn": "Blade",
   "order": 69,
   "releaseAt": 1689757200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/022d6d9532cc6a50.webp",
@@ -11219,6 +11158,7 @@
    "24000"
   ],
   "signatureCone": "23045",
+  "nameEn": "Saber",
   "order": 21,
   "releaseAt": 1752224400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/6be274c5c42488d2.webp",
@@ -11430,6 +11370,7 @@
    "24001"
   ],
   "signatureCone": "23046",
+  "nameEn": "Archer",
   "order": 22,
   "releaseAt": 1752224400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/7ef1c9fce84ea8b4.webp",
@@ -11642,6 +11583,7 @@
    "23012"
   ],
   "signatureCone": "23020",
+  "nameEn": "Dr. Ratio",
   "order": 55,
   "releaseAt": 1705485600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/148159715d4263dd.webp",
@@ -11865,6 +11807,7 @@
    "22000"
   ],
   "signatureCone": "23029",
+  "nameEn": "Jiaoqiu",
   "order": 40,
   "releaseAt": 1724230800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/d818549bbd65f263.webp",
@@ -12077,6 +12020,7 @@
    "21044"
   ],
   "signatureCone": "23024",
+  "nameEn": "Acheron",
   "order": 51,
   "releaseAt": 1711533600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/ded0d7b5d57fd2de.webp",
@@ -12289,6 +12233,7 @@
    "24000"
   ],
   "signatureCone": "23030",
+  "nameEn": "Yunli",
   "order": 41,
   "releaseAt": 1722416400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/51b61a59e3e7f635.webp",
@@ -12537,6 +12482,7 @@
    "23003"
   ],
   "signatureCone": "23026",
+  "nameEn": "Robin",
   "order": 46,
   "releaseAt": 1715158800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/377c1ec7472f602c.webp",
@@ -12784,6 +12730,7 @@
    "21050",
    "24005"
   ],
+  "nameEn": "Trailblazer",
   "order": 32,
   "releaseAt": 1736935200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/e8d2e38cdba2c9b5.webp",
@@ -13021,6 +12968,7 @@
    "23000"
   ],
   "signatureCone": "23028",
+  "nameEn": "Jade",
   "order": 43,
   "releaseAt": 1720602000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/2e66ac6ab209674a.webp",
@@ -13246,6 +13194,7 @@
    "21034"
   ],
   "signatureCone": "23010",
+  "nameEn": "Jing Yuan",
   "order": 73,
   "releaseAt": 1684335600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/804610899eedee3f.webp",
@@ -13471,6 +13420,7 @@
    "21019"
   ],
   "signatureCone": "23015",
+  "nameEn": "Dan Heng • Imbibitor Lunae",
   "order": 66,
   "releaseAt": 1693386000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/4ecea2f051bdf80c.webp",
@@ -13692,25 +13642,18 @@
     "source": "技能",
     "name": "分型的螺旋",
     "kind": "pct",
-    "value": 8.0,
+    "value": 10.0,
     "apply": "team",
     "durationTurns": 0,
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "使除自身以外的队友速度提高8.0%"
-   },
-   {
-    "source": "技能",
-    "name": "",
-    "kind": "pct",
-    "value": 11.0,
-    "apply": "team",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "使除自身以外的队友速度提高11.0%"
+    "text": "使除自身以外的队友速度提高10.0%",
+    "levelUp": {
+     "rank": 3,
+     "value": 10.4,
+     "text": "使除自身以外的队友速度提高10.4%"
+    }
    }
   ],
   "recommendedCones": [
@@ -13719,6 +13662,7 @@
    "21018"
   ],
   "signatureCone": "23019",
+  "nameEn": "Ruan Mei",
   "order": 57,
   "releaseAt": 1703671200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/b7a77a98e4409de3.webp",
@@ -13931,6 +13875,7 @@
    "24004"
   ],
   "signatureCone": "23018",
+  "nameEn": "Argenti",
   "order": 59,
   "releaseAt": 1701856800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/c98c60e12747beda.webp",
@@ -14143,6 +14088,7 @@
    "21000"
   ],
   "signatureCone": "23013",
+  "nameEn": "Bailu",
   "order": 94,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/c09a9929a9b482c8.webp",
@@ -14368,6 +14314,7 @@
    "24001"
   ],
   "signatureCone": "23012",
+  "nameEn": "Yanqing",
   "order": 93,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/e40bd9d3a3e7c6aa.webp",
@@ -14580,6 +14527,7 @@
    "21016"
   ],
   "signatureCone": "23011",
+  "nameEn": "Fu Xuan",
   "order": 65,
   "releaseAt": 1695200400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/025bbe219934b428.webp",
@@ -14792,6 +14740,7 @@
    "23013"
   ],
   "signatureCone": "23008",
+  "nameEn": "Luocha",
   "order": 70,
   "releaseAt": 1687942800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/6c4445cb76b2088a.webp",
@@ -15008,7 +14957,7 @@
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "使账账进入【涨幅惊人！】状态，伤害倍率提高75%，暴击伤害提高12.5%，且当陷入【负债证明】状态下的敌方目标受到我方的普攻、战技或终结技的攻击时，账账行动提前50%"
+    "text": "使账账进入【涨幅惊人！】状态，伤害倍率提高150%，暴击伤害提高25%，且当陷入【负债证明】状态下的敌方目标受到我方的普攻、战技或终结技的攻击时，账账行动提前50%"
    },
    {
     "source": "技能",
@@ -15041,6 +14990,7 @@
    "23012"
   ],
   "signatureCone": "23016",
+  "nameEn": "Topaz & Numby",
   "order": 61,
   "releaseAt": 1698483600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/37862623af5e2c00.webp",
@@ -15253,6 +15203,7 @@
    "23030"
   ],
   "signatureCone": "23002",
+  "nameEn": "Clara",
   "order": 87,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/1d3132c796a03720.webp",
@@ -15465,6 +15416,7 @@
    "21016"
   ],
   "signatureCone": "23005",
+  "nameEn": "Gepard",
   "order": 84,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/ca68bea1bed2afa8.webp",
@@ -15675,13 +15627,18 @@
     "source": "技能",
     "name": "先人一步",
     "kind": "advance",
-    "value": 15.0,
+    "value": 30.0,
     "apply": "self",
     "durationTurns": 0,
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "施放普攻后，布洛妮娅的下一次行动提前15%"
+    "text": "施放普攻后，布洛妮娅的下一次行动提前30%",
+    "levelUp": {
+     "rank": 3,
+     "value": 33.0,
+     "text": "施放普攻后，布洛妮娅的下一次行动提前33%"
+    }
    },
    {
     "source": "星魂",
@@ -15694,18 +15651,6 @@
     "rank": 2,
     "superimpose": null,
     "text": "施放战技时，被指定的我方目标在行动后速度提高30%，持续1回合"
-   },
-   {
-    "source": "技能",
-    "name": "",
-    "kind": "advance",
-    "value": 37.5,
-    "apply": "self",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "施放普攻后，布洛妮娅的下一次行动提前37.5%"
    }
   ],
   "recommendedCones": [
@@ -15714,6 +15659,7 @@
    "21025"
   ],
   "signatureCone": "23003",
+  "nameEn": "Bronya",
   "order": 81,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/427c6ba6a5bea1ff.webp",
@@ -15939,6 +15885,7 @@
    "21034"
   ],
   "signatureCone": "23000",
+  "nameEn": "Himeko",
   "order": 76,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/4d4191fac04bca81.webp",
@@ -16150,6 +16097,7 @@
    "23019",
    "21018"
   ],
+  "nameEn": "Trailblazer",
   "order": 47,
   "releaseAt": 1715158800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/e49ee84ca5bcf985.webp",
@@ -16361,6 +16309,7 @@
    "24002",
    "21016"
   ],
+  "nameEn": "Trailblazer",
   "order": 97,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/f4b079f5a1d9b7e5.webp",
@@ -16572,6 +16521,7 @@
    "21026",
    "21019"
   ],
+  "nameEn": "Trailblazer",
   "order": 95,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/535d38d17eab28db.webp",
@@ -16782,6 +16732,7 @@
    "24000",
    "21005"
   ],
+  "nameEn": "Misha",
   "order": 52,
   "releaseAt": 1709200800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/572545c14817d364.webp",
@@ -17005,6 +16956,7 @@
    "21035",
    "21021"
   ],
+  "nameEn": "Gallagher",
   "order": 50,
   "releaseAt": 1711533600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/153e5cd661a50f9a.webp",
@@ -17215,13 +17167,18 @@
     "source": "技能",
     "name": "师父，请喝茶！",
     "kind": "pct",
-    "value": 6.0,
+    "value": 10.0,
     "apply": "self",
     "durationTurns": 0,
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "使除自身以外的我方指定单体成为【师父】，【师父】的速度提高6.0%"
+    "text": "使除自身以外的我方指定单体成为【师父】，【师父】的速度提高10.0%",
+    "levelUp": {
+     "rank": 3,
+     "value": 10.8,
+     "text": "使除自身以外的我方指定单体成为【师父】，【师父】的速度提高10.8%"
+    }
    },
    {
     "source": "星魂",
@@ -17246,18 +17203,6 @@
     "rank": null,
     "superimpose": null,
     "text": "战斗开始时，三月七的行动提前25%"
-   },
-   {
-    "source": "技能",
-    "name": "",
-    "kind": "pct",
-    "value": 12.0,
-    "apply": "self",
-    "durationTurns": 0,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "使除自身以外的我方指定单体成为【师父】，【师父】的速度提高12.0%"
    }
   ],
   "recommendedCones": [
@@ -17265,6 +17210,7 @@
    "24001",
    "21010"
   ],
+  "nameEn": "March 7th",
   "order": 42,
   "releaseAt": 1722416400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/56b9ab74f56b1501.webp",
@@ -17501,6 +17447,7 @@
    "24001",
    "23016"
   ],
+  "nameEn": "Moze",
   "order": 39,
   "releaseAt": 1725958800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/79f0364929443bb5.webp",
@@ -17752,6 +17699,7 @@
    "21011",
    "21032"
   ],
+  "nameEn": "Hanya",
   "order": 58,
   "releaseAt": 1701856800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/3105faaaf37cb2d3.webp",
@@ -17962,6 +17910,7 @@
    "21042",
    "21019"
   ],
+  "nameEn": "Xueyi",
   "order": 56,
   "releaseAt": 1703671200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/e41c2d709667fcf7.webp",
@@ -18186,6 +18135,7 @@
    "21001",
    "24003"
   ],
+  "nameEn": "Guinaifen",
   "order": 62,
   "releaseAt": 1698483600,
   "iconHd": "/modules/honkai-star-rail/assets/hd/6543779cd7ce99c0.webp",
@@ -18409,6 +18359,7 @@
    "21025",
    "21032"
   ],
+  "nameEn": "Yukong",
   "order": 71,
   "releaseAt": 1687942800,
   "iconHd": "/modules/honkai-star-rail/assets/hd/aaef0e8e0602e2bc.webp",
@@ -18619,13 +18570,18 @@
     "source": "技能",
     "name": "游刃若水",
     "kind": "pct",
-    "value": 15.0,
+    "value": 20.0,
     "apply": "self",
     "durationTurns": 2,
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "当场上有敌方目标的弱点被击破，素裳的速度提高15.00%，持续2回合"
+    "text": "当场上有敌方目标的弱点被击破，素裳的速度提高20.00%，持续2回合",
+    "levelUp": {
+     "rank": 3,
+     "value": 21.0,
+     "text": "当场上有敌方目标的弱点被击破，素裳的速度提高21.00%，持续2回合"
+    }
    },
    {
     "source": "行迹",
@@ -18638,24 +18594,13 @@
     "rank": null,
     "superimpose": null,
     "text": "施放普攻或战技后，若场上有敌方目标处于弱点击破状态，则素裳的行动提前15%"
-   },
-   {
-    "source": "技能",
-    "name": "",
-    "kind": "pct",
-    "value": 22.5,
-    "apply": "self",
-    "durationTurns": 2,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "当场上有敌方目标的弱点被击破，素裳的速度提高22.50%，持续2回合"
    }
   ],
   "recommendedCones": [
    "21010",
    "24001"
   ],
+  "nameEn": "Sushang",
   "order": 92,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/641ff29b975e4365.webp",
@@ -18892,6 +18837,7 @@
    "21018",
    "21011"
   ],
+  "nameEn": "Tingyun",
   "order": 91,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/76cb037a5918f103.webp",
@@ -19116,6 +19062,7 @@
    "21027",
    "23010"
   ],
+  "nameEn": "Qingque",
   "order": 90,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/54e58c04d819a29a.webp",
@@ -19326,6 +19273,7 @@
    "21015",
    "21001"
   ],
+  "nameEn": "Luka",
   "order": 68,
   "releaseAt": 1689757200,
   "iconHd": "/modules/honkai-star-rail/assets/hd/f8246596a2f8379f.webp",
@@ -19536,6 +19484,7 @@
    "21028",
    "21000"
   ],
+  "nameEn": "Lynx",
   "order": 64,
   "releaseAt": 1695200400,
   "iconHd": "/modules/honkai-star-rail/assets/hd/8d6ff71aeeb029c2.webp",
@@ -19760,6 +19709,7 @@
    "21026",
    "24000"
   ],
+  "nameEn": "Hook",
   "order": 89,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/ad727ecd222f1ce2.webp",
@@ -19971,6 +19921,7 @@
    "21001",
    "24003"
   ],
+  "nameEn": "Sampo",
   "order": 88,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/1a61c99d5f44d307.webp",
@@ -20195,6 +20146,7 @@
    "22000",
    "21001"
   ],
+  "nameEn": "Pela",
   "order": 86,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/b63d54041437999b.webp",
@@ -20406,6 +20358,7 @@
    "21007",
    "21021"
   ],
+  "nameEn": "Natasha",
   "order": 85,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/095525e0156134af.webp",
@@ -20617,6 +20570,7 @@
    "24004",
    "21027"
   ],
+  "nameEn": "Serval",
   "order": 83,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/c648c8edabf17b47.webp",
@@ -20828,6 +20782,7 @@
    "21034",
    "24004"
   ],
+  "nameEn": "Herta",
   "order": 80,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/06c4a2e9254a3498.webp",
@@ -21038,31 +20993,25 @@
     "source": "技能",
     "name": "星空祝言",
     "kind": "flat",
-    "value": 36.0,
+    "value": 50.0,
     "apply": "team",
     "durationTurns": 2,
     "maxStacks": 0,
     "rank": null,
     "superimpose": null,
-    "text": "使我方全体速度提高36点，持续2回合"
-   },
-   {
-    "source": "技能",
-    "name": "",
-    "kind": "flat",
-    "value": 57.0,
-    "apply": "team",
-    "durationTurns": 2,
-    "maxStacks": 0,
-    "rank": null,
-    "superimpose": null,
-    "text": "使我方全体速度提高57点，持续2回合"
+    "text": "使我方全体速度提高50点，持续2回合",
+    "levelUp": {
+     "rank": 5,
+     "value": 52.8,
+     "text": "使我方全体速度提高52.8点，持续2回合"
+    }
    }
   ],
   "recommendedCones": [
    "21032",
    "21011"
   ],
+  "nameEn": "Asta",
   "order": 79,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/179f788897aef962.webp",
@@ -21273,6 +21222,7 @@
    "21012",
    "24000"
   ],
+  "nameEn": "Arlan",
   "order": 78,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/ce3f9fd8136cee20.webp",
@@ -21509,6 +21459,7 @@
    "23001",
    "21003"
   ],
+  "nameEn": "Dan Heng",
   "order": 75,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/978e65ce4b4e576d.webp",
@@ -21720,6 +21671,7 @@
    "23005",
    "24002"
   ],
+  "nameEn": "March 7th",
   "order": 74,
   "releaseAt": 1682460000,
   "iconHd": "/modules/honkai-star-rail/assets/hd/a71f8ff1613d5caa.webp",

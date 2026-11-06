@@ -64,6 +64,11 @@ jobs:
           $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
           $listener.Start(); $port = $listener.LocalEndpoint.Port; $listener.Stop()
           $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = "--remote-debugging-port=$port"
+          # CI 上光靠环境变量，WebView2 主进程的参数里没有调试端口（2026-11-05 诊断输出）。再用 WebView2 的
+          # 「按 exe 名附加参数」策略写进这台 CI 机器的当前用户注册表，策略不经过 exe 的启动环境。只在 CI 上这样做。
+          $policy = "HKCU:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+          New-Item -Path $policy -Force | Out-Null
+          New-ItemProperty -Path $policy -Name "FeifeiFoxToolbox.exe" -Value "--remote-debugging-port=$port" -PropertyType String -Force | Out-Null
           $p = Start-Process -FilePath (Join-Path $dir "FeifeiFoxToolbox.exe") -PassThru
           $ok = $false
           $last = "调试端口一直连不上"
@@ -84,6 +89,9 @@ jobs:
             Write-Host "msedgewebview2 进程：$($views.Count) 个；会话：$(($views | ForEach-Object SessionId | Sort-Object -Unique) -join ',')"
             $main = Get-CimInstance Win32_Process -Filter "Name = 'msedgewebview2.exe'" | Where-Object { $_.CommandLine -notmatch '--type=' } | Select-Object -First 1
             Write-Host "调试端口 $port；WebView2 主进程参数：$(if ($main) { $main.CommandLine } else { '没找到' })"
+            Write-Host "附加参数策略：$((Get-ItemProperty $policy -ErrorAction SilentlyContinue).'FeifeiFoxToolbox.exe')"
+            $self = Get-CimInstance Win32_Process -Filter "ProcessId = $($p.Id)"
+            Write-Host "exe 进程：$(if ($self) { $self.CommandLine } else { '已退出' })"
             Write-Host "系统保留的端口段："; netsh int ipv4 show excludedportrange protocol=tcp | Write-Host
             $runtime = Get-ItemProperty 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}' -ErrorAction SilentlyContinue
             Write-Host "WebView2 运行时版本：$(if ($runtime) { $runtime.pv } else { '没找到' })"

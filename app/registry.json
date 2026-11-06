@@ -1,7 +1,7 @@
 {
  "toolbox": {
   "name": "绯绯狐工具箱",
-  "version": "1.2.2"
+  "version": "1.2.3"
  },
  "modules": [
   {
@@ -34,6 +34,7 @@
     "gacha_pools",
     "lightcones",
     "modes",
+    "relic_icons",
     "relic_pieces",
     "relic_sets"
    ],

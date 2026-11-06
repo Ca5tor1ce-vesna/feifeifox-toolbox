@@ -9,9 +9,9 @@ export function buildStatData(characters: unknown, lightcones: unknown, relicSet
   const pieces = (relicPieces as any) ?? {};
   return {
     characters: byId<CharacterStats>(characters, (c) => ({
-      id: String(c.id), name: String(c.name), path: String(c.path ?? ""), element: String(c.element ?? ""), promotions: c.promotions ?? [], statTraces: c.statTraces ?? {},
+      id: String(c.id), name: String(c.name), nameEn: c.nameEn ? String(c.nameEn) : undefined, path: String(c.path ?? ""), element: String(c.element ?? ""), promotions: c.promotions ?? [], statTraces: c.statTraces ?? {},
     })),
-    lightcones: byId<ConeStats>(lightcones, (l) => ({ id: String(l.id), name: String(l.name), path: String(l.path ?? ""), promotions: l.promotions ?? [], panelProps: l.panelProps ?? [] })),
+    lightcones: byId<ConeStats>(lightcones, (l) => ({ id: String(l.id), name: String(l.name), nameEn: l.nameEn ? String(l.nameEn) : undefined, path: String(l.path ?? ""), promotions: l.promotions ?? [], panelProps: l.panelProps ?? [] })),
     relicSets: byId<SetStats>(relicSets, (s) => ({ id: String(s.id), name: String(s.name), properties: s.properties ?? [] })),
     pieces: new Map(Object.entries<PieceInfo>(pieces.pieces ?? {})),
     mainAffixes: pieces.mainAffixes ?? {},

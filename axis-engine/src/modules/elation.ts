@@ -91,6 +91,8 @@ export class Elation implements BattleModule {
   punchlineConsumed = 0;
   punchlineGranted = 0;
   ahaFlat = 0;
+  /** 【阿哈时刻】额外回合里欢愉技固定计入的笑点（爻光终结技 20，E1 40）；不在额外回合里是 null。 */
+  private ahaFixedCount: number | null = null;
   normalCount = 0;
   extraCount = 0;
   useAeonAha = false;
@@ -267,6 +269,14 @@ export class Elation implements BattleModule {
     }
   }
 
+  /**
+   * 这次欢愉技「计入的笑点」：【阿哈时刻】额外回合按固定计入的数（不看笑点池），其余时候是当前笑点池。
+   * 银狼LV.999【真结局解锁条件】按它判断（2026-11-05 群里反馈：爻光开大给的额外回合里银狼少拿了隐藏分）。
+   */
+  countedPunchline(): number {
+    return this.ahaFixedCount ?? Math.max(0, this.punchline);
+  }
+
   // ----------------------------- 额外回合 ----------------------------- //
 
   /** 带笑点和好活当赏的额外回合。笑点只在这个回合内有效，结束时收回。 */
@@ -304,14 +314,17 @@ export class Elation implements BattleModule {
     const engine = this.engine;
     if (engine.depth > MAX_NEST) return;
     engine.depth += 1;
-    const run = () => this.ahaBody(isExtra, fixed);
+    // 【阿哈时刻】是阿哈的一动：各人的欢愉技一口气放完，中途不插终结技，结束后谁攒满谁再开大。
+    // 2026-11-06 群里反馈：真珠的欢愉技回能后立刻开大，插在阿哈时刻中间，后面几人的欢愉技被挂到插进来的动作上，
+    // 阿哈时刻那张卡只剩真珠一个人。
+    const run = () => engine.holdUltimates(() => this.ahaBody(isExtra, fixed));
     try {
       if (isExtra) engine.inExtraWindow(run);
       else run();
     } finally {
       engine.depth -= 1;
     }
-    if (isExtra) for (const ally of engine.units) engine.maybeUltimate(ally);
+    for (const ally of engine.units) engine.maybeUltimate(ally);
   }
 
   private ahaBody(isExtra: boolean, fixed: number): void {
@@ -340,7 +353,14 @@ export class Elation implements BattleModule {
       });
     }
     if (casters.length > 0) {
-      for (const unit of casters) this.castElationSkill(unit);
+      // 额外回合可能嵌在普通【阿哈时刻】里：结束时还原外层的计入方式。
+      const outerFixed = this.ahaFixedCount;
+      this.ahaFixedCount = isExtra ? fixed : null;
+      try {
+        for (const unit of casters) this.castElationSkill(unit);
+      } finally {
+        this.ahaFixedCount = outerFixed;
+      }
     } else {
       engine.record("note", null, "Let There Be Laughter", {
         ...rowOptions,

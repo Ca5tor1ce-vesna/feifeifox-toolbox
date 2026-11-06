@@ -30,6 +30,7 @@ export class TrailblazerElationKit extends Kit {
   onUltimate({ engine, self }: KitContext): void {
     const el = this.el;
     const target = engine.unitAt(engine.resolveTarget(self));
+    engine.targetAlly(self, target, "终结技");
     const details = ["笑点 +5"];
     const canCast = target !== undefined && kitOf(target)?.elationNumber !== undefined;
     const halo = canCast && el.huanyuActive() && target.id === "1511";
@@ -43,7 +44,7 @@ export class TrailblazerElationKit extends Kit {
     el.gainPunchline(5);
     if (!target) return;
     if (!canCast) {
-      engine.advance(target, 50);
+      engine.advance(target, 50, { source: self });
       return;
     }
     if (halo) {

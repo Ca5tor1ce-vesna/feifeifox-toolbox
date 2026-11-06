@@ -4,12 +4,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CharacterDialog from "./CharacterDialog.vue";
 import NumField from "./NumField.vue";
-import Picker from "./Picker.vue";
+import LightconePicker from "../../ui-shared/src/hsr/LightconePicker.vue";
+import RelicSetPicker from "../../ui-shared/src/hsr/RelicSetPicker.vue";
 import SelectField from "./SelectField.vue";
 import { fix } from "./motion.ts";
 import { useSpeedPage } from "./page.ts";
 
-const { collapsedSteps, toggleStep, summaries, charBody, openCharacters, splash, splashSrc, splashBroken, onSplashLoad, state, numberOptions, onEidolon, splashMeta, currentCharacter, charSpeed, charTrace, coneItems, pickCone, onSuperimpose, fourPieceItems, pickFourPiece, ornamentItems, pickOrnament, onSpeedBoots, blockedSets, blockedNames, triggerMore, form, onFourUlts, onConeUlts, onUltTargetsAlly, relicNote, charInfo, characterDialog, characters, pickCharacter, isCustom, onCustomInput, markSplashBroken, currentCone, rosterLinked, rosterHas, rosterError, rosterManual, rosterBack, nameIn } = useSpeedPage();
+const { collapsedSteps, toggleStep, summaries, charBody, openCharacters, splash, splashSrc, splashBroken, onSplashLoad, state, enhanceableIds, numberOptions, onEidolon, onEnhanced, splashMeta, currentCharacter, charSpeed, charTrace, cones, coneNote, pickCone, onSuperimpose, fourPieceItems, fourPieceSets, pickFourPiece, ornamentItems, ornamentSets, describeSet, pickOrnament, onSpeedBoots, blockedSets, blockedNames, triggerMore, form, onFourUlts, onConeUlts, onUltTargetsAlly, relicNote, charInfo, characterDialog, characters, pickCharacter, isCustom, onCustomInput, markSplashBroken, currentCone, rosterLinked, rosterHas, rosterError, rosterMissing, rosterManual, rosterBack, nameIn } = useSpeedPage();
+
+/** 3.4 老角色加强：游戏里可以不强化。 */
+const ENHANCE_OPTIONS = [{ value: "on", label: "已强化" }, { value: "off", label: "原版" }];
+
+/** 用不上「角色与遗器」实际装配时，告诉用户为什么还要手填。 */
+const ROSTER_MISSING: Record<string, string> = {
+  empty: "导入角色和遗器后，这里会自动按实际装配算，不用手填。",
+  character: "「角色与遗器」里还没有这个角色，下面先按手填算。",
+  relics: "「角色与遗器」里这个角色还没穿遗器，下面先按手填算。",
+};
 
 /** 点光锥图打开下面的光锥选择。 */
 function openCones(event: Event): void {
@@ -44,6 +55,7 @@ function linkedRelics(): string {
       </div>
       <div class="sp-config">
         <SelectField id="eidolon" label="星魂" extra="sp-soul" :value="String(state.eidolon)" :options="numberOptions([0, 1, 2, 3, 4, 5, 6], ' 魂')" @change="onEidolon" />
+        <SelectField v-if="enhanceableIds.has(String(state.characterId))" id="enhanced" label="角色强化" extra="sp-soul" :value="state.enhanced === false ? 'off' : 'on'" :options="ENHANCE_OPTIONS" @change="onEnhanced" />
         <div id="splash-meta" ref="splashMeta" class="sp-splash-meta">
           <h2 class="sp-char-title">{{ currentCharacter.name || "选个角色" }}</h2>
           <div class="sp-char-path">{{ currentCharacter.pathName || "" }}<template v-if="currentCharacter.elementName"> · {{ currentCharacter.elementName }}</template></div>
@@ -57,7 +69,7 @@ function linkedRelics(): string {
         <div class="sp-form-row">
           <div class="field sp-grow">
             <label>光锥（只显示同命途）</label>
-            <Picker button-id="lightcone-picker" :items="coneItems" :value="state.lightconeId || ''" placeholder="（不装备光锥）" search-placeholder="搜索光锥…" @pick="pickCone" />
+            <LightconePicker button-id="lightcone-picker" button-class="sp-control" :cones="cones" :note="coneNote" :value="state.lightconeId || ''" @pick="pickCone" />
           </div>
           <SelectField id="superimpose" label="叠影" extra="sp-tiny" :value="String(state.superimpose)" :options="numberOptions([1, 2, 3, 4, 5])" @change="onSuperimpose" />
         </div>
@@ -70,14 +82,17 @@ function linkedRelics(): string {
           <button id="roster-manual" type="button" class="sp-link" @click="rosterManual">手动改</button>
         </div>
         <template v-else>
+        <p v-if="rosterMissing" id="roster-missing" class="hint sp-roster-missing">
+          {{ ROSTER_MISSING[rosterMissing] }}<a href="#/honkai-star-rail/roster">去「角色与遗器」</a>
+        </p>
         <div class="sp-form-row">
           <div class="field sp-grow">
             <label>遗器 4 件套</label>
-            <Picker button-id="fourPiece-picker" :items="fourPieceItems" :value="state.relic.fourPieceId || ''" placeholder="（不用）" search-placeholder="搜索遗器 4 件套…" @pick="pickFourPiece" />
+            <RelicSetPicker button-id="fourPiece-picker" button-class="sp-control" kind="four" :sets="fourPieceSets" :describe="describeSet" :value="state.relic.fourPieceId || ''" @pick="pickFourPiece" />
           </div>
           <div class="field sp-grow">
             <label>位面饰品</label>
-            <Picker button-id="ornamentA-picker" :items="ornamentItems" :value="state.relic.ornamentIds?.[0] || ''" placeholder="（不用）" search-placeholder="搜索位面饰品…" @pick="pickOrnament" />
+            <RelicSetPicker button-id="ornamentA-picker" button-class="sp-control" kind="ornament" :sets="ornamentSets" :describe="describeSet" :value="state.relic.ornamentIds?.[0] || ''" @pick="pickOrnament" />
           </div>
         </div>
         <label class="sp-check"><input id="speedBoots" type="checkbox" :checked="!!state.relic.speedBoots" @change="onSpeedBoots" /> 速度鞋（主词条 +25）</label>

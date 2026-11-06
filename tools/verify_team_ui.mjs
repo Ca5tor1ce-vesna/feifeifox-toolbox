@@ -33,8 +33,9 @@ async function evaluate(expression) {
   return r.result.value;
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-async function wait(expression) {
-  for (let i = 0; i < 80; i++) { if (await evaluate(expression)) return; await sleep(150); }
+/** 默认等 12 秒左右。第一次打开功能页要冷加载打包脚本和数据，CI 上偶尔超过 12 秒（2026-11-06 挂过一次，重跑就过），那里传长一点的时间。 */
+async function wait(expression, ms = 12000) {
+  for (let i = 0; i < Math.ceil(ms / 150); i++) { if (await evaluate(expression)) return; await sleep(150); }
   throw Error(`等待失败: ${expression}`);
 }
 let checks = 0;
@@ -62,7 +63,7 @@ let savedTeam;
 const original = (await api('speed-plan', 'presets')).presets['1502'];
 try {
   await send('Page.navigate', { url: `${base}/#/honkai-star-rail/speed-plan` });
-  await wait("document.querySelector('#save-preset') && document.querySelector('#hero-current')?.textContent !== '—'");
+  await wait("document.querySelector('#save-preset') && document.querySelector('#hero-current')?.textContent !== '—'", 40000);
   await evaluate(`document.querySelector('[data-char="1502"]').click()`);
   await wait(`document.querySelector('[data-char="1502"]').getAttribute('aria-selected')==='true'`);
   await evaluate(`for(const [id,value] of [['eidolon','0'],['superimpose','1']]){const el=document.querySelector('#'+id);el.value=value;el.dispatchEvent(new Event('change',{bubbles:true}));}document.querySelector('#preset-err').value='19.4'; document.querySelector('#preset-energy').value='80'; document.querySelector('#preset-rotation').value='basic'; document.querySelector('#save-preset').click()`);

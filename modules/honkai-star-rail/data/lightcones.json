@@ -141,7 +141,8 @@
   "icon": "/modules/honkai-star-rail/assets/f2fcea3b7d652e7c.webp",
   "portrait": "/modules/honkai-star-rail/assets/aced0fae641221ab.webp",
   "releaseOrder": 6,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Finale of a Lie"
  },
  {
   "id": "24004",
@@ -346,7 +347,8 @@
     "superimpose": 5,
     "text": "施放攻击后，每击中一名敌方目标，使攻击力额外提高8%，该效果最多叠加5次，持续至下次攻击后，若击中大于等于3名敌方目标，使自身速度提高16%，持续1回合"
    }
-  ]
+  ],
+  "nameEn": "Eternal Calculus"
  },
  {
   "id": "23001",
@@ -490,7 +492,8 @@
   "icon": "/modules/honkai-star-rail/assets/1636b692c794477a.webp",
   "portrait": "/modules/honkai-star-rail/assets/bb060360fa594b60.webp",
   "releaseOrder": 82,
-  "effects": []
+  "effects": [],
+  "nameEn": "In the Night"
  },
  {
   "id": "23004",
@@ -609,7 +612,8 @@
   "icon": "/modules/honkai-star-rail/assets/7f494a4772a2c1b7.webp",
   "portrait": "/modules/honkai-star-rail/assets/5520503f2a3d8a95.webp",
   "releaseOrder": 79,
-  "effects": []
+  "effects": [],
+  "nameEn": "In the Name of the World"
  },
  {
   "id": "23003",
@@ -753,7 +757,8 @@
   "icon": "/modules/honkai-star-rail/assets/fc285597f95c4538.webp",
   "portrait": "/modules/honkai-star-rail/assets/dbddbf285f8ffbdf.webp",
   "releaseOrder": 80,
-  "effects": []
+  "effects": [],
+  "nameEn": "But the Battle Isn't Over"
  },
  {
   "id": "23063",
@@ -1018,7 +1023,8 @@
     "superimpose": 5,
     "text": "装备者持有【新声】时，我方全体速度提高40%"
    }
-  ]
+  ],
+  "nameEn": "Rise and Sing"
  },
  {
   "id": "23028",
@@ -1162,7 +1168,8 @@
   "icon": "/modules/honkai-star-rail/assets/0ba0b923e1a53dcd.webp",
   "portrait": "/modules/honkai-star-rail/assets/397df2f36c53f2e3.webp",
   "releaseOrder": 68,
-  "effects": []
+  "effects": [],
+  "nameEn": "Yet Hope Is Priceless"
  },
  {
   "id": "23009",
@@ -1326,7 +1333,8 @@
   "icon": "/modules/honkai-star-rail/assets/1d3d7704705a9103.webp",
   "portrait": "/modules/honkai-star-rail/assets/7878e4ae52a38c5e.webp",
   "releaseOrder": 45,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Unreachable Side"
  },
  {
   "id": "23005",
@@ -1490,7 +1498,8 @@
   "icon": "/modules/honkai-star-rail/assets/2fab4500914dae69.webp",
   "portrait": "/modules/honkai-star-rail/assets/00f408a998d1e660.webp",
   "releaseOrder": 78,
-  "effects": []
+  "effects": [],
+  "nameEn": "Moment of Victory"
  },
  {
   "id": "23050",
@@ -1634,7 +1643,8 @@
   "icon": "/modules/honkai-star-rail/assets/6d64d4a50c0aa814.webp",
   "portrait": "/modules/honkai-star-rail/assets/edcf5171092a0f24.webp",
   "releaseOrder": 25,
-  "effects": []
+  "effects": [],
+  "nameEn": "Never Forget Her Flame"
  },
  {
   "id": "23006",
@@ -1839,7 +1849,8 @@
     "superimpose": 5,
     "text": "装备者每次施放攻击后，速度提高8.0%，最多叠加3层"
    }
-  ]
+  ],
+  "nameEn": "Patience Is All You Need"
  },
  {
   "id": "23064",
@@ -2044,7 +2055,8 @@
     "superimpose": 5,
     "text": "装备者施放欢愉技时，获得【风口】，【风口】使装备者的速度提高40%"
    }
-  ]
+  ],
+  "nameEn": "Summer Rides the Surf"
  },
  {
   "id": "23037",
@@ -2188,7 +2200,8 @@
   "icon": "/modules/honkai-star-rail/assets/5261f7392a713eff.webp",
   "portrait": "/modules/honkai-star-rail/assets/c59ebd8f30500a7d.webp",
   "releaseOrder": 39,
-  "effects": []
+  "effects": [],
+  "nameEn": "Into the Unreachable Veil"
  },
  {
   "id": "23023",
@@ -2332,7 +2345,8 @@
   "icon": "/modules/honkai-star-rail/assets/d76b081b50f3d836.webp",
   "portrait": "/modules/honkai-star-rail/assets/029f8a1b0844d233.webp",
   "releaseOrder": 14,
-  "effects": []
+  "effects": [],
+  "nameEn": "Inherently Unjust Destiny"
  },
  {
   "id": "23032",
@@ -2476,7 +2490,8 @@
   "icon": "/modules/honkai-star-rail/assets/e9be4029fee6bb57.webp",
   "portrait": "/modules/honkai-star-rail/assets/71de9296b5253d6d.webp",
   "releaseOrder": 36,
-  "effects": []
+  "effects": [],
+  "nameEn": "Scent Alone Stays True"
  },
  {
   "id": "23034",
@@ -2595,7 +2610,8 @@
   "icon": "/modules/honkai-star-rail/assets/7833367cdc4a6f2a.webp",
   "portrait": "/modules/honkai-star-rail/assets/802c5e58c8e12c45.webp",
   "releaseOrder": 22,
-  "effects": []
+  "effects": [],
+  "nameEn": "A Grounded Ascent"
  },
  {
   "id": "23026",
@@ -2714,7 +2730,8 @@
   "icon": "/modules/honkai-star-rail/assets/f39a33432167e5eb.webp",
   "portrait": "/modules/honkai-star-rail/assets/ba652bd41c952715.webp",
   "releaseOrder": 67,
-  "effects": []
+  "effects": [],
+  "nameEn": "Flowing Nightglow"
  },
  {
   "id": "23011",
@@ -2878,7 +2895,8 @@
   "icon": "/modules/honkai-star-rail/assets/e6c2b159f89d0a7b.webp",
   "portrait": "/modules/honkai-star-rail/assets/b0e92dd1346bab28.webp",
   "releaseOrder": 76,
-  "effects": []
+  "effects": [],
+  "nameEn": "She Already Shut Her Eyes"
  },
  {
   "id": "23038",
@@ -3022,7 +3040,8 @@
   "icon": "/modules/honkai-star-rail/assets/92b290ebb0f4eb2c.webp",
   "portrait": "/modules/honkai-star-rail/assets/6b8a2e1b09a9942e.webp",
   "releaseOrder": 21,
-  "effects": []
+  "effects": [],
+  "nameEn": "If Time Were a Flower"
  },
  {
   "id": "23012",
@@ -3166,7 +3185,8 @@
   "icon": "/modules/honkai-star-rail/assets/c367ce3b57432265.webp",
   "portrait": "/modules/honkai-star-rail/assets/fb6cfccb3e01278a.webp",
   "releaseOrder": 75,
-  "effects": []
+  "effects": [],
+  "nameEn": "Sleep Like the Dead"
  },
  {
   "id": "24003",
@@ -3310,7 +3330,8 @@
   "icon": "/modules/honkai-star-rail/assets/1f24eb6ebec43d65.webp",
   "portrait": "/modules/honkai-star-rail/assets/5a073c8cdb909124.webp",
   "releaseOrder": 85,
-  "effects": []
+  "effects": [],
+  "nameEn": "Solitary Healing"
  },
  {
   "id": "23036",
@@ -3454,7 +3475,8 @@
   "icon": "/modules/honkai-star-rail/assets/7914edb98cac0f99.webp",
   "portrait": "/modules/honkai-star-rail/assets/0da667cd14185a75.webp",
   "releaseOrder": 34,
-  "effects": []
+  "effects": [],
+  "nameEn": "Time Woven Into Gold"
  },
  {
   "id": "23060",
@@ -3573,7 +3595,8 @@
   "icon": "/modules/honkai-star-rail/assets/83bd2f5909cad506.webp",
   "portrait": "/modules/honkai-star-rail/assets/41bb98557428689c.webp",
   "releaseOrder": 11,
-  "effects": []
+  "effects": [],
+  "nameEn": "A Star That Lights the Night"
  },
  {
   "id": "23054",
@@ -3778,7 +3801,8 @@
     "superimpose": 5,
     "text": "使装备者的速度提高30%"
    }
-  ]
+  ],
+  "nameEn": "When She Decided to See"
  },
  {
   "id": "23065",
@@ -3921,7 +3945,8 @@
   "contentId": null,
   "icon": "/modules/honkai-star-rail/assets/4c9b95c9c75715e8.webp",
   "releaseOrder": 1,
-  "effects": []
+  "effects": [],
+  "nameEn": "Upon the First Echo of \"Aha\""
  },
  {
   "id": "23033",
@@ -4126,7 +4151,8 @@
     "superimpose": 5,
     "text": "进入战斗时立即恢复40.0点能量，且装备者施放终结技后获得【雷遁】，施放2次普攻后，装备者行动提前70%，并移除【雷遁】"
    }
-  ]
+  ],
+  "nameEn": "Ninjutsu Inscription: Dazzling Evilbreaker"
  },
  {
   "id": "23017",
@@ -4270,7 +4296,8 @@
   "icon": "/modules/honkai-star-rail/assets/6436cafbe38dfe5d.webp",
   "portrait": "/modules/honkai-star-rail/assets/eea963dcf2379a40.webp",
   "releaseOrder": 64,
-  "effects": []
+  "effects": [],
+  "nameEn": "Night of Fright"
  },
  {
   "id": "23042",
@@ -4475,7 +4502,8 @@
     "superimpose": 5,
     "text": "使装备者的速度提高30%"
    }
-  ]
+  ],
+  "nameEn": "Long May Rainbows Adorn the Sky"
  },
  {
   "id": "23031",
@@ -4619,7 +4647,8 @@
   "icon": "/modules/honkai-star-rail/assets/8cedf291a9fb21d8.webp",
   "portrait": "/modules/honkai-star-rail/assets/460650b1f224dedc.webp",
   "releaseOrder": 23,
-  "effects": []
+  "effects": [],
+  "nameEn": "I Venture Forth to Hunt"
  },
  {
   "id": "23062",
@@ -4783,7 +4812,8 @@
   "icon": "/modules/honkai-star-rail/assets/bbf0182b0f88667a.webp",
   "portrait": "/modules/honkai-star-rail/assets/6c55362e56ac8d3b.webp",
   "releaseOrder": 10,
-  "effects": []
+  "effects": [],
+  "nameEn": "I Am As You Behold"
  },
  {
   "id": "23010",
@@ -4927,7 +4957,8 @@
   "icon": "/modules/honkai-star-rail/assets/ed33b90298d9bea4.webp",
   "portrait": "/modules/honkai-star-rail/assets/16c176d3622c5bb9.webp",
   "releaseOrder": 69,
-  "effects": []
+  "effects": [],
+  "nameEn": "Before Dawn"
  },
  {
   "id": "23002",
@@ -5071,7 +5102,8 @@
   "icon": "/modules/honkai-star-rail/assets/f12035039694fd71.webp",
   "portrait": "/modules/honkai-star-rail/assets/d62c1fb83e285fce.webp",
   "releaseOrder": 81,
-  "effects": []
+  "effects": [],
+  "nameEn": "Something Irreplaceable"
  },
  {
   "id": "23013",
@@ -5235,7 +5267,8 @@
   "icon": "/modules/honkai-star-rail/assets/9e6a4c8d02065f3e.webp",
   "portrait": "/modules/honkai-star-rail/assets/4f1c42e09ad85b8b.webp",
   "releaseOrder": 74,
-  "effects": []
+  "effects": [],
+  "nameEn": "Time Waits for No One"
  },
  {
   "id": "24001",
@@ -5379,7 +5412,8 @@
   "icon": "/modules/honkai-star-rail/assets/e31c8c80ae3dd7cb.webp",
   "portrait": "/modules/honkai-star-rail/assets/ca214c8b7d208112.webp",
   "releaseOrder": 87,
-  "effects": []
+  "effects": [],
+  "nameEn": "Cruising in the Stellar Sea"
  },
  {
   "id": "23061",
@@ -5523,7 +5557,8 @@
   "icon": "/modules/honkai-star-rail/assets/7a858c032cd0571e.webp",
   "portrait": "/modules/honkai-star-rail/assets/9656493a65b95cb4.webp",
   "releaseOrder": 9,
-  "effects": []
+  "effects": [],
+  "nameEn": "Flickering Stars"
  },
  {
   "id": "23025",
@@ -5728,7 +5763,8 @@
     "superimpose": 5,
     "text": "【溃败】状态下目标受到装备者造成的击破伤害提高40.0%，速度降低20%，同类效果无法叠加"
    }
-  ]
+  ],
+  "nameEn": "Whereabouts Should Dreams Rest"
  },
  {
   "id": "23008",
@@ -5933,7 +5969,8 @@
     "superimpose": 5,
     "text": "当装备者施放终结技后，使我方全体速度提高20点，持续1回合"
    }
-  ]
+  ],
+  "nameEn": "Echoes of the Coffin"
  },
  {
   "id": "24006",
@@ -6077,7 +6114,8 @@
   "icon": "/modules/honkai-star-rail/assets/54019ecc353c7443.webp",
   "portrait": "/modules/honkai-star-rail/assets/ac488d5b4ae50c9e.webp",
   "releaseOrder": 28,
-  "effects": []
+  "effects": [],
+  "nameEn": "Elation Brimming With Blessings"
  },
  {
   "id": "23057",
@@ -6282,7 +6320,8 @@
     "superimpose": 5,
     "text": "使装备者的速度提高30%，造成的欢愉伤害无视目标36%的防御力"
    }
-  ]
+  ],
+  "nameEn": "Welcome to the Cosmic City"
  },
  {
   "id": "23014",
@@ -6426,7 +6465,8 @@
   "icon": "/modules/honkai-star-rail/assets/e4cb6aa62122dc68.webp",
   "portrait": "/modules/honkai-star-rail/assets/d39c6c986a4dc458.webp",
   "releaseOrder": 44,
-  "effects": []
+  "effects": [],
+  "nameEn": "I Shall Be My Own Sword"
  },
  {
   "id": "23015",
@@ -6570,7 +6610,8 @@
   "icon": "/modules/honkai-star-rail/assets/62819cd5b31c9d46.webp",
   "portrait": "/modules/honkai-star-rail/assets/690fb2f1f2e85697.webp",
   "releaseOrder": 70,
-  "effects": []
+  "effects": [],
+  "nameEn": "Brighter Than the Sun"
  },
  {
   "id": "23045",
@@ -6714,7 +6755,8 @@
   "icon": "/modules/honkai-star-rail/assets/86d2f3f6cc90e301.webp",
   "portrait": "/modules/honkai-star-rail/assets/4f68b19c29ba55e0.webp",
   "releaseOrder": 43,
-  "effects": []
+  "effects": [],
+  "nameEn": "A Thankless Coronation"
  },
  {
   "id": "23047",
@@ -6919,7 +6961,8 @@
     "superimpose": 5,
     "text": "【魂迷】状态下，每有1个装备者施加的负面效果，受到的持续伤害提高10.0%，该效果最多叠加6层，受到我方目标攻击时，使攻击者速度提高20.0%，持续3回合"
    }
-  ]
+  ],
+  "nameEn": "Why Does the Ocean Sing"
  },
  {
   "id": "23021",
@@ -7063,7 +7106,8 @@
   "icon": "/modules/honkai-star-rail/assets/9c4d42cfe89240a9.webp",
   "portrait": "/modules/honkai-star-rail/assets/3514b2d3cd632b25.webp",
   "releaseOrder": 31,
-  "effects": []
+  "effects": [],
+  "nameEn": "Earthly Escapade"
  },
  {
   "id": "23059",
@@ -7207,7 +7251,8 @@
   "icon": "/modules/honkai-star-rail/assets/152da3c805d420bc.webp",
   "portrait": "/modules/honkai-star-rail/assets/cba1954903e14e14.webp",
   "releaseOrder": 3,
-  "effects": []
+  "effects": [],
+  "nameEn": "Reforged in Hellfire"
  },
  {
   "id": "23016",
@@ -7351,7 +7396,8 @@
   "icon": "/modules/honkai-star-rail/assets/fe4b5f34621d2350.webp",
   "portrait": "/modules/honkai-star-rail/assets/6156b43258ab99ed.webp",
   "releaseOrder": 73,
-  "effects": []
+  "effects": [],
+  "nameEn": "Worrisome, Blissful"
  },
  {
   "id": "23052",
@@ -7556,7 +7602,8 @@
     "superimpose": 5,
     "text": "使装备者的速度提高30%"
    }
-  ]
+  ],
+  "nameEn": "This Love, Forever"
  },
  {
   "id": "23018",
@@ -7700,7 +7747,8 @@
   "icon": "/modules/honkai-star-rail/assets/442d8a70f15879ba.webp",
   "portrait": "/modules/honkai-star-rail/assets/15f5c9eca97e6bc1.webp",
   "releaseOrder": 72,
-  "effects": []
+  "effects": [],
+  "nameEn": "An Instant Before A Gaze"
  },
  {
   "id": "23055",
@@ -7844,7 +7892,8 @@
   "icon": "/modules/honkai-star-rail/assets/455a86ba346153ae.webp",
   "portrait": "/modules/honkai-star-rail/assets/b7f1274bc0105ab9.webp",
   "releaseOrder": 2,
-  "effects": []
+  "effects": [],
+  "nameEn": "Colors for Tomorrow"
  },
  {
   "id": "23046",
@@ -7988,7 +8037,8 @@
   "icon": "/modules/honkai-star-rail/assets/e523fb1e3550dccb.webp",
   "portrait": "/modules/honkai-star-rail/assets/fb9e81a224bff7e6.webp",
   "releaseOrder": 40,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Hell Where Ideals Burn"
  },
  {
   "id": "23041",
@@ -8107,7 +8157,8 @@
   "icon": "/modules/honkai-star-rail/assets/e9d9ce2183865631.webp",
   "portrait": "/modules/honkai-star-rail/assets/2a4d51f2425c5ae9.webp",
   "releaseOrder": 13,
-  "effects": []
+  "effects": [],
+  "nameEn": "Life Should Be Cast to Flames"
  },
  {
   "id": "23020",
@@ -8251,7 +8302,8 @@
   "icon": "/modules/honkai-star-rail/assets/66495ee877f39f0a.webp",
   "portrait": "/modules/honkai-star-rail/assets/c92fb78ac3253984.webp",
   "releaseOrder": 61,
-  "effects": []
+  "effects": [],
+  "nameEn": "Baptism of Pure Thought"
  },
  {
   "id": "23051",
@@ -8395,7 +8447,8 @@
   "icon": "/modules/honkai-star-rail/assets/eca99de55b9a48c4.webp",
   "portrait": "/modules/honkai-star-rail/assets/730a14975be7b146.webp",
   "releaseOrder": 16,
-  "effects": []
+  "effects": [],
+  "nameEn": "Though Worlds Apart"
  },
  {
   "id": "23049",
@@ -8539,7 +8592,8 @@
   "icon": "/modules/honkai-star-rail/assets/80bd0a31b6e782f4.webp",
   "portrait": "/modules/honkai-star-rail/assets/976343eaaae8de5e.webp",
   "releaseOrder": 17,
-  "effects": []
+  "effects": [],
+  "nameEn": "To Evernight's Stars"
  },
  {
   "id": "23053",
@@ -8683,7 +8737,8 @@
   "icon": "/modules/honkai-star-rail/assets/93d96b7cd2a8b0ef.webp",
   "portrait": "/modules/honkai-star-rail/assets/e2d6d493121deffb.webp",
   "releaseOrder": 15,
-  "effects": []
+  "effects": [],
+  "nameEn": "Dazzled by a Flowery World"
  },
  {
   "id": "23030",
@@ -8827,7 +8882,8 @@
   "icon": "/modules/honkai-star-rail/assets/98ab8e18efb01703.webp",
   "portrait": "/modules/honkai-star-rail/assets/59c10057a2987b7e.webp",
   "releaseOrder": 66,
-  "effects": []
+  "effects": [],
+  "nameEn": "Dance at Sunset"
  },
  {
   "id": "23039",
@@ -8991,7 +9047,8 @@
   "icon": "/modules/honkai-star-rail/assets/66dafe745305368b.webp",
   "portrait": "/modules/honkai-star-rail/assets/e5b98c2b01de62ca.webp",
   "releaseOrder": 38,
-  "effects": []
+  "effects": [],
+  "nameEn": "Flame of Blood, Blaze My Path"
  },
  {
   "id": "23024",
@@ -9135,7 +9192,8 @@
   "icon": "/modules/honkai-star-rail/assets/e685af9f86c8f605.webp",
   "portrait": "/modules/honkai-star-rail/assets/e1bf2e5f545a602f.webp",
   "releaseOrder": 63,
-  "effects": []
+  "effects": [],
+  "nameEn": "Along the Passing Shore"
  },
  {
   "id": "23040",
@@ -9340,7 +9398,8 @@
     "superimpose": 5,
     "text": "当装备者的忆灵消失时，使装备者行动提前24%"
    }
-  ]
+  ],
+  "nameEn": "Make Farewells More Beautiful"
  },
  {
   "id": "24000",
@@ -9459,7 +9518,8 @@
   "icon": "/modules/honkai-star-rail/assets/9e41181db2b5acfe.webp",
   "portrait": "/modules/honkai-star-rail/assets/9d123c996e4c5b98.webp",
   "releaseOrder": 88,
-  "effects": []
+  "effects": [],
+  "nameEn": "On the Fall of an Aeon"
  },
  {
   "id": "24005",
@@ -9664,7 +9724,8 @@
     "superimpose": 5,
     "text": "使装备者的速度提高12.0%"
    }
-  ]
+  ],
+  "nameEn": "Memory's Curtain Never Falls"
  },
  {
   "id": "24002",
@@ -9808,7 +9869,8 @@
   "icon": "/modules/honkai-star-rail/assets/10f737492e836f74.webp",
   "portrait": "/modules/honkai-star-rail/assets/011a0c7d5e0ef76d.webp",
   "releaseOrder": 86,
-  "effects": []
+  "effects": [],
+  "nameEn": "Texture of Memories"
  },
  {
   "id": "23043",
@@ -10013,7 +10075,8 @@
     "superimpose": 5,
     "text": "使装备者的速度提高30%"
    }
-  ]
+  ],
+  "nameEn": "Lies Dance on the Breeze"
  },
  {
   "id": "23058",
@@ -10157,7 +10220,8 @@
   "icon": "/modules/honkai-star-rail/assets/6358d7812ab49346.webp",
   "portrait": "/modules/honkai-star-rail/assets/dde633cc5a204289.webp",
   "releaseOrder": 4,
-  "effects": []
+  "effects": [],
+  "nameEn": "Until the Flowers Bloom Again"
  },
  {
   "id": "23029",
@@ -10301,7 +10365,8 @@
   "icon": "/modules/honkai-star-rail/assets/d1bf2a5e8e8001ed.webp",
   "portrait": "/modules/honkai-star-rail/assets/829744943777017c.webp",
   "releaseOrder": 62,
-  "effects": []
+  "effects": [],
+  "nameEn": "Those Many Springs"
  },
  {
   "id": "23022",
@@ -10445,7 +10510,8 @@
   "icon": "/modules/honkai-star-rail/assets/1bc57541a1eaf2f1.webp",
   "portrait": "/modules/honkai-star-rail/assets/bbe879a81b1ff410.webp",
   "releaseOrder": 33,
-  "effects": []
+  "effects": [],
+  "nameEn": "Reforged Remembrance"
  },
  {
   "id": "23048",
@@ -10589,7 +10655,8 @@
   "icon": "/modules/honkai-star-rail/assets/373962d1a0dc43a9.webp",
   "portrait": "/modules/honkai-star-rail/assets/256f257b1bdf277b.webp",
   "releaseOrder": 12,
-  "effects": []
+  "effects": [],
+  "nameEn": "Epoch Etched in Golden Blood"
  },
  {
   "id": "23000",
@@ -10708,7 +10775,8 @@
   "icon": "/modules/honkai-star-rail/assets/6426de8cf51c0c64.webp",
   "portrait": "/modules/honkai-star-rail/assets/053b4384630d9c9f.webp",
   "releaseOrder": 83,
-  "effects": []
+  "effects": [],
+  "nameEn": "Night on the Milky Way"
  },
  {
   "id": "23019",
@@ -10852,7 +10920,8 @@
   "icon": "/modules/honkai-star-rail/assets/769c33ba6d695abf.webp",
   "portrait": "/modules/honkai-star-rail/assets/4fa50ffb8dc409ec.webp",
   "releaseOrder": 71,
-  "effects": []
+  "effects": [],
+  "nameEn": "Past Self in Mirror"
  },
  {
   "id": "23035",
@@ -10996,7 +11065,8 @@
   "icon": "/modules/honkai-star-rail/assets/fad8503b0b82e231.webp",
   "portrait": "/modules/honkai-star-rail/assets/5a7d924289164ecd.webp",
   "releaseOrder": 35,
-  "effects": []
+  "effects": [],
+  "nameEn": "Long Road Leads Home"
  },
  {
   "id": "23007",
@@ -11140,7 +11210,8 @@
   "icon": "/modules/honkai-star-rail/assets/f81b9bd2d4451ee6.webp",
   "portrait": "/modules/honkai-star-rail/assets/b01604350a7fb7ea.webp",
   "releaseOrder": 41,
-  "effects": []
+  "effects": [],
+  "nameEn": "Incessant Rain"
  },
  {
   "id": "23027",
@@ -11345,7 +11416,8 @@
     "superimpose": 5,
     "text": "当装备者在战斗中击破特攻大于等于150%时，速度提高20%"
    }
-  ]
+  ],
+  "nameEn": "Sailing Towards a Second Life"
  },
  {
   "id": "23044",
@@ -11489,7 +11561,8 @@
   "icon": "/modules/honkai-star-rail/assets/21987a9c5fae903c.webp",
   "portrait": "/modules/honkai-star-rail/assets/949631578256a208.webp",
   "releaseOrder": 19,
-  "effects": []
+  "effects": [],
+  "nameEn": "Thus Burns the Dawn"
  },
  {
   "id": "21006",
@@ -11608,7 +11681,8 @@
   "icon": "/modules/honkai-star-rail/assets/fed918ed80fc25a3.webp",
   "portrait": "/modules/honkai-star-rail/assets/45876ff2734d2294.webp",
   "releaseOrder": 137,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Birth of the Self"
  },
  {
   "id": "21000",
@@ -11752,7 +11826,8 @@
   "icon": "/modules/honkai-star-rail/assets/de67141be16df883.webp",
   "portrait": "/modules/honkai-star-rail/assets/306f1685c02289df.webp",
   "releaseOrder": 143,
-  "effects": []
+  "effects": [],
+  "nameEn": "Post-Op Conversation"
  },
  {
   "id": "21058",
@@ -11896,7 +11971,8 @@
   "icon": "/modules/honkai-star-rail/assets/258eb13eb24f2bff.webp",
   "portrait": "/modules/honkai-star-rail/assets/5ae35137f824be66.webp",
   "releaseOrder": 59,
-  "effects": []
+  "effects": [],
+  "nameEn": "A Trail of Bygone Blood"
  },
  {
   "id": "21011",
@@ -12015,7 +12091,8 @@
   "icon": "/modules/honkai-star-rail/assets/2fe4ab4f710e9582.webp",
   "portrait": "/modules/honkai-star-rail/assets/f52fa1329cf34373.webp",
   "releaseOrder": 132,
-  "effects": []
+  "effects": [],
+  "nameEn": "Planetary Rendezvous"
  },
  {
   "id": "21043",
@@ -12159,7 +12236,8 @@
   "icon": "/modules/honkai-star-rail/assets/1f211c0da9f854f2.webp",
   "portrait": "/modules/honkai-star-rail/assets/18bdb30fc28cfb36.webp",
   "releaseOrder": 100,
-  "effects": []
+  "effects": [],
+  "nameEn": "Concert for Two"
  },
  {
   "id": "22002",
@@ -12303,7 +12381,8 @@
   "icon": "/modules/honkai-star-rail/assets/322b43055c750444.webp",
   "portrait": "/modules/honkai-star-rail/assets/bff5c00bcc21d89a.webp",
   "releaseOrder": 144,
-  "effects": []
+  "effects": [],
+  "nameEn": "For Tomorrow's Journey"
  },
  {
   "id": "21062",
@@ -12447,7 +12526,8 @@
   "icon": "/modules/honkai-star-rail/assets/4786ad844d38323e.webp",
   "portrait": "/modules/honkai-star-rail/assets/a7deb400d761d028.webp",
   "releaseOrder": 56,
-  "effects": []
+  "effects": [],
+  "nameEn": "See You at the End"
  },
  {
   "id": "21034",
@@ -12566,7 +12646,8 @@
   "icon": "/modules/honkai-star-rail/assets/df15ee18b41cbf07.webp",
   "portrait": "/modules/honkai-star-rail/assets/4e7d2fb2e80d4772.webp",
   "releaseOrder": 109,
-  "effects": []
+  "effects": [],
+  "nameEn": "Today Is Another Peaceful Day"
  },
  {
   "id": "21065",
@@ -12710,7 +12791,8 @@
   "icon": "/modules/honkai-star-rail/assets/3d8340263a6203c1.webp",
   "portrait": "/modules/honkai-star-rail/assets/1c807d448ca68a63.webp",
   "releaseOrder": 49,
-  "effects": []
+  "effects": [],
+  "nameEn": "Today's Good Luck"
  },
  {
   "id": "21035",
@@ -12854,7 +12936,8 @@
   "icon": "/modules/honkai-star-rail/assets/417e44cf0a2b28e3.webp",
   "portrait": "/modules/honkai-star-rail/assets/a75ccd599ca01b6a.webp",
   "releaseOrder": 108,
-  "effects": []
+  "effects": [],
+  "nameEn": "What Is Real?"
  },
  {
   "id": "21002",
@@ -12998,7 +13081,8 @@
   "icon": "/modules/honkai-star-rail/assets/cd7f837c28b59526.webp",
   "portrait": "/modules/honkai-star-rail/assets/3688b5a39c3ccfa7.webp",
   "releaseOrder": 141,
-  "effects": []
+  "effects": [],
+  "nameEn": "Day One of My New Life"
  },
  {
   "id": "21061",
@@ -13142,7 +13226,8 @@
   "icon": "/modules/honkai-star-rail/assets/4354dffdbfd0df83.webp",
   "portrait": "/modules/honkai-star-rail/assets/520b68fbce5d10d5.webp",
   "releaseOrder": 54,
-  "effects": []
+  "effects": [],
+  "nameEn": "Holiday Thermae Escapade"
  },
  {
   "id": "21015",
@@ -13261,7 +13346,8 @@
   "icon": "/modules/honkai-star-rail/assets/fbb435281f4593d8.webp",
   "portrait": "/modules/honkai-star-rail/assets/64e2c3113e101e3c.webp",
   "releaseOrder": 128,
-  "effects": []
+  "effects": [],
+  "nameEn": "Resolution Shines As Pearls of Sweat"
  },
  {
   "id": "21013",
@@ -13380,7 +13466,8 @@
   "icon": "/modules/honkai-star-rail/assets/a66ab68e140bd3e1.webp",
   "portrait": "/modules/honkai-star-rail/assets/2b2e1fcd8f3167f1.webp",
   "releaseOrder": 130,
-  "effects": []
+  "effects": [],
+  "nameEn": "Make the World Clamor"
  },
  {
   "id": "21007",
@@ -13524,7 +13611,8 @@
   "icon": "/modules/honkai-star-rail/assets/3a4c7fe15ab1f2b9.webp",
   "portrait": "/modules/honkai-star-rail/assets/df14dcf59ffcfd9a.webp",
   "releaseOrder": 136,
-  "effects": []
+  "effects": [],
+  "nameEn": "Shared Feeling"
  },
  {
   "id": "21029",
@@ -13643,7 +13731,8 @@
   "icon": "/modules/honkai-star-rail/assets/8c9926a128e627d9.webp",
   "portrait": "/modules/honkai-star-rail/assets/c50d7068f78cb650.webp",
   "releaseOrder": 114,
-  "effects": []
+  "effects": [],
+  "nameEn": "We Will Meet Again"
  },
  {
   "id": "22008",
@@ -13787,7 +13876,8 @@
   "icon": "/modules/honkai-star-rail/assets/343f86eeb6a94a43.webp",
   "portrait": "/modules/honkai-star-rail/assets/1426ac7fa30d8b71.webp",
   "releaseOrder": 46,
-  "effects": []
+  "effects": [],
+  "nameEn": "Race to the Horizon"
  },
  {
   "id": "21003",
@@ -13931,7 +14021,8 @@
   "icon": "/modules/honkai-star-rail/assets/d3cf016b15b52474.webp",
   "portrait": "/modules/honkai-star-rail/assets/9641653e3b11f4ec.webp",
   "releaseOrder": 140,
-  "effects": []
+  "effects": [],
+  "nameEn": "Only Silence Remains"
  },
  {
   "id": "22001",
@@ -14075,7 +14166,8 @@
   "icon": "/modules/honkai-star-rail/assets/410251a9dfd147f3.webp",
   "portrait": "/modules/honkai-star-rail/assets/235fe2a0c42fdba3.webp",
   "releaseOrder": 145,
-  "effects": []
+  "effects": [],
+  "nameEn": "Hey, Over Here"
  },
  {
   "id": "22009",
@@ -14193,7 +14285,8 @@
   "contentId": null,
   "icon": "/modules/honkai-star-rail/assets/dc487838f0ebe483.webp",
   "releaseOrder": 0,
-  "effects": []
+  "effects": [],
+  "nameEn": "See You at the World's End!"
  },
  {
   "id": "21038",
@@ -14312,7 +14405,8 @@
   "icon": "/modules/honkai-star-rail/assets/9fade29b6f4fdc20.webp",
   "portrait": "/modules/honkai-star-rail/assets/bcdc69f6d3ba2822.webp",
   "releaseOrder": 105,
-  "effects": []
+  "effects": [],
+  "nameEn": "Flames Afar"
  },
  {
   "id": "21019",
@@ -14456,7 +14550,8 @@
   "icon": "/modules/honkai-star-rail/assets/5333e38b8b66287f.webp",
   "portrait": "/modules/honkai-star-rail/assets/d5d605b5012c2a15.webp",
   "releaseOrder": 124,
-  "effects": []
+  "effects": [],
+  "nameEn": "Under the Blue Sky"
  },
  {
   "id": "21052",
@@ -14600,7 +14695,8 @@
   "icon": "/modules/honkai-star-rail/assets/f1abe9be9d24e028.webp",
   "portrait": "/modules/honkai-star-rail/assets/c4be448bcb9ab539.webp",
   "releaseOrder": 91,
-  "effects": []
+  "effects": [],
+  "nameEn": "Sweat Now, Cry Less"
  },
  {
   "id": "21020",
@@ -14744,7 +14840,8 @@
   "icon": "/modules/honkai-star-rail/assets/1f49486339bd1db0.webp",
   "portrait": "/modules/honkai-star-rail/assets/9f1e6b9a2f1fff7e.webp",
   "releaseOrder": 123,
-  "effects": []
+  "effects": [],
+  "nameEn": "Geniuses' Repose"
  },
  {
   "id": "21051",
@@ -14888,7 +14985,8 @@
   "icon": "/modules/honkai-star-rail/assets/af9fd0e938fe41ef.webp",
   "portrait": "/modules/honkai-star-rail/assets/570eaf7fd7087e03.webp",
   "releaseOrder": 90,
-  "effects": []
+  "effects": [],
+  "nameEn": "Geniuses' Greetings"
  },
  {
   "id": "21041",
@@ -15007,7 +15105,8 @@
   "icon": "/modules/honkai-star-rail/assets/99a4a3699434076b.webp",
   "portrait": "/modules/honkai-star-rail/assets/46f6f0d7698bb996.webp",
   "releaseOrder": 102,
-  "effects": []
+  "effects": [],
+  "nameEn": "It's Showtime"
  },
  {
   "id": "22004",
@@ -15151,7 +15250,8 @@
   "icon": "/modules/honkai-star-rail/assets/3fe7613231ee559a.webp",
   "portrait": "/modules/honkai-star-rail/assets/f4e3e44bc2fa6845.webp",
   "releaseOrder": 89,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Great Cosmic Enterprise"
  },
  {
   "id": "21016",
@@ -15295,7 +15395,8 @@
   "icon": "/modules/honkai-star-rail/assets/06f47a06d242e0ee.webp",
   "portrait": "/modules/honkai-star-rail/assets/c0c64532b24cef1e.webp",
   "releaseOrder": 127,
-  "effects": []
+  "effects": [],
+  "nameEn": "Trend of the Universal Market"
  },
  {
   "id": "21022",
@@ -15439,7 +15540,8 @@
   "icon": "/modules/honkai-star-rail/assets/241fb0c7602e2aef.webp",
   "portrait": "/modules/honkai-star-rail/assets/69c496ff14c26dea.webp",
   "releaseOrder": 121,
-  "effects": []
+  "effects": [],
+  "nameEn": "Fermata"
  },
  {
   "id": "22003",
@@ -15583,7 +15685,8 @@
   "icon": "/modules/honkai-star-rail/assets/5f9766a204f01262.webp",
   "portrait": "/modules/honkai-star-rail/assets/64e39f3e6f8f2a37.webp",
   "releaseOrder": 94,
-  "effects": []
+  "effects": [],
+  "nameEn": "Ninja Record: Sound Hunt"
  },
  {
   "id": "21053",
@@ -15702,7 +15805,8 @@
   "icon": "/modules/honkai-star-rail/assets/a14ade67df0a9514.webp",
   "portrait": "/modules/honkai-star-rail/assets/0fe067c74db0758e.webp",
   "releaseOrder": 55,
-  "effects": []
+  "effects": [],
+  "nameEn": "Journey, Forever Peaceful"
  },
  {
   "id": "21023",
@@ -15821,7 +15925,8 @@
   "icon": "/modules/honkai-star-rail/assets/cf915e361cd8b14b.webp",
   "portrait": "/modules/honkai-star-rail/assets/00ca9d13daa05b0a.webp",
   "releaseOrder": 120,
-  "effects": []
+  "effects": [],
+  "nameEn": "We Are Wildfire"
  },
  {
   "id": "21066",
@@ -15965,7 +16070,8 @@
   "icon": "/modules/honkai-star-rail/assets/059750c2ab9e5317.webp",
   "portrait": "/modules/honkai-star-rail/assets/2d18ac4870694ff6.webp",
   "releaseOrder": 47,
-  "effects": []
+  "effects": [],
+  "nameEn": "A Little Getaway"
  },
  {
   "id": "21054",
@@ -16109,7 +16215,8 @@
   "icon": "/modules/honkai-star-rail/assets/327639b907e62821.webp",
   "portrait": "/modules/honkai-star-rail/assets/0cf89e9607c9ffde.webp",
   "releaseOrder": 60,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Story's Next Page"
  },
  {
   "id": "22000",
@@ -16253,7 +16360,8 @@
   "icon": "/modules/honkai-star-rail/assets/366f98629f50419a.webp",
   "portrait": "/modules/honkai-star-rail/assets/542b0480b9f3c189.webp",
   "releaseOrder": 146,
-  "effects": []
+  "effects": [],
+  "nameEn": "Before the Tutorial Mission Starts"
  },
  {
   "id": "21033",
@@ -16397,7 +16505,8 @@
   "icon": "/modules/honkai-star-rail/assets/ee97a1fa786e10f1.webp",
   "portrait": "/modules/honkai-star-rail/assets/7cd5a137cf8c5554.webp",
   "releaseOrder": 110,
-  "effects": []
+  "effects": [],
+  "nameEn": "Nowhere to Run"
  },
  {
   "id": "21044",
@@ -16541,7 +16650,8 @@
   "icon": "/modules/honkai-star-rail/assets/99ea236f529b7382.webp",
   "portrait": "/modules/honkai-star-rail/assets/6f4b64f38c07500c.webp",
   "releaseOrder": 99,
-  "effects": []
+  "effects": [],
+  "nameEn": "Boundless Choreo"
  },
  {
   "id": "21027",
@@ -16685,7 +16795,8 @@
   "icon": "/modules/honkai-star-rail/assets/67b7784568f8485d.webp",
   "portrait": "/modules/honkai-star-rail/assets/e74734aa4c14345c.webp",
   "releaseOrder": 116,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Seriousness of Breakfast"
  },
  {
   "id": "21024",
@@ -16865,7 +16976,8 @@
     "superimpose": 5,
     "text": "进入战斗后，使装备者速度提高12%，造成的伤害提高24%"
    }
-  ]
+  ],
+  "nameEn": "River Flows in Spring"
  },
  {
   "id": "21001",
@@ -16984,7 +17096,8 @@
   "icon": "/modules/honkai-star-rail/assets/58c11e8b9862888b.webp",
   "portrait": "/modules/honkai-star-rail/assets/cb73c901075e3a8f.webp",
   "releaseOrder": 142,
-  "effects": []
+  "effects": [],
+  "nameEn": "Good Night and Sleep Well"
  },
  {
   "id": "21028",
@@ -17128,7 +17241,8 @@
   "icon": "/modules/honkai-star-rail/assets/5899e2c973145f49.webp",
   "portrait": "/modules/honkai-star-rail/assets/889dd432681d6078.webp",
   "releaseOrder": 115,
-  "effects": []
+  "effects": [],
+  "nameEn": "Warmth Shortens Cold Nights"
  },
  {
   "id": "21037",
@@ -17272,7 +17386,8 @@
   "icon": "/modules/honkai-star-rail/assets/376c53388d531bde.webp",
   "portrait": "/modules/honkai-star-rail/assets/cd0ce8306cf65207.webp",
   "releaseOrder": 106,
-  "effects": []
+  "effects": [],
+  "nameEn": "Final Victor"
  },
  {
   "id": "21009",
@@ -17391,7 +17506,8 @@
   "icon": "/modules/honkai-star-rail/assets/a38490ee6e96149a.webp",
   "portrait": "/modules/honkai-star-rail/assets/1c2fc285ce272663.webp",
   "releaseOrder": 134,
-  "effects": []
+  "effects": [],
+  "nameEn": "Landau's Choice"
  },
  {
   "id": "22007",
@@ -17535,7 +17651,8 @@
   "icon": "/modules/honkai-star-rail/assets/a3e06fd1a9b939ef.webp",
   "portrait": "/modules/honkai-star-rail/assets/7eb760c767c45019.webp",
   "releaseOrder": 96,
-  "effects": []
+  "effects": [],
+  "nameEn": "Tomorrow, Together"
  },
  {
   "id": "21048",
@@ -17740,7 +17857,8 @@
     "superimpose": 5,
     "text": "使装备者的速度提高12%，攻击处于弱点击破状态下的敌方目标后，恢复5.0点能量，该效果每回合最多触发2次"
    }
-  ]
+  ],
+  "nameEn": "Dream's Montage"
  },
  {
   "id": "21014",
@@ -17884,7 +18002,8 @@
   "icon": "/modules/honkai-star-rail/assets/a00f789351958dd5.webp",
   "portrait": "/modules/honkai-star-rail/assets/25f5dfb4ee8f88d5.webp",
   "releaseOrder": 129,
-  "effects": []
+  "effects": [],
+  "nameEn": "Perfect Timing"
  },
  {
   "id": "21060",
@@ -18028,7 +18147,8 @@
   "icon": "/modules/honkai-star-rail/assets/d7102feb84dcfed1.webp",
   "portrait": "/modules/honkai-star-rail/assets/f31e906510b3bcdd.webp",
   "releaseOrder": 58,
-  "effects": []
+  "effects": [],
+  "nameEn": "A Dream Scented in Wheat"
  },
  {
   "id": "22005",
@@ -18172,7 +18292,8 @@
   "icon": "/modules/honkai-star-rail/assets/67f2cc92a3ba2d95.webp",
   "portrait": "/modules/honkai-star-rail/assets/99e752ea4d3f1d37.webp",
   "releaseOrder": 52,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Forever Victual"
  },
  {
   "id": "21026",
@@ -18316,7 +18437,8 @@
   "icon": "/modules/honkai-star-rail/assets/af0dde51deb25c9c.webp",
   "portrait": "/modules/honkai-star-rail/assets/dec4d5e73b77195b.webp",
   "releaseOrder": 117,
-  "effects": []
+  "effects": [],
+  "nameEn": "Woof! Walk Time!"
  },
  {
   "id": "21017",
@@ -18435,7 +18557,8 @@
   "icon": "/modules/honkai-star-rail/assets/23d30583cb5364fd.webp",
   "portrait": "/modules/honkai-star-rail/assets/7e084dd0c0c0fdb8.webp",
   "releaseOrder": 126,
-  "effects": []
+  "effects": [],
+  "nameEn": "Subscribe for More!"
  },
  {
   "id": "21008",
@@ -18579,7 +18702,8 @@
   "icon": "/modules/honkai-star-rail/assets/02206a2f8efdae6a.webp",
   "portrait": "/modules/honkai-star-rail/assets/9b0ea7f813a0b1ea.webp",
   "releaseOrder": 135,
-  "effects": []
+  "effects": [],
+  "nameEn": "Eyes of the Prey"
  },
  {
   "id": "21055",
@@ -18723,7 +18847,8 @@
   "icon": "/modules/honkai-star-rail/assets/c5b8179a57ead6b1.webp",
   "portrait": "/modules/honkai-star-rail/assets/9b05821d92afc9da.webp",
   "releaseOrder": 53,
-  "effects": []
+  "effects": [],
+  "nameEn": "Unto Tomorrow's Morrow"
  },
  {
   "id": "21012",
@@ -18867,7 +18992,8 @@
   "icon": "/modules/honkai-star-rail/assets/bb1117908d013ba6.webp",
   "portrait": "/modules/honkai-star-rail/assets/9a34f657f02dcac4.webp",
   "releaseOrder": 131,
-  "effects": []
+  "effects": [],
+  "nameEn": "A Secret Vow"
  },
  {
   "id": "21021",
@@ -18986,7 +19112,8 @@
   "icon": "/modules/honkai-star-rail/assets/d87dc91c87f4d3a4.webp",
   "portrait": "/modules/honkai-star-rail/assets/9699bb1874f7520f.webp",
   "releaseOrder": 122,
-  "effects": []
+  "effects": [],
+  "nameEn": "Quid Pro Quo"
  },
  {
   "id": "21039",
@@ -19130,7 +19257,8 @@
   "icon": "/modules/honkai-star-rail/assets/0601667db74876bb.webp",
   "portrait": "/modules/honkai-star-rail/assets/50d0b06195673fa5.webp",
   "releaseOrder": 104,
-  "effects": []
+  "effects": [],
+  "nameEn": "Destiny's Threads Forewoven"
  },
  {
   "id": "21036",
@@ -19249,7 +19377,8 @@
   "icon": "/modules/honkai-star-rail/assets/19edf0a54b8ec621.webp",
   "portrait": "/modules/honkai-star-rail/assets/0618901fcb3dddf9.webp",
   "releaseOrder": 107,
-  "effects": []
+  "effects": [],
+  "nameEn": "Dreamville Adventure"
  },
  {
   "id": "21050",
@@ -19393,7 +19522,8 @@
   "icon": "/modules/honkai-star-rail/assets/32124f8c2357ec4f.webp",
   "portrait": "/modules/honkai-star-rail/assets/e6519ebad6842c99.webp",
   "releaseOrder": 92,
-  "effects": []
+  "effects": [],
+  "nameEn": "Victory In a Blink"
  },
  {
   "id": "21018",
@@ -19573,7 +19703,8 @@
     "superimpose": 5,
     "text": "当装备者施放终结技后，我方全体行动提前24%"
    }
-  ]
+  ],
+  "nameEn": "Dance! Dance! Dance!"
  },
  {
   "id": "21057",
@@ -19717,7 +19848,8 @@
   "icon": "/modules/honkai-star-rail/assets/271148d60e00ad6c.webp",
   "portrait": "/modules/honkai-star-rail/assets/8b8916c5f116b5d0.webp",
   "releaseOrder": 51,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Flower Remembers"
  },
  {
   "id": "21046",
@@ -19861,7 +19993,8 @@
   "icon": "/modules/honkai-star-rail/assets/37d89bd8af4ed445.webp",
   "portrait": "/modules/honkai-star-rail/assets/8643c4095b3fd4bb.webp",
   "releaseOrder": 97,
-  "effects": []
+  "effects": [],
+  "nameEn": "Poised to Bloom"
  },
  {
   "id": "21064",
@@ -20005,7 +20138,8 @@
   "icon": "/modules/honkai-star-rail/assets/7777f350f5b6e92b.webp",
   "portrait": "/modules/honkai-star-rail/assets/69e78414e91fb8ae.webp",
   "releaseOrder": 48,
-  "effects": []
+  "effects": [],
+  "nameEn": "Mushy Shroomy's Adventures"
  },
  {
   "id": "21004",
@@ -20149,7 +20283,8 @@
   "icon": "/modules/honkai-star-rail/assets/b2bd6caf0cecbfc1.webp",
   "portrait": "/modules/honkai-star-rail/assets/0f8d1bf66cf8d19c.webp",
   "releaseOrder": 139,
-  "effects": []
+  "effects": [],
+  "nameEn": "Memories of the Past"
  },
  {
   "id": "21010",
@@ -20268,7 +20403,8 @@
   "icon": "/modules/honkai-star-rail/assets/88460a1d51a3d8a8.webp",
   "portrait": "/modules/honkai-star-rail/assets/9825dd407aa33e77.webp",
   "releaseOrder": 133,
-  "effects": []
+  "effects": [],
+  "nameEn": "Swordplay"
  },
  {
   "id": "21045",
@@ -20473,7 +20609,8 @@
     "superimpose": 5,
     "text": "装备者施放终结技后，速度提高16%，持续2回合"
    }
-  ]
+  ],
+  "nameEn": "After the Charmony Fall"
  },
  {
   "id": "21025",
@@ -20592,7 +20729,8 @@
   "icon": "/modules/honkai-star-rail/assets/9e6705820f3af7e3.webp",
   "portrait": "/modules/honkai-star-rail/assets/b6b38274205be7f8.webp",
   "releaseOrder": 118,
-  "effects": []
+  "effects": [],
+  "nameEn": "Past and Future"
  },
  {
   "id": "21030",
@@ -20736,7 +20874,8 @@
   "icon": "/modules/honkai-star-rail/assets/7d42747a7af9d459.webp",
   "portrait": "/modules/honkai-star-rail/assets/41105f8881b74791.webp",
   "releaseOrder": 113,
-  "effects": []
+  "effects": [],
+  "nameEn": "This Is Me!"
  },
  {
   "id": "21056",
@@ -20855,7 +20994,8 @@
   "icon": "/modules/honkai-star-rail/assets/e5b2dace1473bfa7.webp",
   "portrait": "/modules/honkai-star-rail/assets/52a81538c632f259.webp",
   "releaseOrder": 57,
-  "effects": []
+  "effects": [],
+  "nameEn": "In Pursuit of the Wind"
  },
  {
   "id": "21031",
@@ -20999,7 +21139,8 @@
   "icon": "/modules/honkai-star-rail/assets/d3d9697e683918aa.webp",
   "portrait": "/modules/honkai-star-rail/assets/fc780bca5d8bcca5.webp",
   "releaseOrder": 112,
-  "effects": []
+  "effects": [],
+  "nameEn": "Return to Darkness"
  },
  {
   "id": "21042",
@@ -21143,7 +21284,8 @@
   "icon": "/modules/honkai-star-rail/assets/cf7dd843a8bc17e6.webp",
   "portrait": "/modules/honkai-star-rail/assets/833fbf8e3d49bc54.webp",
   "releaseOrder": 101,
-  "effects": []
+  "effects": [],
+  "nameEn": "Indelible Promise"
  },
  {
   "id": "21040",
@@ -21287,7 +21429,8 @@
   "icon": "/modules/honkai-star-rail/assets/dfc2a381ecce5a8a.webp",
   "portrait": "/modules/honkai-star-rail/assets/1dc15d6dd1a13b52.webp",
   "releaseOrder": 103,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Day The Cosmos Fell"
  },
  {
   "id": "21032",
@@ -21406,7 +21549,8 @@
   "icon": "/modules/honkai-star-rail/assets/f56373e89aba2963.webp",
   "portrait": "/modules/honkai-star-rail/assets/98c2d0279ecfd48f.webp",
   "releaseOrder": 111,
-  "effects": []
+  "effects": [],
+  "nameEn": "Carve the Moon, Weave the Clouds"
  },
  {
   "id": "22006",
@@ -21550,7 +21694,8 @@
   "icon": "/modules/honkai-star-rail/assets/18656504d2c49744.webp",
   "portrait": "/modules/honkai-star-rail/assets/1dd8841baf802200.webp",
   "releaseOrder": 50,
-  "effects": []
+  "effects": [],
+  "nameEn": "Fly Into a Pink Tomorrow"
  },
  {
   "id": "21047",
@@ -21755,7 +21900,8 @@
     "superimpose": 5,
     "text": "进入战斗时或造成击破伤害后，速度提高12%，持续2回合，该效果每回合只可触发1次"
    }
-  ]
+  ],
+  "nameEn": "Shadowed by Night"
  },
  {
   "id": "21005",
@@ -21874,7 +22020,8 @@
   "icon": "/modules/honkai-star-rail/assets/3b786a17571ffe1d.webp",
   "portrait": "/modules/honkai-star-rail/assets/029fa136c172dc5c.webp",
   "releaseOrder": 138,
-  "effects": []
+  "effects": [],
+  "nameEn": "The Moles Welcome You"
  },
  {
   "id": "20009",
@@ -21993,7 +22140,8 @@
   "icon": "/modules/honkai-star-rail/assets/e41037e34ebd5f1e.webp",
   "portrait": "/modules/honkai-star-rail/assets/f0278f1f728e979a.webp",
   "releaseOrder": 162,
-  "effects": []
+  "effects": [],
+  "nameEn": "Shattered Home"
  },
  {
   "id": "20016",
@@ -22112,7 +22260,8 @@
   "icon": "/modules/honkai-star-rail/assets/7badaaf3f68640dd.webp",
   "portrait": "/modules/honkai-star-rail/assets/19cc163517ebf37c.webp",
   "releaseOrder": 155,
-  "effects": []
+  "effects": [],
+  "nameEn": "Mutual Demise"
  },
  {
   "id": "20018",
@@ -22231,7 +22380,8 @@
   "icon": "/modules/honkai-star-rail/assets/25b77a3fb2a67e25.webp",
   "portrait": "/modules/honkai-star-rail/assets/2e5df8598265ad30.webp",
   "releaseOrder": 153,
-  "effects": []
+  "effects": [],
+  "nameEn": "Hidden Shadow"
  },
  {
   "id": "20023",
@@ -22350,7 +22500,8 @@
   "icon": "/modules/honkai-star-rail/assets/bad787bd05cfc851.webp",
   "portrait": "/modules/honkai-star-rail/assets/91e38e9532315587.webp",
   "releaseOrder": 147,
-  "effects": []
+  "effects": [],
+  "nameEn": "Sneering"
  },
  {
   "id": "20008",
@@ -22469,7 +22620,8 @@
   "icon": "/modules/honkai-star-rail/assets/e9eaf651248c5028.webp",
   "portrait": "/modules/honkai-star-rail/assets/dcd7ca6eb81a688e.webp",
   "releaseOrder": 163,
-  "effects": []
+  "effects": [],
+  "nameEn": "Fine Fruit"
  },
  {
   "id": "20002",
@@ -22588,7 +22740,8 @@
   "icon": "/modules/honkai-star-rail/assets/b1e77553cd38cabd.webp",
   "portrait": "/modules/honkai-star-rail/assets/81788fe836c906b9.webp",
   "releaseOrder": 169,
-  "effects": []
+  "effects": [],
+  "nameEn": "Collapsing Sky"
  },
  {
   "id": "20004",
@@ -22707,7 +22860,8 @@
   "icon": "/modules/honkai-star-rail/assets/2d93610a9b03d86e.webp",
   "portrait": "/modules/honkai-star-rail/assets/8247aa4ba5b14969.webp",
   "releaseOrder": 167,
-  "effects": []
+  "effects": [],
+  "nameEn": "Void"
  },
  {
   "id": "20017",
@@ -22826,7 +22980,8 @@
   "icon": "/modules/honkai-star-rail/assets/eaeb14d2c244a641.webp",
   "portrait": "/modules/honkai-star-rail/assets/19102b8540cd8a9a.webp",
   "releaseOrder": 154,
-  "effects": []
+  "effects": [],
+  "nameEn": "Pioneering"
  },
  {
   "id": "20010",
@@ -22945,7 +23100,8 @@
   "icon": "/modules/honkai-star-rail/assets/c8fb28c91394bfec.webp",
   "portrait": "/modules/honkai-star-rail/assets/36baced6820713cf.webp",
   "releaseOrder": 161,
-  "effects": []
+  "effects": [],
+  "nameEn": "Defense"
  },
  {
   "id": "20006",
@@ -23064,7 +23220,8 @@
   "icon": "/modules/honkai-star-rail/assets/49f8d19e8f1cae43.webp",
   "portrait": "/modules/honkai-star-rail/assets/7b4aec0856bf7e0c.webp",
   "releaseOrder": 165,
-  "effects": []
+  "effects": [],
+  "nameEn": "Data Bank"
  },
  {
   "id": "20024",
@@ -23183,7 +23340,8 @@
   "icon": "/modules/honkai-star-rail/assets/68834f8a89f04f91.webp",
   "portrait": "/modules/honkai-star-rail/assets/b74e7f47cce9f54d.webp",
   "releaseOrder": 148,
-  "effects": []
+  "effects": [],
+  "nameEn": "Lingering Tear"
  },
  {
   "id": "20011",
@@ -23302,7 +23460,8 @@
   "icon": "/modules/honkai-star-rail/assets/25d4385eadb80018.webp",
   "portrait": "/modules/honkai-star-rail/assets/62e38a60f2b35d70.webp",
   "releaseOrder": 160,
-  "effects": []
+  "effects": [],
+  "nameEn": "Loop"
  },
  {
   "id": "20022",
@@ -23421,7 +23580,8 @@
   "icon": "/modules/honkai-star-rail/assets/77232b83b9fd51f1.webp",
   "portrait": "/modules/honkai-star-rail/assets/7e7b4522428ad0d2.webp",
   "releaseOrder": 150,
-  "effects": []
+  "effects": [],
+  "nameEn": "Reminiscence"
  },
  {
   "id": "20013",
@@ -23540,7 +23700,8 @@
   "icon": "/modules/honkai-star-rail/assets/4336cae821f754a9.webp",
   "portrait": "/modules/honkai-star-rail/assets/dce87b9774429a45.webp",
   "releaseOrder": 158,
-  "effects": []
+  "effects": [],
+  "nameEn": "Passkey"
  },
  {
   "id": "20021",
@@ -23659,7 +23820,8 @@
   "icon": "/modules/honkai-star-rail/assets/1867437b6360212d.webp",
   "portrait": "/modules/honkai-star-rail/assets/45ce2864945a4a6a.webp",
   "releaseOrder": 149,
-  "effects": []
+  "effects": [],
+  "nameEn": "Shadowburn"
  },
  {
   "id": "20001",
@@ -23778,7 +23940,8 @@
   "icon": "/modules/honkai-star-rail/assets/744605a4e611f226.webp",
   "portrait": "/modules/honkai-star-rail/assets/b65c4d69e065bcc6.webp",
   "releaseOrder": 170,
-  "effects": []
+  "effects": [],
+  "nameEn": "Cornucopia"
  },
  {
   "id": "20003",
@@ -23922,7 +24085,8 @@
   "icon": "/modules/honkai-star-rail/assets/bbf11c3ad1b6e3f8.webp",
   "portrait": "/modules/honkai-star-rail/assets/c529d636a1815a9c.webp",
   "releaseOrder": 168,
-  "effects": []
+  "effects": [],
+  "nameEn": "Amber"
  },
  {
   "id": "20014",
@@ -24102,7 +24266,8 @@
     "superimpose": 5,
     "text": "使装备者在消灭敌方目标后，速度提高18%，持续2回合"
    }
-  ]
+  ],
+  "nameEn": "Adversarial"
  },
  {
   "id": "20020",
@@ -24221,7 +24386,8 @@
   "icon": "/modules/honkai-star-rail/assets/33e6f35749a26dc7.webp",
   "portrait": "/modules/honkai-star-rail/assets/eaa06801143f6286.webp",
   "releaseOrder": 151,
-  "effects": []
+  "effects": [],
+  "nameEn": "Sagacity"
  },
  {
   "id": "20007",
@@ -24340,7 +24506,8 @@
   "icon": "/modules/honkai-star-rail/assets/671e0894c3adc7a7.webp",
   "portrait": "/modules/honkai-star-rail/assets/7263283cd9e5b425.webp",
   "releaseOrder": 164,
-  "effects": []
+  "effects": [],
+  "nameEn": "Darting Arrow"
  },
  {
   "id": "20015",
@@ -24520,7 +24687,8 @@
     "superimpose": 5,
     "text": "当装备者施放普攻后，使下一次行动提前20%"
    }
-  ]
+  ],
+  "nameEn": "Multiplication"
  },
  {
   "id": "20019",
@@ -24700,7 +24868,8 @@
     "superimpose": 5,
     "text": "进入战斗时，我方全体速度提高20点，持续1回合"
    }
-  ]
+  ],
+  "nameEn": "Mediation"
  },
  {
   "id": "20012",
@@ -24819,7 +24988,8 @@
   "icon": "/modules/honkai-star-rail/assets/b575fcd299d8871f.webp",
   "portrait": "/modules/honkai-star-rail/assets/d29067aaf693ad32.webp",
   "releaseOrder": 159,
-  "effects": []
+  "effects": [],
+  "nameEn": "Meshing Cogs"
  },
  {
   "id": "20000",
@@ -24938,7 +25108,8 @@
   "icon": "/modules/honkai-star-rail/assets/9a15d887ac6edf96.webp",
   "portrait": "/modules/honkai-star-rail/assets/3ab0385ec1a10313.webp",
   "releaseOrder": 171,
-  "effects": []
+  "effects": [],
+  "nameEn": "Arrows"
  },
  {
   "id": "20005",
@@ -25057,6 +25228,7 @@
   "icon": "/modules/honkai-star-rail/assets/021c9ece9cf3409e.webp",
   "portrait": "/modules/honkai-star-rail/assets/6ec367dc15982eef.webp",
   "releaseOrder": 166,
-  "effects": []
+  "effects": [],
+  "nameEn": "Chorus"
  }
 ]

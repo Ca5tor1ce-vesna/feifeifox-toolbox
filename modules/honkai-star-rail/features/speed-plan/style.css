@@ -155,6 +155,8 @@
 .sp-roster-link p { margin: 0 0 4px; }
 .sp-roster-link .hint { margin: 0 0 4px; font-size: 12px; line-height: 1.6; }
 .sp-roster-back { margin: 10px 0 0; }
+.sp-roster-missing { margin: 0 0 10px; }
+.sp-roster-missing a { margin-left: 6px; color: var(--accent-strong); font-weight: 700; }
 .sp-check { display: flex; align-items: center; gap: 9px; margin-top: 15px; color: #594556; font-size: 13px; cursor: pointer; }
 .sp .sp-check input, .sp .effect-row input[type="checkbox"] {
   flex: none; width: 34px; height: 20px; margin: 0; border: 0; border-radius: 999px;
@@ -190,36 +192,6 @@
 .sp-numeric button { height: 26px; padding: 0; border: 0; border-radius: 5px; background: none; color: #b899a9; font-size: 17px; line-height: 1; cursor: pointer; transition: background .12s, color .12s, transform .18s cubic-bezier(.34, 1.56, .64, 1); }
 .sp-numeric button:active { transform: scale(.82); }
 .sp-numeric button:hover { background: #f9edf2; color: var(--accent); }
-
-/* 带图下拉（光锥 / 遗器） */
-.picker-button.sp-control { gap: 10px; width: 100%; min-width: 0; padding: 4px 30px 4px 10px; text-align: left; font: inherit; font-size: 14px; cursor: pointer; }
-.picker-button img, .picker-button .sp-noimg { width: 31px; height: 31px; border-radius: 5px; object-fit: cover; flex: none; }
-.picker-button .sp-noimg { display: none; }
-.picker-button .pb-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.picker-button .pb-caret { position: absolute; right: 12px; top: 50%; width: 13px; height: 13px; margin-top: -6.5px; font-size: 0; background: no-repeat center / 13px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 9 7 7 7-7' fill='none' stroke='%23a38b99' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E"); }
-
-.picker-popup {
-  position: fixed; z-index: 50; padding: 12px;
-  background: #fffdfd; border: 1px solid var(--border); border-radius: 12px;
-  box-shadow: 0 12px 35px #70405c25;
-  animation: picker-pop 0.12s ease-out;
-}
-.picker-popup.hidden { display: none; }
-.picker-search { width: 100%; height: 36px; margin-bottom: 8px; padding: 0 10px; border: 1px solid var(--field-edge); border-radius: 7px; background: #fff; outline: none; font: inherit; font-size: 13px; }
-.picker-list { max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
-.picker-item {
-  display: flex; align-items: center; gap: 10px; padding: 7px; border-radius: 7px; border: 0;
-  background: transparent; color: var(--text); font: inherit; font-size: 13px; cursor: pointer; text-align: left; min-width: 0;
-}
-.picker-item:hover { background: #fff6f9; }
-.picker-item.active { background: #fff0f5; color: var(--accent); }
-.picker-item img, .picker-item .sp-noimg { width: 31px; height: 31px; border-radius: 5px; object-fit: cover; flex: 0 0 auto; }
-.picker-item .sp-noimg { display: grid; place-items: center; color: #aa8b9a; }
-.picker-item .sp-noimg::before { content: "—"; }
-.picker-item .pi-name { flex: 0 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 64px; }
-.picker-item .pi-meta { flex: 1 1 auto; color: var(--muted); font-size: 11.5px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-@keyframes picker-pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .picker-popup { animation: none; } }
 
 /* 折叠的补充设置 */
 .sp details summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 7px; margin-top: 12px; color: #a76a85; font-size: 13px; font-weight: 500; }
@@ -500,9 +472,6 @@ table.sp-req th, table.sp-req td { padding: 6px 8px; }
   #r-recommend td:nth-child(5)::before { content: "拉条 "; color: var(--muted); font-size: 12px; }
   #r-recommend td:nth-child(6) { grid-area: res; }
   #r-recommend td:nth-child(7) { grid-area: btn; align-self: center; }
-}
-@media (pointer: coarse) {
-  .picker-item { padding: 10px 8px; }
 }
 #sp-effect-more:has(> #r-cone-advance:empty):has(> #r-relics:empty)::after { content: "当前配置没有光锥拉条或套装生效记录。"; display: block; padding-top: 10px; color: var(--muted); font-size: 12px; }
 .sp-char .sp-char-name { font-size: 14px; font-weight: 700; line-height: 1.3; margin: 0; }

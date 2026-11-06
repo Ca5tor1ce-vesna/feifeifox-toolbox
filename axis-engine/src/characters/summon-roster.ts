@@ -3,9 +3,11 @@
  * 引擎不模拟生命值、敌方和战技点，相关效果列进 notSimulated，结果里会提示。
  * 文案没写清的时序（已在场时重复召唤、衣匠速度是否随阿格莱雅变化）按最直接的读法，待实测。
  */
+import { HimekoNovaKit } from "./himeko-nova.ts";
+import { fmt } from "../format.ts";
 import type { ActContext, CharacterKit, KitContext } from "../types.ts";
 import { DIST_BASE, type SummonActor, type Unit } from "../unit.ts";
-import { simple } from "./declarative.ts";
+import type { SkillPoints } from "../modules/skill-points.ts";
 import { StatefulKit } from "./stateful-roster.ts";
 
 abstract class SummonKit extends StatefulKit {
@@ -151,7 +153,7 @@ class DanHengPermansorKit extends SummonKit {
   }
 
   private bindComrade(): void {
-    this.comrade = this.otherTarget() ?? this.self;
+    this.comrade = this.targeted("战技") ?? this.self;
     if (this.dragon) return;
     this.dragon = this.engine.addActor({
       name: "【龙灵】",
@@ -200,7 +202,8 @@ class IncineratorBladeKit extends OverflowKit {
       const need = this.self.eidolon >= 2 ? 7 : 9;
       if (this.charge < need) return;
       this.charge -= need;
-      this.engine.gainEnergy(this.self, 30, { reason: "天赋【因果尽偿】" });
+      // 天赋 Lv10 回 25，E3 Lv12 27（以前取了 Lv15 的 30）。
+      this.engine.gainEnergy(this.self, this.self.eidolon >= 3 ? 27 : 25, { reason: "天赋【因果尽偿】" });
       this.followUp("天赋：额外施放战技", this.self.energyGains.skill);
       if (this.self.eidolon >= 1 && this.countdown) this.engine.delay(this.countdown, 15);
     });
@@ -271,7 +274,8 @@ class MydeiKit extends SummonKit {
 
   private enterBlood(): void {
     this.blood = true;
-    this.hp = Math.min(100, this.hp + 30);
+    // 天赋 Lv10 回复 25% 生命，E5 Lv12 27%（以前取了 Lv15 的 30%）。
+    this.hp = Math.min(100, this.hp + (this.self.eidolon >= 5 ? 27 : 25));
     this.note("进入【血仇】", "行动提前 100%");
     this.engine.advance(this.self, 100, { selfSource: true });
   }
@@ -312,7 +316,8 @@ class MydeiKit extends SummonKit {
   }
 
   onUltimate(): void {
-    this.hp = Math.min(100, this.hp + 22.5);
+    // 终结技 Lv10 回复 20% 生命，E5 Lv12 21%（以前取了 Lv15 的 22.5%）。
+    this.hp = Math.min(100, this.hp + (this.self.eidolon >= 5 ? 21 : 20));
     this.addCharge(20);
   }
 }
@@ -457,12 +462,36 @@ class GilgameshKit extends SummonKit {
 class RinKit extends SummonKit {
   gems = 20;
   private shadow = 0;
+  /** 终结技「消耗至 2」期间由自身按 ×2 记账，屏蔽天赋的每点 +1。 */
+  private suppressGems = false;
 
   constructor() {
     super({
       id: "1508",
-      notSimulated: ["战技点转【宝石能量】（引擎不模拟战技点）", "与 Archer 的连携追加攻击"],
+      notSimulated: ["与 Archer 的连携追加攻击"],
+      setup: (k) => {
+        const kit = k as unknown as RinKit;
+        const points = kit.engine.findModule<SkillPoints>("skill-points");
+        if (points) kit.wireSkillPoints();
+      },
       rules: [{ on: "battleStart", do: (k) => k.speed("行迹【淑女风范】", k.self, "pct", 20, 3) }],
+    });
+  }
+
+  private get points(): SkillPoints | undefined {
+    return this.engine.findModule<SkillPoints>("skill-points");
+  }
+
+  /** 天赋：我方单位目标每消耗或恢复 1 点战技点，远坂凛获得 1 点【宝石能量】（4.6.54 版本资料）。 */
+  wireSkillPoints(): void {
+    this.engine.addResourceView((unit) => (unit === this.self ? { gems: this.gems } : {}));
+    this.engine.on("spChanged", ({ unit, amount }) => {
+      if (amount === 0 || this.suppressGems) return;
+      const delta = Math.abs(amount);
+      this.gems += delta;
+      this.engine.record("note", this.self, "【宝石能量】", {
+        details: [`${unit.name} ${amount > 0 ? "恢复" : "消耗"} ${delta} 点战技点：宝石能量 +${delta}（现有 ${this.gems}）`],
+      });
     });
   }
 
@@ -471,7 +500,8 @@ class RinKit extends SummonKit {
   }
 
   act({ kind, extra }: ActContext): void {
-    if (kind !== "skill" || (this.shadow <= 0 && this.gems < 15)) {
+    const spEnough = (this.points?.sp ?? 0) >= 7;
+    if (kind !== "skill" || (this.shadow <= 0 && this.gems < 15 && !spEnough)) {
       this.engine.defaultAct(this.self, kind, extra);
       return;
     }
@@ -488,6 +518,20 @@ class RinKit extends SummonKit {
 
   onUltimate(): void {
     this.gems += this.self.eidolon >= 6 ? 36 : 12;
+    // 终结技：当前战技点大于 2 时消耗至 2，每消耗 1 点获得 2 点【宝石能量】。
+    const points = this.points;
+    if (points && points.sp > 2) {
+      this.suppressGems = true;
+      try {
+        const used = points.drainTo(this.self, 2, "终结技：消耗战技点至 2");
+        this.gems += used * 2;
+        this.engine.record("note", this.self, "【宝石能量】", {
+          details: [`终结技把战技点消耗至 2：${used} 点 × 2 → 宝石能量 +${used * 2}（现有 ${this.gems}）`],
+        });
+      } finally {
+        this.suppressGems = false;
+      }
+    }
     if (this.self.eidolon >= 6) this.engine.extraTurn(this.self, "E6：额外回合");
   }
 }
@@ -500,7 +544,8 @@ class FireflyKit extends SummonKit {
   private e2Pending = false;
 
   constructor() {
-    super({ id: "1310" });
+    // 强化版（3.4）行迹【α模组-偏时迸发】：击破时「完全燃烧」倒计时延后 10%（每次最多 3 次），要看击破，引擎没有韧性。
+    super({ id: "1310", notSimulated: ["强化版：击破时「完全燃烧」倒计时延后（取决于敌方韧性）"] });
   }
 
   protected setup(): void {
@@ -542,9 +587,11 @@ class FireflyKit extends SummonKit {
       else this.enhanced("火萤Ⅳ型-底火斩击", 0, extra);
       this.afterEnhanced();
     } else if (kind === "skill") {
-      this.engine.record("skill", this.self, "指令-天火轰击", { details: ["固定恢复 65% 能量上限", "下一次行动提前 25%"], extra });
+      // 战技 Lv10 固定回 60% 能量上限，E3 Lv12 62%（以前取了 Lv15 的 65%）。
+      const restore = this.self.eidolon >= 3 ? 0.62 : 0.6;
+      this.engine.record("skill", this.self, "指令-天火轰击", { details: [`固定恢复 ${fmt(restore * 100, 0)}% 能量上限`, "下一次行动提前 25%"], extra });
       this.engine.advance(this.self, 25, { selfSource: true });
-      this.engine.gainEnergy(this.self, this.self.maxEnergy * 0.65, { fixed: true, reason: "战技" });
+      this.engine.gainEnergy(this.self, this.self.maxEnergy * restore, { fixed: true, reason: "战技" });
       this.engine.attack(this.self, "skill", extra);
     } else {
       this.engine.defaultAct(this.self, "basic", extra);
@@ -552,8 +599,10 @@ class FireflyKit extends SummonKit {
   }
 
   onUltimate(): void {
-    this.engine.addSpeedBuff(this.self, { kind: "flat", value: 75, turns: null, label: "完全燃烧" });
-    this.note("进入「完全燃烧」", "行动提前 100%，速度 +75");
+    // 终结技 Lv10 速度 +60，E5 Lv12 +66（以前取了 Lv15 的 75）。
+    const burn = this.self.eidolon >= 5 ? 66 : 60;
+    this.engine.addSpeedBuff(this.self, { kind: "flat", value: burn, turns: null, label: "完全燃烧" });
+    this.note("进入「完全燃烧」", `行动提前 100%，速度 +${burn}`);
     this.engine.advance(this.self, 100, { selfSource: true });
     this.burning = this.engine.addActor({
       name: "「完全燃烧」倒计时",
@@ -570,7 +619,12 @@ class FireflyKit extends SummonKit {
   }
 }
 
-/** 阿格莱雅：衣匠速度是她的 35%，攻击叠速度。开大进入【至高之姿】，100 速倒计时。 */
+/**
+ * 阿格莱雅：衣匠速度是她局外面板速度的 35%，攻击叠速度。开大进入【至高之姿】，100 速倒计时。
+ * 数值按游戏里练得到的技能等级（2026-11-06 改，以前取了资料里的最高一级，练不到）：
+ * 衣匠每层 +55 速（忆灵天赋 Lv6，E3 起 Lv7 +57.2）；【至高之姿】每层 +15%（终结技 Lv10，E5 起 Lv12 +16%）。
+ * 衣匠和阿格莱雅的局内增益互相独立，所以按开战时的速度（局外面板）算，不跟着她局内的加速变（两个攻略视频的说法）。
+ */
 class AglaeaKit extends SummonKit {
   private garmaker: SummonActor | null = null;
   private countdown: SummonActor | null = null;
@@ -581,7 +635,14 @@ class AglaeaKit extends SummonKit {
   }
 
   protected setup(): void {
-    this.engine.addSpeedModifier((unit) => (unit === this.self && this.countdown ? { pct: 17.5 * this.stacks } : {}));
+    const perStack = this.self.eidolon >= 5 ? 16 : 15;
+    this.engine.addSpeedModifier((unit) => (unit === this.self && this.countdown ? { pct: perStack * this.stacks } : {}));
+  }
+
+  /** 衣匠的速度：阿格莱雅局外面板的 35%（开战前没有快照时先用当前速度）+ 层数加速。 */
+  private garmakerSpeed(): number {
+    const panel = this.self.initialSpeed || this.self.speed();
+    return panel * 0.35 + this.stacks * (this.self.eidolon >= 3 ? 57.2 : 55);
   }
 
   private maxStacks(): number {
@@ -601,7 +662,7 @@ class AglaeaKit extends SummonKit {
     this.garmaker = this.engine.addActor({
       name: "衣匠",
       role: "memosprite",
-      speed: () => this.self.speed() * 0.35 + this.stacks * 63.8,
+      speed: () => this.garmakerSpeed(),
       remDist: 0, // 被召唤时行动提前 100%
       onTurn: () => {
         this.summonAttack("衣匠", "刺纹之陷", 10);
@@ -717,7 +778,7 @@ class TrailblazerRemembranceKit extends SummonKit {
   constructor() {
     super({
       id: "8007",
-      notSimulated: ["迷迷消失（生命值不模拟）", "E4 能量上限为 0 的角色施放技能时的充能"],
+      notSimulated: ["迷迷消失（生命值不模拟）"],
       rules: [{ on: "battleStart", do: (k) => k.advanceSelf("行迹【追念之权杖】", 30) }],
     });
   }
@@ -731,6 +792,15 @@ class TrailblazerRemembranceKit extends SummonKit {
       this.energyPool -= whole * 10;
       this.addCharge(whole);
     });
+    // E4（4.6.54 版本资料）：能量上限为 0 的我方目标（用【残梦】【火种】这类特殊资源开大的）主动施放技能时，迷迷 +3% 充能。
+    // 「主动施放」按实际放出来的普攻、战技和终结技算，追击不算。
+    const e4 = (unit: Unit) => {
+      if (this.self.eidolon >= 4 && unit !== this.self && unit.energyType !== "standard") this.addCharge(3);
+    };
+    this.engine.on("actionDone", ({ unit, casts }) => {
+      if (casts.length > 0) e4(unit);
+    });
+    this.engine.on("ultimate", ({ unit }) => e4(unit));
     this.engine.on("summonTurn", ({ actor }) => {
       if (actor === this.mimi || actor.role !== "memosprite") return;
       if (this.self.eidolon >= 2 && !this.cheerUsed) {
@@ -759,8 +829,8 @@ class TrailblazerRemembranceKit extends SummonKit {
     this.charge = 0;
     engine.record("note", self, "我会！帮你！", { kind: "summon", name: "迷迷", details: ["指定队友行动提前 100%"] });
     engine.gainEnergy(self, 10, { reason: "我会！帮你！" });
-    const target = this.otherTarget();
-    if (target) engine.advance(target, 100);
+    const target = this.targeted("忆灵技【我会！帮你！】");
+    if (target) engine.advance(target, 100, { source: self });
   }
 
   private summon(): void {
@@ -954,7 +1024,7 @@ class RobinSummerKit extends SummonKit {
   constructor() {
     super({
       id: "1512",
-      notSimulated: ["受到队友治疗或护盾时的【律动】回能", "我方提供治疗或护盾时的气氛值", "【特邀嘉宾】持有者无法给队友拉条"],
+      notSimulated: ["受到队友治疗或护盾时的【律动】回能", "我方提供治疗或护盾时的气氛值"],
     });
   }
 
@@ -971,7 +1041,7 @@ class RobinSummerKit extends SummonKit {
       this.bonusUsed = false;
       if (unit !== this.guest) return;
       this.guestTurns -= 1;
-      if (this.guestTurns <= 0) this.guest = null;
+      if (this.guestTurns <= 0) this.setGuest(null);
     });
     this.engine.on("summonTurn", () => { this.bonusUsed = false; });
   }
@@ -1001,7 +1071,8 @@ class RobinSummerKit extends SummonKit {
     this.band = engine.addActor({
       name: "「晴空乐手」",
       role: "memosprite",
-      speed: () => self.speed() * 1.8 * (self.eidolon >= 4 ? 1.2 + this.atmosphere * 0.005 : 1),
+      // 知更鸟•晴歌局外面板速度的 180%，召唤时就定了，她局内吃到的加速不带给乐手（攻略视频：「和战斗内水鸟的速度无关」）。
+      speed: () => (self.initialSpeed || self.speed()) * 1.8 * (self.eidolon >= 4 ? 1.2 + this.atmosphere * 0.005 : 1),
       onTurn: () => this.summonAttack("「晴空乐手」", "叽叽啾啾四重奏", 20),
     });
     this.countdown = engine.addActor({
@@ -1048,12 +1119,20 @@ class RobinSummerKit extends SummonKit {
   }
 
   onUltimate(): void {
-    const target = this.otherTarget();
+    const target = this.targeted("终结技");
     if (!target) return;
     this.advanceUnit("终结技", target, 100);
-    this.gainFor("终结技", target, target.maxEnergy * 0.24, { fixed: true });
-    this.guest = target;
+    // 终结技 Lv10 固定回 20% 能量上限，E5 Lv12 21.6%（以前取了 Lv15 的 24%）。
+    this.restoreFor("终结技", target, target.maxEnergy * (this.self.eidolon >= 5 ? 0.216 : 0.2), { fixed: true });
+    this.setGuest(target);
     this.guestTurns = 2;
+  }
+
+  /** 【特邀嘉宾】只有一个持有者：持有期间不能给其他队友拉条（4.6.54 版本资料），换人或到期时解除。 */
+  private setGuest(target: Unit | null): void {
+    if (this.guest) this.guest.allyAdvanceBlock = null;
+    this.guest = target;
+    if (target) target.allyAdvanceBlock = "【特邀嘉宾】";
   }
 }
 
@@ -1065,11 +1144,11 @@ class PhainonKit extends SummonKit {
   constructor() {
     super({
       id: "1408",
-      notSimulated: ["成为队友技能目标时获得【火种】", "受到队友能量恢复时获得【火种】", "变身期间 E2 额外回合（依赖【毁伤】）", "E1 消灭敌人时的速度继承提高"],
+      notSimulated: ["成为敌方技能目标时获得【火种】（不模拟敌方）", "队友「我方全体」的群体技能没给【火种】（只算单体、扩散能选中白厄的技能），实际开大可能比轴上早", "变身期间 E2 额外回合（依赖【毁伤】）", "E1 消灭敌人时的速度继承提高"],
       rules: [
         { on: "technique", do: (k) => {
           for (const unit of k.engine.units) {
-            if (unit !== k.self) k.gainFor("秘技", unit, 25);
+            if (unit !== k.self) k.restoreFor("秘技", unit, 25);
           }
         } },
         { on: "battleStart", do: (k) => k.gain("行迹【行向世界终点】", k.self.eidolon >= 6 ? 6 : 1) },
@@ -1081,6 +1160,11 @@ class PhainonKit extends SummonKit {
   protected setup(): void {
     // 【火种】可溢出 3 点，E6 不再有上限。溢出部分放完大后留着，变身结束时还在。
     this.self.energyCap = this.self.eidolon >= 6 ? Infinity : this.self.maxEnergy + 3;
+    // 天赋（4.6.54 版本资料）：成为其他目标的技能目标时 +1【火种】。队友这边：单体、扩散圈能选到白厄的战技、终结技、忆灵技都算，
+    // 只能选自己的群体增益（驭空、阮•梅、缇宝、知更鸟的战技等）不算（攻略视频 BV1pp3tzhERW 2:47）。
+    this.engine.on("allyTargeted", ({ caster, target, ability }) => {
+      if (target === this.self) this.gain(`天赋：成为${caster.name}的${ability}目标`, 1);
+    });
   }
 
   canUltimate(): boolean {
@@ -1141,7 +1225,6 @@ class CyreneKit extends SummonKit {
     super({
       id: "1415",
       notSimulated: [
-        "终结技「激活全体队友的终结技」的实际效果（待实测）",
         "【永续的燃烧】刷新白厄的额外回合（依赖生命值）",
       ],
     });
@@ -1204,7 +1287,8 @@ class CyreneKit extends SummonKit {
     } else if (kit instanceof DanHengPermansorKit) kit.advanceDragon();
     else if (kit instanceof EvernightKit) kit.poem = true;
     else if (target.id === "1405") this.advanceUnit("德谬歌", target, 100);
-    else if (target.id === "1409") this.gainFor("德谬歌", target, 33.6);
+    // 忆灵技 Lv6 给风堇 24 点能量，E3 Lv7 26.4（以前取了 Lv10 的 33.6）。
+    else if (target.id === "1409") this.gainFor("德谬歌", target, this.self.eidolon >= 3 ? 26.4 : 24);
     else if (target.id === "1410") this.nextAttack.set(target, 60);
     else if (target.id === "1408") this.gainFor("德谬歌", target, 6);
     else if (target.id === "8007") this.genesis = target;
@@ -1236,8 +1320,24 @@ class CyreneKit extends SummonKit {
     if (!first) return;
     this.engine.setMemosprite(this.self, true);
     if (this.self.eidolon >= 6) this.advanceAll("E6", 100);
-    const target = this.otherTarget();
+    const target = this.targeted("忆灵技【此诗，献予一切生命】");
     if (target) this.dedicate(target);
+    this.activateTeamUltimates();
+  }
+
+  /**
+   * 首次开大「激活全体队友的终结技」：把队友开大要的资源直接补到够开大（攻略实测：白厄【火种】变成 12 点）。
+   * 这是激活，不是能量恢复，不触发回能相关的效果。之后按「能开就开」，队友当场开大。
+   */
+  private activateTeamUltimates(): void {
+    const { engine, self } = this;
+    for (const unit of engine.units) {
+      if (unit === self || unit.energy >= unit.ultCost) continue;
+      const before = unit.energy;
+      unit.energy = unit.ultCost;
+      engine.record("note", self, "激活终结技", { details: [`${unit.name} ${unit.energyName ?? "能量"} ${fmt(before)} → ${fmt(unit.ultCost)}`] });
+    }
+    for (const unit of engine.units) if (unit !== self) engine.maybeUltimate(unit);
   }
 }
 
@@ -1250,15 +1350,7 @@ export const SUMMON_KITS: Record<string, () => CharacterKit> = {
   1014: () => new SaberKit(),
   1509: () => new GilgameshKit(),
   1508: () => new RinKit(),
-  // 姬子•启行：助战技要玩家决定时机，这里只计入不用助战技时的回能。
-  1510: simple({
-    id: "1510",
-    notSimulated: ["助战技（可插入施放，需要手动决定）及其回能和额外回合"],
-    rules: [
-      { on: "technique", do: (k) => k.gain("秘技：波次开始施放战技", k.self.energyGains.skill) },
-      { on: "turnStart", do: (k) => k.gain("行迹【人类该向何处去】", 5) },
-    ],
-  }),
+  1510: () => new HimekoNovaKit(),
   1310: () => new FireflyKit(),
   1402: () => new AglaeaKit(),
   1409: () => new HyacineKit(),

@@ -96,3 +96,18 @@ test("Toy 版不用平台的商业标识（上传协议 3.5(3)，2026-11-05 用�
   assert.match("哔哩哔哩", TOY_BRAND);
   assert.doesNotMatch("https://space.bilibili.com/1", TOY_BRAND, "B站空间的网址是平台自己的链接，可以留");
 });
+
+test("打包后的 JS 里中文写成 \\uXXXX 转义时，Toy 的平台字样替换和扫描也看得到", async () => {
+  const { toyText, unescapeCjk, TOY_BRAND } = await import("../../tools/package.mjs");
+  // 测试文件自己也会被转译，所以转义串现场拼：中文字符写成 \uXXXX
+  const BS = String.fromCharCode(92);
+  const escape = (text: string): string => [...text].map((ch) => (ch.charCodeAt(0) >= 0x2e80 ? `${BS}u${ch.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0")}` : ch)).join("");
+  const escaped = escape('"在 B站 App 里一次选一张）"');
+  assert.ok(escaped.includes(`B${BS}u7AD9`));
+  assert.doesNotMatch(escaped, TOY_BRAND, "转义着的时候原来的扫描看不到");
+  assert.equal(unescapeCjk(escaped), '"在 B站 App 里一次选一张）"');
+  assert.equal(toyText(unescapeCjk(escaped)), '"在 App 里一次选一张）"');
+  // 字面的反斜杠（两个反斜杠再接 u7AD9）和非中文的转义不动
+  const literal = `"${BS}${BS}u7AD9 ${BS}u0041 ${BS}n"`;
+  assert.equal(unescapeCjk(literal), literal);
+});

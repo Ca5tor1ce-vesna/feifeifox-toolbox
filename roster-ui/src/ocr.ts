@@ -1,5 +1,6 @@
 /** 页面里的识图：按需加载随包的 Tesseract.js（ocr/ 目录），把图片解码成像素交给 recognizeCard。 */
 import { createEngine, type Engine } from "../../ui-shared/src/import/record-card/engine.ts";
+import type { RelicIcons } from "../../ui-shared/src/import/record-card/intl.ts";
 import { recognizeCard, type CardResult } from "../../ui-shared/src/import/record-card/recognize.ts";
 import type { Pixels } from "../../ui-shared/src/import/record-card/preprocess.ts";
 import type { StatData } from "../../ui-shared/src/stats/types.ts";
@@ -33,8 +34,19 @@ export async function closeEngine(): Promise<void> {
   if (current) await (await current).close().catch(() => undefined);
 }
 
+/** 有的手机相册和内嵌网页选图时不给文件类型（空字符串），这种要解码了才知道是不是图片。 */
+export const notImage = (file: Pick<File, "type">): boolean => !!file.type && !file.type.startsWith("image/");
+
+async function decode(file: File): Promise<ImageBitmap> {
+  try {
+    return await createImageBitmap(file);
+  } catch {
+    throw new Error(`「${file.name}」打不开：可能是手机的 HEIC 格式，或者图片损坏了。请存成 JPG 或 PNG 再导入。`);
+  }
+}
+
 async function pixelsOf(file: File): Promise<Pixels> {
-  const bitmap = await createImageBitmap(file);
+  const bitmap = await decode(file);
   const canvas = document.createElement("canvas");
   canvas.width = bitmap.width;
   canvas.height = bitmap.height;
@@ -46,9 +58,17 @@ async function pixelsOf(file: File): Promise<Pixels> {
   return { width: image.width, height: image.height, data: image.data };
 }
 
-export async function recognizeFile(file: File, data: StatData, base: string, onProgress?: (p: number) => void): Promise<CardResult> {
-  if (!file.type.startsWith("image/")) throw new Error(`「${file.name}」不是图片。`);
+/** 国际服横版图才用的图标数据（遗器套装、词条图标），第一次用到时才加载，之后复用。 */
+let icons: Promise<RelicIcons> | null = null;
+
+export async function recognizeFile(file: File, data: StatData, base: string, loadIcons: () => Promise<RelicIcons>, onProgress?: (p: number) => void): Promise<CardResult> {
+  if (notImage(file)) throw new Error(`「${file.name}」不是图片。`);
   const px = await pixelsOf(file);
   if (px.width < 600) throw new Error(`「${file.name}」太小了（宽 ${px.width}），请用原图，不要用聊天里压缩过的图。`);
-  return recognizeCard(px, data, await getEngine(base), onProgress);
+  const relicIcons = () => {
+    icons ??= loadIcons();
+    icons.catch(() => { icons = null; });
+    return icons;
+  };
+  return recognizeCard(px, data, await getEngine(base), onProgress, { relicIcons });
 }

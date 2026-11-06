@@ -2,17 +2,19 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import AxisHead, { type Head } from "./AxisHead.vue";
 import { vLoad } from "./img-load.ts";
+import { cardDamage, formatDamage, type RowDamage } from "./damage.ts";
 import { AHA_NAME, TYPE_NAMES, type AxisCard, type Row } from "./model.ts";
 import { prefersReducedMotion } from "./motion.ts";
 import { claimClipPlayback, releaseClipPlayback, type UltClip } from "./ult-clips.ts";
 
 // 轴上的一张卡。头像用 AxisHead（和选人头像同样取景的透明底立绘，没有底色和图标），大招多一张立绘。
-const props = defineProps<{ card: AxisCard; icons: Record<number, string>; splashes: Record<number, string>; heads: Record<number, Head>; clips: Record<number, UltClip>; active?: boolean }>();
+const props = defineProps<{ damage: Record<string, RowDamage> | null; card: AxisCard; icons: Record<number, string>; splashes: Record<number, string>; heads: Record<number, Head>; clips: Record<number, UltClip>; active?: boolean }>();
 
 // 挂在卡片右边的小头像下面只写两三个字。
 const SHORT: Record<string, string> = { fua: "追击", elation_skill: "欢愉技", memosprite: "忆灵技" };
 
 const main = computed(() => props.card.main);
+const hitTotal = computed(() => cardDamage([...(main.value ? [main.value.key] : []), ...props.card.follows.map((row) => row.key)], props.damage));
 const faceOf = (row: Row): string => (row.slot === null ? "" : props.icons[row.slot] ?? "");
 const headOf = (row: Row): Head | undefined => (row.slot === null ? undefined : props.heads[row.slot]);
 const splashOf = (row: Row): string => (row.slot === null ? "" : props.splashes[row.slot] ?? "");
@@ -115,6 +117,7 @@ onBeforeUnmount(stop);
       <span v-if="card.kind !== 'ult' && energyText(main)" class="axis-card-energy">{{ energyText(main) }}</span>
     </template>
 
+    <span v-if="hitTotal !== null" class="axis-card-damage" :title="`这一动的伤害 ${formatDamage(hitTotal)}`">{{ formatDamage(hitTotal) }}</span>
     <span v-if="follows.length" class="axis-card-follows">
       <span class="axis-card-plus" aria-hidden="true">+</span>
       <span v-for="row in follows" :key="row.key" class="axis-card-follow" :class="{ 'is-extra': row.extra }" :title="row.label">

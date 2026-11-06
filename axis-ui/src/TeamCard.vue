@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { AnimatePresence, motion } from "motion-v";
 import { computed, ref } from "vue";
+import { ENHANCEABLE } from "../../axis-engine/src/battle.ts";
+import LightconePicker from "../../ui-shared/src/hsr/LightconePicker.vue";
+import RelicSetPicker from "../../ui-shared/src/hsr/RelicSetPicker.vue";
 import { iconOf } from "./assets.ts";
 import AxisFace from "./AxisFace.vue";
 import CustomFields from "./CustomFields.vue";
@@ -27,6 +30,8 @@ const props = defineProps<{
   savedBuild: string | null;
   /** 「角色与遗器」里这个角色的概况；没有就是 null。 */
   actualBuild: string | null;
+  /** 队里有姬子•启行：显示「助战技」设置（她自己的卡不显示）。 */
+  assistTeam: boolean;
 }>();
 const emit = defineEmits<{ remove: []; change: []; replace: []; readBuild: []; readRoster: []; clearBuild: [] }>();
 
@@ -68,6 +73,20 @@ const setEnergy = (event: Event): void => {
   member.value.initialEnergy = text.trim() === "" ? null : numberOr(text, 0);
   emit("change");
 };
+/** 带图下拉的小字：会影响行动轴的光锥、套装标「影响轴」（以前写在名字后面的括号里）。 */
+const axisNote = (cone: CatalogItem): string | undefined => (coneMattersForAxis(String(cone.id)) ? "影响轴" : undefined);
+const setNote = (set: CatalogItem): string | undefined => (setMattersForAxis(String(set.id)) ? "影响轴" : undefined);
+const pickGear = (key: "lightconeId" | "cavernId" | "ornamentId", id: string): void => {
+  member.value[key] = id;
+  emit("change");
+};
+/** 助战技：「默认」不存字段（老存档、没设过的都按默认）。 */
+const setAssist = (event: Event): void => {
+  const value = (event.target as HTMLSelectElement).value;
+  if (value === "use" || value === "never") member.value.assist = value;
+  else delete member.value.assist;
+  emit("change");
+};
 const clearOverrides = (): void => {
   member.value.overrides = {};
   emit("change");
@@ -88,7 +107,7 @@ const clearOverrides = (): void => {
           <span><b>{{ view.ultimates }}</b> 大</span>
           <span v-if="view.extraTurns"><b>{{ view.extraTurns }}</b> 额外</span>
         </span>
-        <span class="axis-member-sub">{{ member.eidolon }} 魂<template v-if="coneName"> · {{ coneName }} 叠{{ member.superimpose }}</template></span>
+        <span class="axis-member-sub">{{ member.eidolon }} 魂<template v-if="ENHANCEABLE.has(member.id) && member.enhanced === false"> · 原版</template><template v-if="coneName"> · {{ coneName }} 叠{{ member.superimpose }}</template></span>
       </div>
       <button class="ghost small" type="button" :aria-expanded="open" @click="open = !open">{{ open ? "收起" : "配置" }}</button>
       <button class="ghost small axis-remove" type="button" :aria-label="`移除${displayName}`" title="移出队伍" @click="emit('remove')">✕</button>
@@ -115,6 +134,21 @@ const clearOverrides = (): void => {
               <option v-for="n in 7" :key="n" :value="n - 1">{{ n - 1 }} 魂</option>
             </select>
           </label>
+          <label v-if="ENHANCEABLE.has(member.id)" class="axis-field" title="3.4 版本的老角色加强，游戏里可以不强化">
+            <span>角色强化</span>
+            <select class="input" :value="member.enhanced === false ? 'off' : 'on'" @change="member.enhanced = ($event.target as HTMLSelectElement).value !== 'off'; emit('change')">
+              <option value="on">已强化</option>
+              <option value="off">没强化（原版）</option>
+            </select>
+          </label>
+          <label v-if="assistTeam && member.id !== '1510'" class="axis-field" title="默认只让能白用的队友（开拓同行，E2 起所有人）里第一个用的那位用；不是开拓同行的人用了会少一动">
+            <span>助战技</span>
+            <select class="input" :value="member.assist ?? 'auto'" @change="setAssist($event)">
+              <option value="auto">默认</option>
+              <option value="use">有次数就用</option>
+              <option value="never">不用</option>
+            </select>
+          </label>
           <label class="axis-field">
             <span>额外速度 <small>副词条和鞋子</small></span>
             <input class="input" type="number" step="0.1" :value="member.flatSpd" @input="setNumber('flatSpd', $event)" />
@@ -131,13 +165,10 @@ const clearOverrides = (): void => {
             <span>开局拉条 <small>%，光锥和套装给的不用填</small></span>
             <input class="input" type="number" min="0" max="100" :value="member.initAdv" @input="setNumber('initAdv', $event)" />
           </label>
-          <label class="axis-field axis-field-wide">
+          <div class="axis-field axis-field-wide">
             <span>光锥</span>
-            <select v-model="member.lightconeId" class="input" @change="emit('change')">
-              <option value="">{{ member.id === "1511" ? "默认：专武《当第一声「阿哈」响起》叠 1" : "不带光锥" }}</option>
-              <option v-for="cone in cones" :key="cone.id" :value="String(cone.id)">{{ cone.name }}{{ coneMattersForAxis(String(cone.id)) ? "（影响轴）" : "" }}</option>
-            </select>
-          </label>
+            <LightconePicker :button-id="`axis-cone-${slotIndex}`" button-class="input" :cones="cones" :value="member.lightconeId" :empty-label="member.id === '1511' ? '默认：专武《当第一声「阿哈」响起》叠 1' : '不带光锥'" :note="axisNote" @pick="pickGear('lightconeId', $event)" />
+          </div>
           <label class="axis-field">
             <span>叠影</span>
             <select v-model.number="member.superimpose" class="input" :disabled="!member.lightconeId" @change="emit('change')">
@@ -152,20 +183,14 @@ const clearOverrides = (): void => {
               <option value="basic">优先普攻</option>
             </select>
           </label>
-          <label class="axis-field axis-field-wide">
+          <div class="axis-field axis-field-wide">
             <span>遗器 4 件</span>
-            <select v-model="member.cavernId" class="input" @change="emit('change')">
-              <option value="">不计</option>
-              <option v-for="set in caverns" :key="set.id" :value="String(set.id)">{{ set.name }}{{ setMattersForAxis(String(set.id)) ? "（影响轴）" : "" }}</option>
-            </select>
-          </label>
-          <label class="axis-field axis-field-wide">
+            <RelicSetPicker :button-id="`axis-cavern-${slotIndex}`" button-class="input" kind="four" :sets="caverns" :value="member.cavernId" empty-label="不计" :describe="setNote" @pick="pickGear('cavernId', $event)" />
+          </div>
+          <div class="axis-field axis-field-wide">
             <span>位面饰品</span>
-            <select v-model="member.ornamentId" class="input" @change="emit('change')">
-              <option value="">不计</option>
-              <option v-for="set in ornaments" :key="set.id" :value="String(set.id)">{{ set.name }}{{ setMattersForAxis(String(set.id)) ? "（影响轴）" : "" }}</option>
-            </select>
-          </label>
+            <RelicSetPicker :button-id="`axis-ornament-${slotIndex}`" button-class="input" kind="ornament" :sets="ornaments" :value="member.ornamentId" empty-label="不计" :describe="setNote" @pick="pickGear('ornamentId', $event)" />
+          </div>
           <label v-if="teammates.length > 0" class="axis-field axis-field-wide">
             <span>{{ targetLabel }} <small>给队友放技能时指定谁</small></span>
             <select v-model="member.targetSlot" class="input" @change="emit('change')">

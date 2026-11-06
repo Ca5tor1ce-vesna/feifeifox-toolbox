@@ -50,6 +50,8 @@ test("读取实际装配（1.2）：开战前速度等于面板速度，能量�
     assert.ok(Math.abs(unit.speed() - panel.spd.total) < 1e-3, `${id} 引擎 ${unit.speed()}，面板 ${panel.spd.total}`);
     assert.equal(member.buildName, "实际装配");
     assert.ok(Math.abs(member.measured!.elation - panel.elation.total) < 1e-9);
+    // 伤害要用的面板和「角色与遗器」算出来的一样。
+    for (const stat of ["atk", "hp", "critRate", "critDmg"] as const) assert.equal(member.panel![stat], panel[stat].total, `${id} ${stat}`);
   }
   const feiying = memberFromRoster(enka.characters.find((c) => c.id === "1505")!, enka.relics.filter((r) => r.equippedBy === "1505"), stats, game, catalog);
   assert.ok(Math.abs(feiying.err - 19.44) < 0.01, `绯英只有连结绳主词条的能量恢复效率 19.44%，实际 ${feiying.err}`);

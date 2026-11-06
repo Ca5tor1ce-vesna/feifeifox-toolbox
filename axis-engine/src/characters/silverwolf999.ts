@@ -25,7 +25,7 @@ export class SilverWolf999Kit extends Kit {
   e2Pending = 0;
   private e2Running = false;
 
-  readonly enemyDependent = ["E2 进入【无敌玩家】后自身增益延长 1 回合"];
+  readonly enemyDependent: string[] = [];
 
   protected setup(): void {
     // 隐藏分多半在别人的行动里涨，额外回合等那一动结束再放，不插进别人行动的中间。
@@ -34,6 +34,12 @@ export class SilverWolf999Kit extends Kit {
     this.engine.on("stepDone", () => this.releaseE2Turns());
     // 隐藏分合计 = 能开大的 60 点 + 溢出部分，页面上那一列显示这个。
     this.engine.addResourceView((unit) => (unit === this.self ? { hiddenScore: this.self.energy + this.overflow } : {}));
+    // 开局隐藏分填得比 60 多时，多的算溢出（基础合计上限 300）：能开大的那部分始终封顶 60。
+    const self = this.self;
+    if (self.energy > self.maxEnergy) {
+      this.overflow = Math.min(self.energy, self.maxEnergy + 240) - self.maxEnergy;
+      self.energy = self.maxEnergy;
+    }
   }
 
   canUltimate(): boolean {
@@ -138,15 +144,29 @@ export class SilverWolf999Kit extends Kit {
     const { engine, self, el } = this;
     engine.record("note", self, "隐藏分 +15", { details: [`${self.name} 施放欢愉技`] });
     engine.gainEnergy(self, 15, { fixed: true, reason: "欢愉技" });
-    // 行迹【真结局】：欢愉技计入笑点 ≥20 / ≥40 各 +20。
-    const counted = Math.max(0, el.punchline);
-    if (counted >= 20 - EPS) engine.gainEnergy(self, 20, { fixed: true, reason: "真结局" });
-    if (counted >= 40 - EPS) engine.gainEnergy(self, 20, { fixed: true, reason: "真结局" });
+    // 行迹【真结局解锁条件】：欢愉技计入笑点 ≥20 / ≥40 各 +20。【阿哈时刻】额外回合按固定计入的 20/40 算，不看笑点池。
+    const counted = el.countedPunchline();
+    const bonus = counted >= 40 - EPS ? 40 : counted >= 20 - EPS ? 20 : 0;
+    if (bonus > 0) {
+      engine.record("note", self, "真结局解锁条件", { details: [`欢愉技计入 ${fmt(counted, 0)} 笑点：隐藏分 +${bonus}`] });
+      // 分两次各 +20：和以前一样每次单独结算（溢出、E2 计数、能不能开大）。
+      for (let i = 0; i < bonus / 20; i += 1) engine.gainEnergy(self, 20, { fixed: true, reason: "真结局" });
+    }
   };
 
-  /** 官方：无敌玩家期间无法开大，隐藏分在退出【无敌玩家】时才清空。 */
-  payUltimate() {
-    return { details: ["【无敌玩家】期间隐藏分不清空"] };
+  /**
+   * 开大消耗 60 隐藏分，溢出的部分保留（技能说明没写，2026-11-05 用户按游戏实际确认）；
+   * 剩下的到退出【无敌玩家】时才清空（E1 保留 20%）。E2 的「初始隐藏分」是扣完以后的数。
+   */
+  payUltimate({ self }: KitContext) {
+    const before = self.energy + this.overflow;
+    const after = Math.max(0, before - self.ultCost);
+    self.energy = Math.min(self.maxEnergy, after);
+    this.overflow = after - self.energy;
+    return {
+      details: [`隐藏分 ${fmt(before)} → ${fmt(after)}（消耗 ${fmt(self.ultCost, 0)}，溢出的保留）`],
+      resources: { energyBefore: before, energyCost: self.ultCost },
+    };
   }
 
   onUltimate({ engine, self }: KitContext): void {
@@ -155,6 +175,12 @@ export class SilverWolf999Kit extends Kit {
     this.e2Score = 0;
     this.e2Granted = 0;
     if (self.eidolon >= 2) this.countE2(self.energy + this.overflow);
+    // E2（4.6.54 版本资料）：进入【无敌玩家】后自身所有增益延长 1 回合。行动轴只关心速度和能量恢复效率，常驻的不动。
+    if (self.eidolon >= 2) {
+      const extended = self.buffs.filter((buff) => buff.turns !== null && buff.turns > 0);
+      for (const buff of extended) buff.turns = (buff.turns as number) + 1;
+      if (extended.length) engine.record("note", self, "E2：增益延长 1 回合", { details: extended.map((buff) => `${buff.label} → 剩 ${buff.turns} 回合`) });
+    }
     engine.advance(self, 100, { selfSource: true });
     // 行迹【隐藏关卡】：进入【无敌玩家】+20 隐藏分。
     engine.record("note", self, "隐藏关卡", { details: ["进入【无敌玩家】：隐藏分 +20"] });

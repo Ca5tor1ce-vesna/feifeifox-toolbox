@@ -21,6 +21,8 @@ export interface Rule {
   on: Trigger;
   /** 星魂门槛。 */
   eidolon?: number;
+  /** true 只在强化版生效，false 只在原版生效（3.4 老角色加强）；不写两版都生效。 */
+  enhanced?: boolean;
   when?: (kit: SimpleKit) => boolean;
   do: (kit: SimpleKit) => void;
 }
@@ -56,6 +58,7 @@ export class SimpleKit extends Kit {
     for (const rule of this.rules) {
       if (rule.on !== trigger) continue;
       if (rule.eidolon !== undefined && this.self.eidolon < rule.eidolon) continue;
+      if (rule.enhanced !== undefined && this.self.enhanced !== rule.enhanced) continue;
       if (rule.when && !rule.when(this)) continue;
       rule.do(this);
     }
@@ -87,6 +90,21 @@ export class SimpleKit extends Kit {
     this.engine.gainEnergy(target, amount, { fixed: options.fixed, reason: label });
   }
 
+  /**
+   * 技能给队友恢复能量（停云、藿藿、知更鸟•晴歌的终结技这类）。用特殊资源开大的角色（【残梦】【飞黄】【隐藏分】等）
+   * 不吃能量恢复（攻略实测：停云、藿藿的终结技不会增加【残梦】）；白厄改为获得 1 点【火种】（行迹【身承炎炬万千】）。
+   */
+  restoreFor(label: string, target: Unit, amount: number, options: { fixed?: boolean } = {}): void {
+    if (target.energyType === "standard") {
+      this.gainFor(label, target, amount, options);
+    } else if (target.id === "1408" && target !== this.self) {
+      this.note(label, `${target.name} 受到队友的能量恢复：行迹【身承炎炬万千】【火种】+1`);
+      this.engine.gainEnergy(target, 1, { fixed: true, reason: "身承炎炬万千" });
+    } else {
+      this.note(label, `${target.name} 用${target.energyName ? `【${target.energyName}】` : "特殊资源"}开大，不吃能量恢复`);
+    }
+  }
+
   advanceSelf(label: string, pct: number): void {
     this.note(label, `自身行动提前 ${pct}%`);
     this.engine.advance(this.self, pct, { selfSource: true });
@@ -94,7 +112,7 @@ export class SimpleKit extends Kit {
 
   advanceUnit(label: string, target: Unit, pct: number): void {
     this.note(label, `${target.name} 行动提前 ${pct}%`);
-    this.engine.advance(target, pct);
+    this.engine.advance(target, pct, { source: this.self });
   }
 
   advanceAll(label: string, pct: number): void {
@@ -122,6 +140,13 @@ export class SimpleKit extends Kit {
   otherTarget(): Unit | null {
     const target = this.target();
     return target === this.self ? null : target;
+  }
+
+  /** 这次技能选中的队友：发 allyTargeted（白厄的【火种】），返回目标（选到自己时为 null）。每次施放只调一次。 */
+  targeted(ability: string): Unit | null {
+    const target = this.otherTarget();
+    this.engine.targetAlly(this.self, target, ability);
+    return target;
   }
 }
 

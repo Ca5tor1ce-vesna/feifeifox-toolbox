@@ -142,7 +142,7 @@ test("千冶•刃：未开大时只能普攻，结界里才能放战技", () =>
   near(engine.units[0].energy, 120 + 20);
 });
 
-test("千冶•刃：结界内每次攻击 +1 充能，9 点恢复 30 并追加战技；结界外不计", () => {
+test("千冶•刃：结界内每次攻击 +1 充能，9 点恢复 25（E3 27）并追加战技；结界外不计", () => {
   const engine = battle({ team: [zero("1507", { initialEnergy: 160, baseSpd: 1 }), zero("1218", { baseSpd: 1 })], maxAV: 1 });
   engine.run();
   const unit = engine.units[0];
@@ -150,8 +150,8 @@ test("千冶•刃：结界内每次攻击 +1 充能，9 点恢复 30 并追加�
   assert.equal(unit.followUps, 0);
   engine.attack(engine.units[1], "basic");
   assert.equal(unit.followUps, 1);
-  // 开大后 5，+30 恢复，+30 追加战技基础回能。
-  near(unit.energy, 5 + 30 + 30);
+  // 天赋按练得到的等级：Lv10 恢复 25，E3 Lv12 27。开大后 5，+25 恢复，+30 追加战技基础回能。
+  near(unit.energy, 5 + 25 + 30);
   const outside = battle({ team: [zero("1507", { baseSpd: 1 }), zero("1218", { baseSpd: 1 })], maxAV: 1 });
   outside.run();
   for (let i = 0; i < 20; i += 1) outside.attack(outside.units[1], "basic");
@@ -323,7 +323,9 @@ test("吉尔伽美什：队友开大时固定恢复其消耗的 30%；特殊资�
   const engine = battle({ team: [zero("1509", { baseSpd: 1 }), zero("1218", { initialEnergy: 100 })], maxAV: 1 });
   engine.run();
   near(engine.units[0].energy, 30);
-  const resource = battle({ team: [zero("1509", { baseSpd: 1 }), zero("1415", { baseSpd: 1, initialEnergy: 24 })], maxAV: 1 });
+  // 用【残梦】开大的黄泉：开局 4 + 行迹【赤鬼】5 = 9，开局结束就开大，不算能量消耗，吉尔伽美什只拿 2 点兴致。
+  // （以前用昔涟测：她首次开大会激活队友的终结技，吉尔伽美什自己也会开大，不再适合测这个。）
+  const resource = battle({ team: [zero("1509", { baseSpd: 1 }), zero("1308", { baseSpd: 1, initialEnergy: 4 })], maxAV: 1 });
   resource.run();
   near(resource.units[0].energy, 0);
   near(resource.units[0].speed(), 1.2);
@@ -372,14 +374,14 @@ test("姬子•启行：回合开始助战技次数满时 +5；秘技相当于�
   near(opened.units[0].energy, 30);
 });
 
-test("流萤：战技固定回 65% 能量上限并提前 25%；满能开大进入完全燃烧", () => {
-  // 开局补到 120。第 1 动 +156 封顶 240，当场开大：能量 0 + 5。挂起 25% + 100%，距离 0，当场再动。
+test("流萤：战技固定回 60% 能量上限（E3 62%）并提前 25%；满能开大进入完全燃烧（速度 +60，E5 +66）", () => {
+  // 技能按练得到的等级：战技 Lv10 60%，终结技 Lv10 +60。开局补到 120。第 1 动 +144 封顶 240，当场开大：能量 0 + 5。挂起 25% + 100%，距离 0，当场再动。
   const t = 10000 / 104;
   const engine = battle({ team: [zero("1310")], maxAV: t + 1 });
   engine.run();
   const unit = engine.units[0];
   assert.equal(unit.ultimates, 1);
-  near(unit.speed(), 104 + 75);
+  near(unit.speed(), 104 + 60);
   const rows = engine.timeline.filter((row) => row.slot === 0 && ["skill", "enhanced_basic"].includes(row.type));
   near(rows[1].av, t);
   assert.ok(rows[1].label.includes("死星过载"));
@@ -394,7 +396,7 @@ test("流萤：70 速倒计时结束后解除完全燃烧，之后的战技只�
   near(unit.speed(), 104);
   unit.energy = 0; // 第一次战技一定回满开大，这里单独看不开大时的提前量。
   engine.takeTurn(unit);
-  near(unit.energy, 156);
+  near(unit.energy, 240 * 0.6);
   near(unit.remDist, 7500);
 });
 
@@ -424,14 +426,19 @@ test("阿格莱雅：战技召唤衣匠并立即行动，衣匠速度是她的 3
   near(self[1].av, t);
 });
 
-test("阿格莱雅：衣匠攻击叠速度，每层 +63.8 点，最多 6 层，E4 7 层", () => {
+test("阿格莱雅：衣匠速度 = 她局外面板 × 35% + 每层 55（E3 起 57.2），最多 6 层，E4 7 层", () => {
+  // 忆灵天赋 0 魂满级 Lv6 是 55，E3 +1 级到 Lv7 是 57.2（以前取了资料最高一级 Lv10 的 63.8，练不到）。
   const engine = battle({ team: [zero("1402", { baseSpd: 100 })], maxAV: 100.01 });
   engine.run();
   const actor = engine.summons.find((item) => item.name === "衣匠")!;
-  near(actor.speed(), 100 * 0.35 + 63.8);
+  near(actor.speed(), 100 * 0.35 + 55);
   const state = kit<{ fillStacks(): void }>(engine, "1402");
   state.fillStacks();
-  near(actor.speed(), 100 * 0.35 + 6 * 63.8);
+  near(actor.speed(), 100 * 0.35 + 6 * 55);
+  const e3 = battle({ team: [zero("1402", { baseSpd: 100, eidolon: 3 })], maxAV: 100.01 });
+  e3.run();
+  kit<{ fillStacks(): void }>(e3, "1402").fillStacks();
+  near(e3.summons.find((item) => item.name === "衣匠")!.speed(), 100 * 0.35 + 6 * 57.2);
   const e4 = battle({ team: [zero("1402", { baseSpd: 100, eidolon: 4 })], maxAV: 1 });
   e4.run();
   const e4State = kit<{ fillStacks(): void; stacks: number }>(e4, "1402");
@@ -439,13 +446,20 @@ test("阿格莱雅：衣匠攻击叠速度，每层 +63.8 点，最多 6 层，E
   assert.equal(e4State.stacks, 7);
 });
 
-test("阿格莱雅：至高之姿每层自身速度 +17.5%；100 速倒计时结束衣匠消失，留 1 层，回能 20", () => {
+test("阿格莱雅：至高之姿每层自身速度 +15%（E5 16%），衣匠不跟着她变；100 速倒计时结束衣匠消失，留 1 层，回能 20", () => {
+  // 终结技 0 魂满级 Lv10 是 15%，E5 +2 级到 Lv12 是 16%（以前取了 Lv15 的 17.5%）。
   const engine = battle({ team: [zero("1402", { baseSpd: 100, initialEnergy: 350 })], maxAV: 1 });
   engine.run();
   // 开大：能量 0 + 5。衣匠 0 AV 行动一次：+10，1 层。
   const unit = engine.units[0];
   assert.equal(unit.ultimates, 1);
-  near(unit.speed(), 100 * 1.175);
+  near(unit.speed(), 100 * 1.15);
+  // 衣匠按她局外面板（开战时 100）算，不吃【至高之姿】给她的加速：100 × 35% + 1 层 55。
+  near(engine.summons.find((actor) => actor.name === "衣匠")!.speed(), 100 * 0.35 + 55);
+  const e5 = battle({ team: [zero("1402", { baseSpd: 100, initialEnergy: 350, eidolon: 5 })], maxAV: 1 });
+  e5.run();
+  const e5Stacks = kit<{ stacks: number }>(e5, "1402").stacks;
+  near(e5.units[0].speed(), 100 * (1 + 0.16 * e5Stacks));
   const countdown = engine.summons.find((actor) => actor.role === "countdown")!;
   const before = unit.energy;
   countdown.onTurn(countdown);
@@ -508,6 +522,18 @@ test("开拓者•记忆：特殊资源不算能量；开大给史诗，普攻�
   const engine = battle({ team: [zero("8007", { initialEnergy: 160 })], maxAV: t + 1 });
   engine.run();
   assert.ok(engine.timeline.some((row) => row.label.includes("明天，一同写下！")));
+});
+
+test("开拓者•记忆 E4：能量上限为 0 的队友主动施放技能，迷迷 +3% 充能", () => {
+  // 4.6.54 版本资料：「使能量上限为0的我方目标主动施放技能时，迷迷也能够获得3%充能」。
+  // 开拓者 1 速不行动；黄泉（【残梦】开大，能量上限 0）在 10000/101 普攻一次。她的资源不算能量，不进「每 10 点能量 +1%」。
+  const charge = (eidolon: number) => {
+    const engine = battle({ team: [zero("8007", { baseSpd: 1, eidolon }), zero("1308", { rotation: "basic" })], maxAV: 100 });
+    engine.run();
+    return kit<{ charge: number }>(engine, "8007").charge;
+  };
+  near(charge(3), 0);
+  near(charge(4), 3);
 });
 
 test("开拓者•记忆 E2：其他忆灵行动 +8，每回合 1 次", () => {
@@ -586,6 +612,27 @@ test("长夜月 E2：每次获得忆质多 2 点", () => {
   assert.equal(kit<{ memory: number }>(engine, "1413").memory, 9);
 });
 
+test("知更鸟•晴歌：【特邀嘉宾】持有者在持续期间不能给其他队友拉条，到期后恢复", () => {
+  // 4.6.54 版本资料：持有【特邀嘉宾】的角色「无法使其他友方目标获得行动提前效果，持续2回合。该角色每回合开始时持续回合数减1」。
+  // 知更鸟•晴歌开局满能，0 AV 对星期日开大：星期日拉条 100% 当场行动，战技本该把希儿拉条 100%，现在被拦下。
+  const engine = battle({
+    team: [
+      zero("1512", { initialEnergy: 140, targetSlot: 1, baseSpd: 1 }),
+      zero("1313", { rotation: "skill", targetSlot: 2 }),
+      zero("1102", { rotation: "basic" }),
+    ],
+    maxAV: 120,
+  });
+  engine.run();
+  const at = (slot: number, type: string) => engine.timeline.filter((row) => row.slot === slot && row.type === type).map((row) => row.av);
+  const [first, second] = at(1, "skill");
+  near(first, 0, "星期日被拉到 0 AV 当场放战技");
+  assert.ok(engine.timeline.some((row) => row.av === 0 && row.label === "无法给其他队友拉条"), "时间轴写明被拦下");
+  assert.ok(!at(2, "basic").includes(0), "希儿没被拉到 0 AV");
+  // 星期日回合开始两次后【特邀嘉宾】到期：第二次战技照常把希儿拉上来。
+  assert.ok(at(2, "basic").some((av) => Math.abs(av - second) < 1e-9), "到期后照常拉条");
+});
+
 test("知更鸟•晴歌：气氛 6 和 12 召唤后两名乐手，每次 +20；全员登台进入 Fever 不再行动", () => {
   const t = 10000 / 95;
   const engine = battle({ team: [zero("1512", { targetSlot: 1 }), zero("1218", { baseSpd: 1 })], maxAV: t + 0.01 });
@@ -602,6 +649,21 @@ test("知更鸟•晴歌：气氛 6 和 12 召唤后两名乐手，每次 +20；
   assert.equal(state.members, 3);
   assert.equal(unit.paused, true);
   assert.ok(engine.summons.some((actor) => actor.name === "「晴空乐手」"));
+});
+
+test("知更鸟•晴歌：「晴空乐手」速度按她局外面板的 180%，她局内吃到的加速不带给乐手", () => {
+  // 攻略视频：乐手速度是「局外面板的180%，和战斗内水鸟的速度无关」。开战 100 速 → 乐手 180；给她加 50% 也还是 180。
+  const engine = battle({ team: [zero("1512", { baseSpd: 100 })], maxAV: 1 });
+  engine.run();
+  const unit = engine.units[0];
+  const state = kit<{ atmosphere: number; enterFever(): void }>(engine, "1512");
+  state.atmosphere = 40;
+  state.enterFever();
+  const band = engine.summons.find((actor) => actor.name === "「晴空乐手」")!;
+  near(band.speed(), 180);
+  engine.addSpeedBuff(unit, { kind: "pct", value: 50, turns: null, label: "测试加速" });
+  near(unit.speed(), 150);
+  near(band.speed(), 180);
 });
 
 test("知更鸟•晴歌：Fever 倒计时每次扣一半（至少 12），气氛归零退出并提前 50%", () => {
@@ -624,12 +686,12 @@ test("知更鸟•晴歌：Fever 倒计时每次扣一半（至少 12），气�
   assert.equal(engine.summons.some((actor) => actor.name === "「晴空乐手」"), false);
 });
 
-test("知更鸟•晴歌：开大拉目标 100%，固定回 24%，特邀嘉宾攻击多 2 点气氛，持有者 2 回合", () => {
+test("知更鸟•晴歌：开大拉目标 100%，固定回 20%（E5 21.6%），特邀嘉宾攻击多 2 点气氛，持有者 2 回合", () => {
   const engine = battle({ team: [zero("1512", { baseSpd: 1, initialEnergy: 140, targetSlot: 1 }), zero("1218", { baseSpd: 1 })], maxAV: 1 });
   engine.run();
   const ally = engine.units[1];
-  // 椒丘 0 AV 被拉到当场行动：开局 15，开大时固定 +24% × 100 = 24，战技 +30。
-  near(ally.energy, 15 + 24 + 30);
+  // 终结技按练得到的等级：Lv10 20%。椒丘 0 AV 被拉到当场行动：开局 15，开大时固定 +20% × 100 = 20，战技 +30。
+  near(ally.energy, 15 + 20 + 30);
   const state = kit<{ atmosphere: number }>(engine, "1512");
   assert.equal(state.atmosphere, 3); // 那次战技 1 + 2
   engine.takeTurn(ally); // 持续减到 0
@@ -647,6 +709,18 @@ test("知更鸟•晴歌：秘技提前 20% +6 气氛，贝茜被召唤时立即
   near(engine.units[0].energy, 70);
 });
 
+test("白厄：成为队友技能目标时 +1【火种】；只能选自己的群体增益不算", () => {
+  // 4.6.54 版本资料天赋：「当白厄成为其他任意目标的技能目标时，获得1点【火种】」。攻略视频 BV1pp3tzhERW 2:47：
+  // 单体、扩散圈能选到白厄的都算，阮•梅这类只能选自己的战技不算。白厄 1 速只打普攻（被星期日拉上来那一动不加【火种】），开局行迹【行向世界终点】+1。
+  const coreflame = (support: string, maxAV: number) => {
+    const engine = battle({ team: [zero("1408", { baseSpd: 1, rotation: "basic" }), zero(support, { rotation: "skill", targetSlot: 0 })], maxAV });
+    engine.run();
+    return engine.units[0].energy;
+  };
+  near(coreflame("1313", 10000 / 96 + 1), 2, "星期日战技选中白厄：1 + 1");
+  near(coreflame("1303", 10000 / 104 + 1), 1, "阮•梅战技只能选自己：不加");
+});
+
 test("白厄：变身后队友不行动，8 个额外回合按 60% 速度，结束全队速度 +15%", () => {
   // 基础 300，变身速度 180；间隔 55.56，第 8 次在 444.44。
   const speed = 300 * 0.6;
@@ -660,6 +734,21 @@ test("白厄：变身后队友不行动，8 个额外回合按 60% 速度，结�
   assert.equal(engine.timeline.filter((row) => row.slot === 1 && row.av < end && ["skill", "basic"].includes(row.type)).length, 0);
   near(engine.units[1].speed(), 1150);
   near(engine.units[0].energy, 1 + 3); // 开局 12 + 1，开大留 1，变身结束 +3
+});
+
+test("队友的能量恢复不加到【残梦】【飞黄】上；白厄改为【火种】+1", () => {
+  // 攻略实测：停云、藿藿的终结技不会增加【残梦】。白厄行迹【身承炎炬万千】：受到队友能量恢复的技能效果时【火种】+1。
+  // 藿藿开局满能，开局结束就开大：黄泉只有【赤鬼】5 点，飞霄只有【天通】3 点，白厄开局 1 + 1 = 2，椒丘照常回能。
+  const engine = battle({ team: [zero("1217", { baseSpd: 1, initialEnergy: 140 }), zero("1308", { baseSpd: 1 }), zero("1220", { baseSpd: 1 }), zero("1408", { baseSpd: 1 })], maxAV: 1 });
+  engine.run();
+  assert.equal(engine.units[0].ultimates, 1);
+  near(engine.units[1].energy, 5);
+  near(engine.units[2].energy, 3);
+  near(engine.units[3].energy, 2);
+  assert.ok(engine.timeline.some((row) => row.details.some((d) => d.includes("黄泉 用【残梦】开大，不吃能量恢复"))));
+  const jiaoqiu = battle({ team: [zero("1217", { baseSpd: 1, initialEnergy: 140 }), zero("1218", { baseSpd: 1 })], maxAV: 1 });
+  jiaoqiu.run();
+  near(jiaoqiu.units[1].energy, 15 + 100 * 0.2); // 椒丘开局 15 + 藿藿 20%
 });
 
 test("白厄：火种溢出最多 3 点，E6 无上限；E1 速度 66%；秘技给队友 25", () => {
@@ -728,11 +817,21 @@ test("昔涟：德谬歌的诗：万敌不在血仇提前 100%，阿格莱雅层
   const aglaea = battle({ team: [zero("1415", { baseSpd: 1, initialEnergy: 24, targetSlot: 1 }), zero("1402", { baseSpd: 100 })], maxAV: 1 });
   aglaea.run();
   assert.equal(kit<{ stacks: number }>(aglaea, "1402").stacks, 6);
-  const before = aglaea.units[1].energy;
+  // 昔涟首次开大激活阿格莱雅的终结技 → 她开大进【至高之姿】立即行动，这次强化普攻就是「下一次攻击」，拿到 70。
+  // 开大返还 5 + 强化普攻 20 + 诗 70 + 衣匠【刺纹之陷】10 = 105；之后再攻击不再有 70。
+  near(aglaea.units[1].energy, 105);
   aglaea.attack(aglaea.units[1], "basic");
-  near(aglaea.units[1].energy, before + 70);
-  aglaea.attack(aglaea.units[1], "basic");
-  near(aglaea.units[1].energy, before + 70);
+  near(aglaea.units[1].energy, 105);
+});
+
+test("昔涟首次开大激活全体队友的终结技：资源补到够开大，队友当场开大", () => {
+  // 攻略实测：昔涟开大「激活终结技」是把白厄【火种】变成 12 点。白厄开局 1 + 德谬歌的忆灵技选中白厄 1（天赋）+ 诗 6 = 8 → 12；椒丘能量 15 → 100。
+  const engine = battle({ team: [zero("1415", { baseSpd: 1, initialEnergy: 24 }), zero("1408", { baseSpd: 1 }), zero("1218", { baseSpd: 1 })], maxAV: 1 });
+  engine.run();
+  const notes = engine.timeline.filter((row) => row.label === "激活终结技").map((row) => row.details[0]);
+  assert.deepEqual(notes, ["白厄 火种 8.00 → 12.00", "椒丘 能量 15.00 → 100.00"]);
+  assert.equal(engine.units[1].ultimates, 1);
+  assert.equal(engine.units[2].ultimates, 1);
 });
 
 test("昔涟：【故事】3 点德谬歌行动，E1 +6 追忆，E6 第 2 次起全队提前 24%", () => {
@@ -748,7 +847,7 @@ test("昔涟：【故事】3 点德谬歌行动，E1 +6 追忆，E6 第 2 次起
 });
 
 test("依赖敌方或生命值的部分都写清楚了", () => {
-  for (const [id, keyword] of [["1404", "受到"], ["1409", "生命"], ["1413", "生命"], ["1408", "目标"], ["1402", "敌方"], ["1415", "待实测"], ["1510", "助战技"]] as const) {
+  for (const [id, keyword] of [["1404", "受到"], ["1409", "生命"], ["1413", "生命"], ["1408", "目标"], ["1402", "敌方"], ["1415", "生命"], ["1510", "助战技"]] as const) {
     const { unsupported } = battle({ team: [{ id }] }).run();
     assert.ok(unsupported.some((item) => item.mechanic.includes(keyword)), `${id} 应提到 ${keyword}：${JSON.stringify(unsupported)}`);
   }

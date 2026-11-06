@@ -68,6 +68,8 @@ export default {
       onChange: () => ctx.persistence?.capture?.(),
       expose: (getState: () => PageState) => { readState = getState; },
     });
+    // 带图下拉的弹层挂在页面根上（和配速查询一样），切走功能时随页面一起卸掉。
+    app.provide("popupRoot", root);
     app.mount(root);
   },
 

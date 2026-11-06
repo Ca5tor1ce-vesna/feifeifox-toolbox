@@ -45,6 +45,7 @@ export default {
       catalog,
       isExe: !!(globalThis as any).__TAURI__,
       ocrBase: new URL("./ocr/", import.meta.url).href,
+      loadIcons: () => ctx.data("relic_icons"),
     });
     app.provide("popupRoot", root);
     app.mount(root);

@@ -182,6 +182,11 @@ test("砂金•戏浪终结技自提速 4 回合，【阿哈时刻】加权跟�
   const res = sim({ team: [{ id: "1513", err: 500 }, { id: "1503", targetSlot: 3 }, { id: "1502" }, { id: "1501" }], useTech: false, maxAV: 120 });
   assert.deepEqual(labels(res, "胜局，凌越飓浪之上")[0].details, ["笑点 +6", "热意 +8", "自身速度 +30%（4 回合）", "基础回能返还 +5 × (1+ERR)"]);
   near(unit(res, "1513").finalSpd, 107 * 1.3 + 9); // 148.1
+  // E5 终结技等级 +2：Lv10 30% → Lv12 33.6%；设置里改成别的数就听设置
+  const e5 = sim({ team: [{ id: "1513", err: 500, eidolon: 5 }, { id: "1503", targetSlot: 3 }, { id: "1502" }, { id: "1501" }], useTech: false, maxAV: 120 });
+  has(labels(e5, "胜局，凌越飓浪之上")[0].details, "自身速度 +33.6%（4 回合）");
+  const custom = sim({ team: [{ id: "1513", err: 500, eidolon: 5 }, { id: "1503", targetSlot: 3 }, { id: "1502" }, { id: "1501" }], useTech: false, maxAV: 120, ultSpdPct: 40 });
+  has(labels(custom, "胜局，凌越飓浪之上")[0].details, "自身速度 +40%（4 回合）");
   near(res.aha.speed, 122.275, "开大前的加权");
   near(res.aha.finalSpeed, 80 + 0.2 * 148.1 + 0.1 * 110 + 0.05 * 108 + 0.025 * 107, "提速后他是最快的欢愉");
 
@@ -222,7 +227,9 @@ test("单欢愉只有【纵享惊涛】固定 +25，三赌牌局再给全队 15%
   assert.equal(res.resources.sanduActive, false);
   near(unit(res, "1304").finalSpd, 106);
 
-  res = sim({ team: [{ id: "1511", eidolon: 1, e1Wishpower: 8, targetSlot: 2 }, { id: "1513" }, { id: "1304", rotation: "basic" }], useTech: false, maxAV: 120 });
+  // 阿哈 71.28 的【阿哈时刻】放完欢愉技后才开大（阿哈时刻中途不插大），开大算队友攻击 → 【纵享惊涛】+25 到下一次阿哈时刻结束；
+  // 下一次在 118.31，窗口取 110 看 +25 还在的时候。
+  res = sim({ team: [{ id: "1511", eidolon: 1, e1Wishpower: 8, targetSlot: 2 }, { id: "1513" }, { id: "1304", rotation: "basic" }], useTech: false, maxAV: 110 });
   assert.equal(res.resources.sanduActive, true);
   assert.ok(someNote(res, (note) => note.includes("三赌牌局生效：全队速度 +15%")));
   near(unit(res, "1513").initialSpd, 116, "开局记账还没生效");
@@ -303,7 +310,8 @@ test("欢愉技和绯英转移不凭空生成笑点，也不连触发两次首�
   const wolf = unit(res, "1506");
   const fei = unit(res, "1505");
   assert.equal(wolf.ultCount, 0);
-  assert.equal(wolf.finalEnergy, 15, "只有银狼自己的欢愉技 +15");
+  // 开局是阿哈秘技给的额外回合，欢愉技固定计入 20 笑点：银狼自己的欢愉技 +15，【真结局解锁条件】计入 ≥20 再 +20（2026-11-05 补上）。
+  assert.equal(wolf.finalEnergy, 35, "银狼欢愉技 +15，真结局 +20");
   // 240 开局 + 20 秘技 + 5 欢愉技回能 + 5 附加好活当赏 + 20 阿哈额外回合好活当赏
   // + 阿哈/火花编号更小，各转移 10；银狼编号 999 不转移。310 - 240 + 5 = 75。
   assert.equal(fei.finalEnergy, 75);
@@ -560,6 +568,21 @@ test("银狼只吃自己的欢愉技 +15，队友欢愉技不给隐藏分", () =
   const res = sim({ maxAV: 60, useTech: false, useAeonAha: true, aeonAhaBaseSpd: 200, aeonAhaLcBaseSpd: 0, team: [{ id: "1506", baseSpd: 1, traceSpd: 0 }, { id: "1503", baseSpd: 1, traceSpd: 0 }] });
   near(unit(res, "1506").finalEnergy, 15);
   assert.ok(!res.timeline.some((ev: Ev) => ev.res.energy === 30));
+});
+
+/**
+ * 爻光终结技给阿哈的额外回合「固定计入 20 笑点」（E1 40），银狼【真结局解锁条件】按欢愉技计入的笑点 ≥20 / ≥40 各 +20，
+ * 所以这次欢愉技分别 +20 / +40，和当时笑点池有多少无关（4.6.54 版本资料；2026-11-05 群里反馈以前只按笑点池算，少拿了）。
+ */
+test("爻光额外回合里银狼按固定计入的 20 / 40 笑点拿真结局隐藏分", () => {
+  for (const [eidolon, counted, bonus] of [[0, 20, 20], [1, 40, 40]] as const) {
+    const res = sim({ maxAV: 600, useTech: false, useAeonAha: true, team: [{ id: "1502", eidolon, rotation: "skill" }, { id: "1506" }, { id: "1505" }, { id: "1501" }] });
+    const extra = res.timeline.find((ev: Ev) => ev.type === "aha_extra");
+    assert.ok(extra, `爻光 E${eidolon} 要有一次额外回合`);
+    assert.ok(extra.label.includes(`计入 ${counted} 笑点`));
+    const notes = res.timeline.filter((ev: Ev) => ev.label === "真结局解锁条件" && Math.abs(ev.av - extra.av) < 1e-9);
+    assert.deepEqual(notes.map((ev: Ev) => ev.details[0]), [`欢愉技计入 ${counted} 笑点：隐藏分 +${bonus}`], `爻光 E${eidolon}`);
+  }
 });
 
 test("银狼基础天赋可溢出 240（合计 300）；【无敌玩家】期间不能再开大", () => {
