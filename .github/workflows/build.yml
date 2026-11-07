@@ -102,6 +102,22 @@ jobs:
           if (-not $ok) { throw "exe 启动后 40 秒内页面没有打开" }
           Write-Host "冒烟通过"
 
+      # exe 自动更新（1.3）：给冒烟过的 exe 签名，写出 -update.exe 和 latest.json（tools/update_sign.mjs）。
+      # 私钥在仓库 Secret UPDATE_SIGNING_KEY；要发 Release 时没有私钥就停下，免得发出一个老用户收不到更新的版本。
+      - name: 签名自动更新文件
+        shell: pwsh
+        run: |
+          $release = "${{ startsWith(github.ref, 'refs/tags/v') && !github.event.repository.private }}" -eq "true"
+          if (-not $env:UPDATE_SIGNING_KEY) {
+            if ($release) { throw "没有签名私钥：在公开仓库 Settings → Secrets → Actions 加 UPDATE_SIGNING_KEY" }
+            Write-Host "没有签名私钥，跳过（只有发 Release 时必须有）"
+            exit 0
+          }
+          node tools/update_sign.mjs release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+
       # 手动运行只上传 Actions 产物；标签运行创建或更新对应的 Release。
       - name: 发布
         # 只在公开仓库发布：开发仓库是私有的，在那里推了标签也只构建、不发 Release，免得同一个版本有两个出处。
@@ -115,7 +131,8 @@ jobs:
           if ("v$codeVersion" -ne $tag) {
             throw "tag（$tag）和 package.json 的版本（v$codeVersion）不一致：先改版本号再打 tag"
           }
-          $files = @("dist/feifeifox-toolbox-v$codeVersion-portable.zip", "dist/feifeifox-toolbox-v$codeVersion-toy.zip")
+          # latest.json 必须叫这个名字：exe 从「最新 Release」的固定下载地址读它（预发布不算最新，不会推给用户）。
+          $files = @("dist/feifeifox-toolbox-v$codeVersion-portable.zip", "dist/feifeifox-toolbox-v$codeVersion-toy.zip", "dist/feifeifox-toolbox-v$codeVersion-update.exe", "dist/latest.json")
           $notes = "dist/feifeifox-toolbox-v$codeVersion-notes.md"
           foreach ($file in $files + $notes) { if (-not (Test-Path -LiteralPath $file)) { throw "缺少发布附件 $file" } }
           gh release view $tag --json tagName 2>$null | Out-Null
@@ -124,11 +141,13 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             exit 0
           }
+          # Release 标题统一成「绯绯狐工具箱 v1.x」（2026-11-06 用户要求），以前只写 tag，每版都要手动改。
+          $title = "绯绯狐工具箱 $tag"
           # 带后缀的版本（如 1.1.0-beta.1）按预发布发，且不抢「Latest」。
           if ($codeVersion -match '[A-Za-z]') {
-            gh release create $tag @files --title $tag --notes-file $notes --verify-tag --prerelease --latest=false
+            gh release create $tag @files --title $title --notes-file $notes --verify-tag --prerelease --latest=false
           } else {
-            gh release create $tag @files --title $tag --notes-file $notes --verify-tag
+            gh release create $tag @files --title $title --notes-file $notes --verify-tag
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         env:

@@ -27,8 +27,8 @@ export class YaoguangKit extends Kit {
   }
 
   onTechnique({ engine, self }: KitContext): void {
-    engine.record("tech", self, "爻光秘技：自动施放战技", { details: ["结界 3 回合（不吃战技点）"] });
-    this.skill(false);
+    engine.record("tech", self, "爻光秘技：自动施放战技", { details: ["结界 3 回合（不吃战技点）", "秘技触发的战技不算施放战技，不加 3 笑点", "基础回能 30 × (1+ERR)"] });
+    this.skill(false, true);
   }
 
   protected basic(extra: boolean): void {
@@ -43,11 +43,18 @@ export class YaoguangKit extends Kit {
     engine.attack(self, "basic", extra);
   }
 
-  protected skill(extra: boolean): void {
+  /**
+   * technique：秘技在开战时自动放的那次。游戏配置里它是单独的技能类型，结界的「普攻、战技后 +3 笑点」
+   * 只认普攻和战技，所以这次不加笑点（2026-11-07 用户按游戏实际反馈）。
+   */
+  protected skill(extra: boolean, technique = false): void {
     const { engine, self } = this;
     this.field = 3;
-    engine.record("skill", self, `${self.name} 的战技`, { details: ["结界 3 回合", "结界内自己普攻/战技 +3 笑点", "基础回能 30 × (1+ERR)"], extra });
-    this.el.gainPunchline(3);
+    // 秘技那次的说明写在秘技那条记录上，不另记一张战技卡（以前会多出一张「第 0 动」的战技卡）。
+    if (!technique) {
+      engine.record("skill", self, `${self.name} 的战技`, { details: ["结界 3 回合", "结界内自己普攻/战技 +3 笑点", "基础回能 30 × (1+ERR)"], extra });
+      this.el.gainPunchline(3);
+    }
     engine.gainEnergy(self, 30, { reason: "战技" });
     engine.attack(self, "skill", extra);
   }

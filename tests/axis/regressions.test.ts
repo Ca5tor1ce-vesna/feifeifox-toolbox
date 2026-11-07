@@ -178,7 +178,12 @@ test("部分溢出时只计入实际获得的能量", () => {
 
 test("绯英开大时点跟随真实回能", () => {
   // 100 速：每 100 AV 战技 +30，欢愉技 +5、附加好活当赏 +5、笑点结算 +10，共 50。240 即可开大。
-  const cases: [number, number[]][] = [[240, [0, 500, 1000]], [480, [0, 0, 500, 1000]], [0, [500, 1000]]];
+  // 开战 1 个人头笑点、每次【阿哈时刻】结束 1 个人头笑点，都进下一次结算，所以每轮 51；开战好活当赏 20 转能量 +20（2026-11-07）。
+  // 开局 240：260 开大剩 25；100 AV 76，之后每轮 +51，400 AV 229，500 AV 战技 +30、狐狸老师 +10 到 269 开大，
+  // 大后补到 55；600/700/800 AV 106/157/208，900 AV 战技、欢愉技、狐狸老师、好活当赏、笑点结算到 269 开大。
+  // 开局 480：开战的 20 被上限截掉，0 AV 连开两次剩 10；100 AV 61，500 AV 254 开大，900 AV 254 开大。
+  // 开局 0：开战 20；100 AV 71，500 AV 264 开大，900 AV 264 开大。
+  const cases: [number, number[]][] = [[240, [0, 500, 900]], [480, [0, 0, 500, 900]], [0, [500, 900]]];
   for (const [initial, expected] of cases) {
     const result = simulateLegacy({ maxAV: 1000, useTech: false, trace3Advance: false, useAeonAha: false, team: [{ id: "1505", initialEnergy: initial, baseSpd: 100, traceSpd: 0 }] });
     const ults = result.timeline.filter((row) => row.type === "ultimate");
@@ -298,11 +303,12 @@ test("绯英：秘技和欢愉技附加好活当赏", () => {
   const { el, engine } = battle([{ id: "1505", initialEnergy: 0 }], { useTech: true });
   engine.battleStart();
   const unit = engine.units[0];
-  assert.equal(unit.energy, 20);
-  assert.equal(el.haohuoSum(unit), 20);
+  // 开战 20 + 秘技 20，好活当赏都按 1:1 转能量。
+  assert.equal(unit.energy, 40);
+  assert.equal(el.haohuoSum(unit), 40);
   el.castElationSkill(unit);
-  assert.equal(unit.energy, 30); // 5 基础能量 + 5 好活当赏转能量
-  assert.equal(el.haohuoSum(unit), 30);
+  assert.equal(unit.energy, 50); // 5 基础能量 + 5 好活当赏转能量
+  assert.equal(el.haohuoSum(unit), 50);
 });
 
 test("绯英 E1：追击后施放一次欢愉技", () => {

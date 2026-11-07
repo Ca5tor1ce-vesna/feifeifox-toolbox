@@ -2,7 +2,7 @@
  * 两版只差数据从哪来：工具箱联网从镜像拉（main.ts），Toy 版读打包时随包放好的数据（main-toy.ts）。 */
 import { createApp, type App as VueApp } from "vue";
 import App, { type RecordsState } from "./App.vue";
-import { withAvatars } from "./data.ts";
+import { withArchive, withAvatars } from "./data.ts";
 
 import type { FeatureCtx } from "../../ui-shared/src/feature.ts";
 
@@ -21,9 +21,11 @@ export function recordsFeature(source: RecordsSource) {
     async mount(root: HTMLElement, ctx: FeatureCtx): Promise<void> {
       // 头像对照用崩铁的角色和光锥数据，读到的时候才对。
       const catalog = Promise.all([ctx.data("characters"), ctx.data("lightcones")]).catch(() => [[], []]);
+      // 往期成绩随包放，读不到就只显示最新的。
+      const archive = ctx.data("records_archive").catch(() => null);
       const load = async (refresh: boolean) => {
-        const [result, [characters, lightcones]] = await Promise.all([source(refresh), catalog]);
-        return withAvatars(result, characters as unknown[] as never[], lightcones as unknown[] as never[]);
+        const [result, [characters, lightcones], older] = await Promise.all([source(refresh), catalog, archive]);
+        return withAvatars(withArchive(result, older), characters as unknown[] as never[], lightcones as unknown[] as never[]);
       };
       const initial = (ctx.persistence?.load?.()?.data as Partial<RecordsState> | undefined) ?? null;
       app = createApp(App, { load, initial, expose: (getState: () => RecordsState) => { readState = getState; } });

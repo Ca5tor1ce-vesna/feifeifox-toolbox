@@ -25,6 +25,10 @@
 .axis-field-wide { grid-column: 1 / -1; }
 .axis-switch-field { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); cursor: pointer; }
 .axis-field-switch { align-self: end; min-height: 40px; }
+.axis-ult-order { grid-column: 1 / -1; }
+.axis-ult-order-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.axis-ult-order-list button { display: inline-flex; align-items: center; gap: 5px; }
+.axis-ult-order-list b { color: var(--accent-strong); font-family: var(--mono); font-size: 11.5px; }
 .axis-switch { position: relative; flex: none; width: 36px; height: 20px; padding: 0; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--muted) 38%, transparent); cursor: pointer; transition: background .16s; }
 .axis-switch[data-state="checked"] { background: var(--accent); }
 .axis-switch:focus-visible { outline: none; box-shadow: var(--focus); }
@@ -184,6 +188,10 @@
 .axis-card.is-ult .axis-card-body b { font-size: 15px; }
 .axis-card.is-ult .axis-card-ult { color: var(--axis-ult); font-size: 12px; font-style: italic; font-weight: 800; letter-spacing: .12em; }
 .axis-card.is-ult .axis-card-follow em { color: color-mix(in srgb, #fff 85%, var(--accent)); }
+.axis-card-ult-line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; }
+/* 拉条溢出的角标：琥珀色，和「额外」区分；终结技、阿哈时刻卡底色深，改白底 */
+.axis-card-overflow { background: color-mix(in srgb, #d97706 18%, var(--panel)); color: color-mix(in srgb, #b45309 85%, var(--text)); font-weight: 700; }
+.axis-card.is-ult .axis-card-overflow, .axis-card.is-aha .axis-card-overflow { background: #fff; color: #b45309; }
 /* 立绘框：贴在横幅右边，里面的立绘按每个角色的头像取景摆（位置由 TimelineCard 算）。
  * 渐隐加在立绘本身：立绘常常只占框的右半边，加在框上的话立绘左边缘落在不透明区，会露出一道硬边。 */
 .axis-card-art { position: absolute; top: 0; right: 0; width: 180px; height: 100%; overflow: hidden; pointer-events: none; }
@@ -238,6 +246,7 @@
 .axis-detail-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .axis-detail-chips span { padding: 0 6px; border-radius: 4px; background: var(--panel-2); color: var(--accent-strong); font-family: var(--mono); font-size: 11.5px; }
 .axis-detail-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.axis-detail-actions .is-on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); }
 
 /* 阿哈时刻 */
 .axis-elation { margin-bottom: 12px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 6%, var(--panel)); }

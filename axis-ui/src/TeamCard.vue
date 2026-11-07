@@ -49,7 +49,8 @@ const targetLabel = computed(() => TARGET_LABELS[props.member.id] ?? "技能目�
 const displayName = computed(() => props.member.custom?.name || props.item?.name || props.member.id);
 
 const coneName = computed(() => props.lightcones.find((cone) => String(cone.id) === member.value.lightconeId)?.name);
-const overrideCount = computed(() => Object.keys(member.value.overrides).length);
+// 逐动改出招和逐动改目标一起算，「恢复自动」一起清掉。
+const overrideCount = computed(() => Object.keys(member.value.overrides).length + Object.keys(member.value.targetOverrides ?? {}).length);
 
 const manualText = computed({
   get: () => (member.value.manualUltimates ?? defaultManualUltimates(member.value.id)).join("，"),
@@ -59,6 +60,21 @@ const manualText = computed({
     emit("change");
   },
 });
+
+// 留大：开大点在时间轴卡片上点出来，这里只选方式、看设了几个、一键清空。
+const holdCount = computed(() => member.value.ultAfter?.length ?? 0);
+// 只在还没设开大点时说怎么设，别的情况旁边已经写着了。
+const ultHint = computed(() => (member.value.ultMode === "hold" && holdCount.value === 0 ? "点开时间轴上的卡片，选「在这之后开大」" : ""));
+const setUltMode = (event: Event): void => {
+  const value = (event.target as HTMLSelectElement).value;
+  if (value === "hold") member.value.ultMode = "hold";
+  else delete member.value.ultMode;
+  emit("change");
+};
+const clearHolds = (): void => {
+  member.value.ultAfter = [];
+  emit("change");
+};
 
 const numberOr = (value: string, fallback: number): number => {
   const parsed = Number(value);
@@ -89,6 +105,7 @@ const setAssist = (event: Event): void => {
 };
 const clearOverrides = (): void => {
   member.value.overrides = {};
+  delete member.value.targetOverrides;
   emit("change");
 };
 </script>
@@ -202,8 +219,19 @@ const clearOverrides = (): void => {
             <span>第几动后开大 <small>算不出开大时点，按实际填，多次用逗号隔开</small></span>
             <input v-model.lazy="manualText" class="input" />
           </label>
+          <label v-else class="axis-field axis-field-wide">
+            <span>开大 <small v-if="ultHint">{{ ultHint }}</small></span>
+            <select :value="member.ultMode === 'hold' ? 'hold' : 'auto'" class="input" @change="setUltMode">
+              <option value="auto">有大就开</option>
+              <option value="hold">留大，到开大点再开</option>
+            </select>
+          </label>
+          <div v-if="member.ultMode === 'hold' && holdCount > 0" class="axis-field axis-field-wide axis-build">
+            <span>{{ holdCount }} 个开大点</span>
+            <button class="ghost small" type="button" @click="clearHolds">清空</button>
+          </div>
           <div v-if="overrideCount > 0" class="axis-field axis-field-wide axis-build">
-            <span>改过 {{ overrideCount }} 动的出招</span>
+            <span>改过 {{ overrideCount }} 处出招或目标</span>
             <button class="ghost small" type="button" @click="clearOverrides">恢复自动</button>
           </div>
         </div>

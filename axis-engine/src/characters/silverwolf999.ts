@@ -42,6 +42,16 @@ export class SilverWolf999Kit extends Kit {
     }
   }
 
+  /**
+   * 秘技「朋友，这才是T0级秘技」：每个波次开始时触发 1 次【怪怪怪味豆】对应的【头号补给盲盒】，
+   * 【怪怪怪味豆】获得 3 笑点（终结技参数 #6，4.6.54 版本资料）。行动轴只模拟第一波。
+   * 2026-11-07 群里反馈：开局秘技没算这 3 笑点。
+   */
+  onTechnique({ engine, self }: KitContext): void {
+    engine.record("tech", self, "朋友，这才是T0级秘技", { details: ["开战触发 1 次【怪怪怪味豆】的【头号补给盲盒】", "笑点 +3（隐藏分同步 +3）"] });
+    this.el.gainPunchline(3);
+  }
+
   canUltimate(): boolean {
     return this.invincible <= 0;
   }

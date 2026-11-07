@@ -13,7 +13,7 @@ import { Elation, type ElationConfig } from "./modules/elation.ts";
 import { Equipment } from "./modules/equipment.ts";
 import { LIGHTCONE_EFFECTS } from "./modules/gear-effects.ts";
 import { SkillPoints } from "./modules/skill-points.ts";
-import type { ActionKind, AssistPreference, BattleModule, CycleStructure, EnergyType, UnitGear, UnitSpec } from "./types.ts";
+import type { ActionKind, AssistPreference, BattleModule, CycleStructure, EnergyType, UltMode, UltPoint, UnitGear, UnitSpec } from "./types.ts";
 
 export interface MemberInput {
   id: string;
@@ -34,11 +34,17 @@ export interface MemberInput {
   initialEnergy?: number;
   initAdv?: number;
   targetSlot?: number | null;
+  /** 逐动改目标：第 n 动（从 1 数）的技能选中哪个站位；没填的动按 targetSlot。 */
+  targetScript?: (number | null)[];
   rotation?: ActionKind;
   /** 逐动覆盖：第 n 动用什么。 */
   script?: ActionKind[];
   /** 第几动之后开大（不看能量）。遐蝶默认第 2 动，因为她的开大时点算不出来。 */
   manualUltimates?: number[];
+  /** 开大方式：auto 有大就开（默认），hold 留大，只在 ultAfter 的开大点之后开。 */
+  ultMode?: UltMode;
+  /** 留大的开大点：站位 slot 的角色第 action 动结束后。 */
+  ultAfter?: UltPoint[];
   /** 光锥和叠影（1~5）。光锥的速度和能量恢复效率由它给出，flatSpd、pctSpd、err 不要重复填。 */
   lightcone?: { id: string; superimpose?: number };
   /** 遗器套装：几件生效。套装效果同样不要重复填进 flatSpd、pctSpd、err。 */
@@ -132,11 +138,14 @@ function customSpec(member: MemberInput, custom: CustomCharacter, data: GameData
     rotation: member.rotation ?? "skill",
     script: member.script,
     manualUltimates: member.manualUltimates,
+    ultMode: member.ultMode,
+    ultAfter: member.ultAfter,
     ultimateAttacks: true,
     energyGains: { ...custom.energy },
     eidolon: member.eidolon ?? 0,
     elation: false,
     targetSlot: member.targetSlot ?? null,
+    targetScript: member.targetScript,
     equipment: { ...member.equipment },
     kit: customKit(member, custom),
   };
@@ -146,6 +155,10 @@ export interface BattleInput {
   team: MemberInput[];
   maxAV?: number;
   useTechnique?: boolean;
+  /** 进场角色（开怪时操控的角色）的站位。真珠、刻律德菈的秘技转到他身上；不填按各自的技能目标。 */
+  leadSlot?: number | null;
+  /** 几名角色同时能开大时的先后（站位列表），没列到的按站位。 */
+  ultOrder?: number[];
   /** 模式的轮次结构，来自 modes.json。不填按混沌回忆。 */
   cycle?: CycleStructure;
   /** 敌人数量，默认 1。只影响「每击中 1 个目标」这类回能。 */
@@ -295,6 +308,8 @@ function unitSpec(member: MemberInput, data: GameData, names: Map<string, GameDa
     rotation: member.rotation ?? (entry?.rotation === "basic" ? "basic" : "skill"),
     script: member.script,
     manualUltimates: member.manualUltimates ?? DEFAULT_MANUAL_ULTIMATES[member.id],
+    ultMode: member.ultMode,
+    ultAfter: member.ultAfter,
     ultimateAttacks: !NON_ATTACK_ULTIMATES.has(member.id) && !MIGRATED_KITS.has(member.id),
     energyGains: { basic: gains.Normal ?? 20, skill: gains.BPSkill ?? 30, ultimate: gains.Ultra ?? 5 },
     eidolon: member.eidolon ?? 0,
@@ -302,6 +317,7 @@ function unitSpec(member: MemberInput, data: GameData, names: Map<string, GameDa
     assist: member.assist,
     elation: entry?.elation ?? local?.pathName === "欢愉",
     targetSlot: member.targetSlot ?? null,
+    targetScript: member.targetScript,
     equipment: { hasSigLc, ...member.equipment },
     kit: KITS[member.id]?.(),
     measured: member.measured,
@@ -318,6 +334,8 @@ export function createBattle(input: BattleInput, data: GameData): AxisEngine {
     units,
     cycle: input.cycle,
     useTechnique: input.useTechnique ?? true,
+    leadSlot: input.leadSlot ?? null,
+    ultOrder: input.ultOrder,
     enemyCount: input.enemyCount,
     modules: input.damage ? [new DamageLedger(input.damage), ...modules] : modules,
     lateModules: [new Equipment({ dancePct: input.dancePct ?? 24 })],

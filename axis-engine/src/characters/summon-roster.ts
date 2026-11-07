@@ -1337,7 +1337,7 @@ class CyreneKit extends SummonKit {
       unit.energy = unit.ultCost;
       engine.record("note", self, "激活终结技", { details: [`${unit.name} ${unit.energyName ?? "能量"} ${fmt(before)} → ${fmt(unit.ultCost)}`] });
     }
-    for (const unit of engine.units) if (unit !== self) engine.maybeUltimate(unit);
+    engine.sweepUltimates(self);
   }
 }
 

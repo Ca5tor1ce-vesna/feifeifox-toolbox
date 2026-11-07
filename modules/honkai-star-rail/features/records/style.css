@@ -96,9 +96,93 @@
   flex-wrap: wrap;
 }
 
-.hr-label {
+.hr-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 8px 10px;
+}
+
+.hr-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.hr-field-wide {
+  grid-column: span 2;
+}
+
+.hr-field .hr-stage {
+  width: 100%;
+  min-width: 0;
+}
+
+.hr-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hr-cat {
+  padding: 3px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
   color: var(--muted);
   font-size: 13px;
+  cursor: pointer;
+}
+
+.hr-cat.is-active {
+  background: rgba(232, 184, 75, 0.15);
+  color: var(--accent);
+  border-color: rgba(232, 184, 75, 0.4);
+}
+
+.hr-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex-basis: 100%;
+}
+
+.hr-tag {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 18px;
+}
+
+.hr-more-filters {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .hr-field-wide {
+    grid-column: auto;
+  }
+
+  .hr-filters:not(.is-open) .hr-field-more {
+    display: none;
+  }
+
+  .hr-more-filters {
+    display: inline-block;
+  }
+}
+
+.hr-more {
+  align-self: center;
+  padding: 6px 14px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
 }
 
 .hr-stage {
@@ -108,15 +192,6 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   min-width: 220px;
-}
-
-.hr-chip {
-  padding: 3px 12px;
-  border-radius: 999px;
-  background: rgba(232, 184, 75, 0.15);
-  color: var(--accent);
-  border: 1px solid rgba(232, 184, 75, 0.4);
-  font-size: 13px;
 }
 
 .hr-meta {
@@ -151,6 +226,8 @@
 
 .hr-card-head {
   display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   justify-content: space-between;
   align-items: baseline;
 }
@@ -336,9 +413,7 @@
 .hr-wrap .hr-status { font-size: 12px; }
 
 .hr-wrap .hr-stagebar { gap: 10px; margin: 8px 0 14px; font-size: 13px; }
-.hr-wrap .hr-label { color: var(--muted); }
 .hr-wrap .hr-stage { min-width: 0; padding: 0 2px; border: 0; background: transparent; color: var(--text); font-weight: 700; font-size: 13px; }
-.hr-wrap .hr-chip { padding: 0; border: 0; background: none; color: var(--muted); font-size: 13px; }
 
 .hr-wrap .hr-grid { display: block; border: 1px solid #f0e1e7; border-radius: 14px; background: #fffdfd; overflow: hidden; }
 .hr-wrap .hr-grid-head, .hr-wrap .hr-card { display: grid; grid-template-columns: 165px minmax(0, 1fr) 60px 60px 86px 150px; gap: 0 12px; align-items: center; padding: 0 20px; }
@@ -394,8 +469,6 @@
   .hr-wrap .hr-cons { font-size: 10.5px; }
   .hr-wrap .hr-stats { align-items: center; gap: 12px; }
   .hr-wrap .hr-date { align-self: center; font-size: 11.5px; text-align: right; }
-  /* 关卡下拉框里已经写着「· 0轮次」，后面不再重复 */
-  .hr-wrap .hr-stagebar .hr-chip { display: none; }
   .hr-wrap .hr-meta { width: 100%; text-align: right; }
   /* 手机：顶栏已经写着「角色顶分」，页内大标题不再重复；四个模式一行排开，不折成两行 */
   .hr-wrap .hr-title { display: none; }

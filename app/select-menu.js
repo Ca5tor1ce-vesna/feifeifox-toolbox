@@ -114,14 +114,17 @@ window.GT_INSTALL_SELECT_MENU = () => {
 };
 window.GT_INSTALL_SELECT_MENU();
 
-window.GT_DIALOG = (message, confirm = false) => new Promise(resolve => {
+/* 外壳的确认和提示框（代替浏览器自带的弹框，内嵌网页里那些会被拦掉）。confirm 为 true 时多一个取消按钮，返回点的是不是确定。
+ * options（可选）：title 标题、ok / cancel 按钮文字、details 放在文字下面的节点、wide 宽一点（放更新内容）。 */
+window.GT_DIALOG = (message, confirm = false, options = {}) => new Promise(resolve => {
   const dialog = document.createElement('dialog');
-  dialog.className = 'gt-dialog';
+  dialog.className = options.wide ? 'gt-dialog gt-whats-new' : 'gt-dialog';
+  if (options.title) { const title = document.createElement('h2'); title.textContent = options.title; dialog.append(title); }
   const text = document.createElement('p'); text.textContent = message;
   const actions = document.createElement('div'); actions.className = 'gt-dialog-actions';
-  if (confirm) { const cancel = document.createElement('button'); cancel.type = 'button'; cancel.textContent = '取消'; cancel.onclick = () => dialog.close('cancel'); actions.append(cancel); }
-  const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'gt-dialog-primary'; ok.textContent = '确定'; ok.onclick = () => dialog.close('ok'); actions.append(ok);
-  dialog.append(text, actions); document.body.append(dialog);
+  if (confirm) { const cancel = document.createElement('button'); cancel.type = 'button'; cancel.textContent = options.cancel || '取消'; cancel.onclick = () => dialog.close('cancel'); actions.append(cancel); }
+  const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'gt-dialog-primary'; ok.textContent = options.ok || '确定'; ok.onclick = () => dialog.close('ok'); actions.append(ok);
+  dialog.append(text); if (options.details) dialog.append(options.details); dialog.append(actions); document.body.append(dialog);
   dialog.addEventListener('close', () => { const accepted = dialog.returnValue === 'ok'; dialog.remove(); resolve(accepted); }, { once: true });
   dialog.showModal(); (confirm ? actions.firstElementChild : ok).focus();
 });

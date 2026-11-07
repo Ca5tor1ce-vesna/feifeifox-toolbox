@@ -6,7 +6,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { legacyCatalog, simulateLegacy, thresholdLegacy } from "../../axis-engine/src/legacy.ts";
+import { buildLegacyBattle, legacyCatalog, simulateLegacy, thresholdLegacy } from "../../axis-engine/src/legacy.ts";
 
 type Ev = any;
 type Result = any;
@@ -257,27 +257,33 @@ test("需求速度 = 10000 × (动数 − 拉条%/100) ÷ 目标行动值", () =
 
 // ---- 笑点口径 ---- //
 
-test("单火花没人出招：第一次【阿哈时刻】消耗 0，欢愉技不灌池", () => {
+test("单火花没人出招：第一次【阿哈时刻】只消耗开战的 1 个人头笑点，欢愉技不灌池", () => {
   const res = sim({ maxAV: 130, ...QUIET, team: [{ id: "1501", baseSpd: 1, traceSpd: 0, elation: true }] });
   const spark = res.units[0];
-  assert.equal(res.summary.punchlineGranted, 0);
-  assert.equal(res.summary.punchlineConsumed, 0);
-  assert.equal(res.resources.punchline, 0);
+  // 4.6 版本游戏配置：开战和每次【阿哈时刻】结束都按欢愉角色数 × 1 加笑点（结束时在消耗之后）。这里 1 名欢愉角色：
+  // 开战 +1，第一次【阿哈时刻】消耗这 1 个，结束再 +1。
+  assert.equal(res.summary.punchlineGranted, 2);
+  assert.equal(res.summary.punchlineConsumed, 1);
+  assert.equal(res.resources.punchline, 1);
+  assert.deepEqual(labels(res, "人头笑点")[0].details, ["场上 1 名欢愉角色，每人 1 笑点：笑点 +1"]);
   assert.equal(spark.actionCount, 0);
-  assert.deepEqual(spark.mechanics.haohuo, []);
+  // 开战每人 20 好活当赏；【阿哈时刻】消耗的 1 个笑点也给 1。
+  assert.deepEqual(spark.mechanics.haohuo.map((item: Ev) => [item.label, item.count]), [["开战", 20], ["阿哈时刻", 1]]);
   const skills = elationSkills(res);
   assert.deepEqual(skills.map((ev: Ev) => ev.label), ["火花 的欢愉技"]);
   assert.deepEqual(skills[0].details, ["不产生笑点", "基础回能 5 × (1+ERR)"]);
-  assert.deepEqual(labels(res, "【阿哈时刻】笑点结算")[0].details, ["消耗笑点 0"]);
+  assert.deepEqual(labels(res, "【阿哈时刻】笑点结算")[0].details, ["消耗笑点 1"]);
   assert.ok(!JSON.stringify(res.timeline).includes("固定 +20 笑点"));
   near(skills[0].av, 10000 / 80.2, "", 4);
 });
 
 test("秘技额外回合按 20 记账不进池；E6 首大是进池的 100 笑点", () => {
   const tech = sim({ maxAV: 1, useTech: true, useAeonAha: true, team: [{ id: "1511" }, { id: "1501" }, { id: "8009" }, { id: "1503", targetSlot: 1 }] });
-  assert.equal(tech.summary.punchlineGranted, 0);
+  // 额外回合不消耗、不进池；开战和额外回合结束时 4 名欢愉角色各给 1 个人头笑点（4.6 版本游戏配置）。
+  assert.equal(tech.summary.punchlineGranted, 4 + 4);
   assert.equal(tech.summary.punchlineConsumed, 0);
-  assert.equal(tech.resources.punchline, 0);
+  assert.equal(tech.resources.punchline, 4 + 4);
+  assert.equal(labels(tech, "人头笑点")[0].extra, true);
   assert.equal(tech.aha.extraTriggerCount, 1);
   assert.equal(tech.aha.triggerCount, 0);
   assert.ok(!someNote(tech, (note) => note.includes("笑点首达 40")));
@@ -302,19 +308,44 @@ test("秘技额外回合按 20 记账不进池；E6 首大是进池的 100 笑�
   assert.ok(hits[0].includes("全队暴伤 +40%"));
 });
 
+test("阿哈开大拉条超过【阿哈时刻】剩余距离时，记下溢出了多少 AV", () => {
+  // 【阿哈时刻】底速 200 + 0.2 × 阿哈速度 100 = 220。开局拉 95%，剩 500 距离（2.27 AV）；
+  // E1 开局 8 愿力立刻开大，拉条 20% = 2000 距离，溢出 1500 / 220 = 6.82 AV。
+  const team = [{ id: "1511", eidolon: 1, baseSpd: 100, traceSpd: 0, lcBaseSpd: 0, permPct: 0, permFlat: 0, rotation: "basic", equipment: { hasSigLc: false, godJoy: false } }];
+  const base = { maxAV: 5, useTech: false, trace3Advance: false, e1Wishpower: 8, ultAdvanceAha: 20, aeonAhaBaseSpd: 200, aeonAhaLcBaseSpd: 0, team };
+  const overflowsOf = (payload: Payload) => {
+    const battle = buildLegacyBattle(payload);
+    battle.engine.run();
+    return battle.engine.overflows;
+  };
+  const items = overflowsOf({ ...base, ahaAdvancePct: 95 }).filter((item) => item.target === "【阿哈时刻】");
+  assert.equal(items.length, 1);
+  assert.equal(items[0].av, 0);
+  assert.equal(items[0].pct, 20);
+  near(items[0].leftAv, 500 / 220, "剩余");
+  near(items[0].wastedAv, 1500 / 220, "溢出");
+  assert.equal(items[0].after?.label, "星神★阿哈 的终结技");
+
+  // 剩余距离够拉（开局没拉条，剩 10000）：不记。
+  assert.equal(overflowsOf({ ...base, ahaAdvancePct: 0 }).filter((item) => item.target === "【阿哈时刻】").length, 0);
+});
+
 test("欢愉技和绯英转移不凭空生成笑点，也不连触发两次首达 40", () => {
   const res = sim({ maxAV: 1, useTech: true, team: [{ id: "1511" }, { id: "1506" }, { id: "1505" }, { id: "1501" }] });
-  assert.equal(res.summary.punchlineGranted, 0);
+  // 只有开战的人头笑点 4、银狼秘技的 3 和额外【阿哈时刻】结束时的人头笑点 4。
+  assert.equal(res.summary.punchlineGranted, 4 + 3 + 4);
   assert.equal(res.summary.punchlineConsumed, 0);
   assert.ok(!someNote(res, (note) => note.includes("笑点首达 40")));
   const wolf = unit(res, "1506");
   const fei = unit(res, "1505");
   assert.equal(wolf.ultCount, 0);
   // 开局是阿哈秘技给的额外回合，欢愉技固定计入 20 笑点：银狼自己的欢愉技 +15，【真结局解锁条件】计入 ≥20 再 +20（2026-11-05 补上）。
-  assert.equal(wolf.finalEnergy, 35, "银狼欢愉技 +15，真结局 +20");
+  // 笑点同步成隐藏分：开战人头 4、银狼秘技 3、额外回合结束的人头笑点 4（2026-11-07 补上）。开战的 20 好活当赏没升格，不进隐藏分。
+  assert.equal(wolf.finalEnergy, 4 + 3 + 35 + 4, "开战人头 +4，秘技 +3，银狼欢愉技 +15，真结局 +20，人头 +4");
   // 240 开局 + 20 秘技 + 5 欢愉技回能 + 5 附加好活当赏 + 20 阿哈额外回合好活当赏
   // + 阿哈/火花编号更小，各转移 10；银狼编号 999 不转移。310 - 240 + 5 = 75。
-  assert.equal(fei.finalEnergy, 75);
+  // 开战再多 40：自己的开战好活当赏 20，阿哈、火花的开战好活当赏各转移 10（2026-11-07）。
+  assert.equal(fei.finalEnergy, 75 + 40);
   assert.equal(unit(res, "1511").mechanics.wishpower, 1);
   assert.ok(fei.mechanics.haohuo.some((item: Ev) => item.label === "阿哈时刻额外回合" && item.count === 20));
   assert.ok(!JSON.stringify(res.timeline).includes("固定 +20 笑点"));
@@ -390,7 +421,9 @@ test("兔子戏法只在升格后写在欢愉技上，不额外加笑点", () =>
   assert.equal(skills[0].details[0], "不产生笑点");
   assert.ok(skills[0].details.some((d: string) => d.includes("兔子戏法") && d.includes("50%")));
   assert.ok(someNote(res, (n) => n.includes("不加这份笑点")));
-  assert.equal(res.summary.punchlineGranted, 0);
+  // 只有人头笑点：开战和 1 次【阿哈时刻】结束，各 2 名欢愉角色。
+  assert.equal(res.timeline.filter((ev: Ev) => ev.type === "aha").length, 1);
+  assert.equal(res.summary.punchlineGranted, 2 + 2);
 });
 
 test("升格后，开拓者终结技打中阿哈时先放自己的欢愉技", () => {
@@ -399,7 +432,7 @@ test("升格后，开拓者终结技打中阿哈时先放自己的欢愉技", ()
   assert.ok(skills.length >= 2);
   assert.deepEqual(skills.slice(0, 2).map((ev: Ev) => ev.name), ["开拓者•欢愉", "星神★阿哈"]);
   assert.ok(anyDetail(res, (d) => d.includes("主角光环")));
-  assert.equal(res.summary.punchlineGranted, 8);
+  assert.equal(res.summary.punchlineGranted, 8 + 2, "另有开战 2 名欢愉角色的人头笑点");
 });
 
 test("跃然纸上：升格后额外回合结束，该次好活当赏收到 10%，笑点 10% 不重复加", () => {
@@ -420,9 +453,10 @@ test("升格后新获得的好活当赏把真珠自己夹到 75，队友不夹",
     team: [{ ...SLOW_AHA, eidolon: 6 }, { id: "1503", baseSpd: 1, traceSpd: 0, targetSlot: 2 }, { id: "1501", baseSpd: 1, traceSpd: 0 }],
   });
   const total = (id: string) => unit(res, id).mechanics.haohuo.reduce((sum: number, item: Ev) => sum + item.count, 0);
+  // 真珠：开战 20，第一次【阿哈时刻】夹到 75 - 20 = 55，之后已满不再加。
   near(total("1503"), 75);
-  // E6 首次拉条保留：0 AV 消耗 100，后续自然阿哈再消耗返还的 10。
-  near(total("1501"), 110);
+  // 火花不夹：开战 20；0 AV 消耗开战人头 3 + E6 首大 100 = 103；后续自然阿哈再消耗返还的 10.3 和人头 3。
+  near(total("1501"), 20 + 103 + 13.3);
 });
 
 const PEARL_PULL = { id: "1503", initAdv: 100, err: 0, baseSpd: 200, traceSpd: 0, targetSlot: 0 };
@@ -431,13 +465,14 @@ test("全息幻象：升格后好活当赏的 20% 进隐藏分，没升格不加
   const team = [SLOW_AHA, PEARL_PULL, { id: "1506", baseSpd: 1, traceSpd: 0 }];
   const res = sim({ maxAV: 5, ...ASCENDED, team });
   const wolf = unit(res, "1506");
+  // 开战 3 名欢愉角色的人头笑点同步隐藏分 +3（这时还没升格，开战的好活当赏不进隐藏分）；
   // 真珠在 0 AV 开大，全队好活当赏 20，银狼按升格规则拿 20% = 4。
-  near(wolf.finalEnergy, 4);
+  near(wolf.finalEnergy, 3 + 4);
   near(wolf.mechanics.hiddenOverflow, 0);
   assert.equal(wolf.ultCount, 0);
   assert.ok(anyDetail(res, (d) => d.includes("好活当赏 20 的 20% → 隐藏分 +4.00")));
   const plain = sim({ maxAV: 5, ...QUIET, team: team.slice(1) });
-  assert.equal(unit(plain, "1506").finalEnergy, 0);
+  assert.equal(unit(plain, "1506").finalEnergy, 2, "只有开战 2 名欢愉角色的人头笑点");
   assert.ok(!plain.timeline.some((ev: Ev) => ev.label.includes("全息幻象")));
 });
 
@@ -450,7 +485,8 @@ test("书中折花：升格后能量可溢出最多 60，开大后写回来，�
   assert.ok(note.length > 0);
   assert.ok(note.some((ev: Ev) => ev.details.some((d: string) => d.includes("溢出能量 60.00"))));
   assert.ok(note.some((ev: Ev) => ev.details.some((d: string) => d.includes("不触发天赋好活当赏"))));
-  near(unit(res, "1505").finalEnergy, 70); // 540 - 2×240 + 2×5
+  // 540 - 2×240 + 2×5 + 10：开战多拿的好活当赏让累计回能多跨过一次 240，最后一轮多一次【狐狸老师】+10。
+  near(unit(res, "1505").finalEnergy, 80);
   assert.ok(unit(res, "1505").ultCount >= 1);
 });
 
@@ -507,7 +543,7 @@ test("开拓者终结技：目标有欢愉技则计入 20 且不进池；没有�
   assert.deepEqual(skill[0].details, ["不产生笑点", "基础回能 5 × (1+ERR)"]);
   // 终结技自己的 +5 发生在备注快照之后、欢愉技之前
   near(skill[0].res.punchline, note.res.punchline + 5);
-  assert.equal(forced.summary.punchlineGranted, 8);
+  assert.equal(forced.summary.punchlineGranted, 8 + 2, "另有开战 2 名欢愉角色的人头笑点");
   assert.equal(forced.summary.punchlineConsumed, 0);
   assert.ok(unit(forced, "1501").mechanics.haohuo.some((item: Ev) => item.label === "开拓者终结技·计入笑点" && item.count === 20));
   assert.ok(!JSON.stringify(forced.timeline).includes("固定 +20 笑点"));
@@ -516,7 +552,7 @@ test("开拓者终结技：目标有欢愉技则计入 20 且不进池；没有�
   has(labels(pulled, "开拓者•欢愉终结技")[0].details, "砂金(存护) 拉条 50%");
   assert.equal(elationSkills(pulled).length, 0);
   assert.ok(pulled.units.every((u: Ev) => u.mechanics.haohuo.every((item: Ev) => item.label !== "开拓者终结技·计入笑点")));
-  assert.equal(pulled.summary.punchlineGranted, 8);
+  assert.equal(pulled.summary.punchlineGranted, 8 + 1, "存护砂金不是欢愉角色，开战只有 1 个人头笑点");
 });
 
 // ---- 能量 ---- //
@@ -526,10 +562,11 @@ test("标准能量角色进战 = 上限 50%；愿力、隐藏分从 0 开始", (
   near(unit(res, "1503").finalEnergy, 90);
   near(unit(res, "1513").finalEnergy, 65);
   near(unit(res, "1505").initialEnergy, 240);
-  near(unit(res, "1505").finalEnergy, 5, "进战即可开大");
+  // 绯英进战即可开大：240 + 开战好活当赏 20 + 瞰众乐从编号更小的真珠、阿哈各转 10 = 280，开大后 40 + 5。
+  near(unit(res, "1505").finalEnergy, 45, "进战即可开大");
   near(unit(res, "1511").finalEnergy, 0, "愿力");
   res = sim({ maxAV: 1, useTech: false, team: [{ id: "1506" }] });
-  near(res.units[0].finalEnergy, 0, "隐藏分");
+  near(res.units[0].finalEnergy, 1, "隐藏分只有开战 1 个人头笑点");
 });
 
 test("欢愉技基础回能 5 × ERR", () => {
@@ -554,7 +591,7 @@ test("绯英按普通能量角色：战技 30 × ERR，终结技返还 5 × ERR"
   const res = sim({ maxAV: 1, ...QUIET, team: [{ id: "1505", baseSpd: 1, traceSpd: 0, initAdv: 100, err: 100 }] });
   assert.equal(res.units[0].energyType, "standard");
   has(res.timeline.find((ev: Ev) => ev.type === "skill").details, "基础回能 30 × (1+ERR)");
-  near(res.units[0].finalEnergy, 70); // 240 - 240 + 5×2 + 30×2
+  near(res.units[0].finalEnergy, 90); // 240 + 开战好活当赏 20 - 240 + 5×2 + 30×2
 });
 
 test("好活当赏转能量单次不超过 100", () => {
@@ -566,7 +603,8 @@ test("好活当赏转能量单次不超过 100", () => {
 
 test("银狼只吃自己的欢愉技 +15，队友欢愉技不给隐藏分", () => {
   const res = sim({ maxAV: 60, useTech: false, useAeonAha: true, aeonAhaBaseSpd: 200, aeonAhaLcBaseSpd: 0, team: [{ id: "1506", baseSpd: 1, traceSpd: 0 }, { id: "1503", baseSpd: 1, traceSpd: 0 }] });
-  near(unit(res, "1506").finalEnergy, 15);
+  // 自己的欢愉技 +15；开战和【阿哈时刻】结束时 2 名欢愉角色的人头笑点各同步 +2。
+  near(unit(res, "1506").finalEnergy, 15 + 2 + 2);
   assert.ok(!res.timeline.some((ev: Ev) => ev.res.energy === 30));
 });
 
@@ -672,4 +710,81 @@ test("砂金•戏浪【热意】E0 上限 30", () => {
 test("存护砂金【热手】开局护盾触发阿哈行迹2（+1 愿力）", () => {
   const res = sim({ maxAV: 1, ...QUIET, team: [{ id: "1511" }, { id: "1304" }] });
   assert.ok(anyDetail(res, (d) => d.includes("砂金【热手】开局护盾 → 愿力 +1")));
+});
+
+// ---- 2026-11-07 群里反馈：开局笑点和人头笑点 ---- //
+// 依据：4.6 版本游戏配置（阿哈时刻结束按欢愉角色数 × 1 加笑点；爻光秘技的自动战技是单独的技能类型），
+// 4.6.54 版本资料（银狼秘技每波触发【怪怪怪味豆】盲盒，终结技参数 #6 = 3 笑点）。
+
+test("爻光秘技开战自动放的战技不加笑点，也不算第 0 动的战技卡", () => {
+  const res = sim({ maxAV: 1, useTech: true, useAeonAha: false, team: [{ id: "1502" }] });
+  // 只有开战 1 个人头笑点，秘技的战技不加。
+  assert.equal(res.summary.punchlineGranted, 1);
+  assert.equal(res.resources.punchline, 1);
+  assert.ok(!res.timeline.some((ev: Ev) => ev.type === "skill"), "开局不该有爻光的战技卡");
+  const tech = labels(res, "爻光秘技")[0];
+  has(tech.details, "秘技触发的战技不算施放战技，不加 3 笑点");
+  // 结界照常展开 3 回合。
+  assert.equal(unit(res, "1502").mechanics.fieldTurns, 3);
+});
+
+test("银狼秘技开战 +3 笑点，隐藏分同步 +3；不用秘技没有", () => {
+  // 两边都有开战 1 个人头笑点。
+  const withTech = sim({ maxAV: 1, useTech: true, useAeonAha: false, team: [{ id: "1506" }] });
+  assert.equal(withTech.summary.punchlineGranted, 1 + 3);
+  assert.equal(unit(withTech, "1506").finalEnergy, 1 + 3);
+  has(labels(withTech, "朋友，这才是T0级秘技")[0].details, "笑点 +3（隐藏分同步 +3）");
+  const without = sim({ maxAV: 1, useTech: false, useAeonAha: false, team: [{ id: "1506" }] });
+  assert.equal(without.summary.punchlineGranted, 1);
+  assert.equal(unit(without, "1506").finalEnergy, 1);
+});
+
+test("普通【阿哈时刻】先消耗笑点池，再按欢愉角色数加人头笑点", () => {
+  // 两名欢愉角色都 1 速不出招，阿哈底速 200：开战 +2；第一次【阿哈时刻】消耗这 2，结束 +2；第二次消耗上次留下的 2，结束再 +2。
+  const res = sim({ maxAV: 100, ...QUIET, useAeonAha: true, aeonAhaBaseSpd: 200, aeonAhaLcBaseSpd: 0, team: [{ id: "1501", baseSpd: 1, traceSpd: 0 }, { id: "1503", baseSpd: 1, traceSpd: 0 }] });
+  const settles = labels(res, "【阿哈时刻】笑点结算").map((ev: Ev) => ev.details[0]);
+  assert.deepEqual(settles, ["消耗笑点 2", "消耗笑点 2"]);
+  const heads = labels(res, "人头笑点");
+  assert.equal(heads.length, 2);
+  heads.forEach((ev: Ev) => assert.equal(ev.res.punchline, 2));
+  assert.equal(res.summary.punchlineGranted, 2 + 2 + 2);
+  assert.equal(res.summary.punchlineConsumed, 2 + 2);
+});
+
+test("爻光开大的额外【阿哈时刻】结束也加人头笑点，不消耗笑点池", () => {
+  // 银狼隐藏分同步这一份由「欢愉技和绯英转移不凭空生成笑点」那条钉住（3 + 35 + 4）。
+  const res = sim({ maxAV: 600, useTech: false, useAeonAha: true, team: [{ id: "1502", rotation: "skill" }, { id: "1506" }, { id: "1505" }, { id: "1501" }] });
+  const extra = res.timeline.find((ev: Ev) => ev.type === "aha_extra");
+  assert.ok(extra, "爻光要有一次额外回合");
+  const at = res.timeline.filter((ev: Ev) => Math.abs(ev.av - extra.av) < 1e-9);
+  const head = at.find((ev: Ev) => ev.label === "【阿哈时刻】结束：人头笑点");
+  assert.ok(head && head.extra, "额外回合结束要记人头笑点");
+  assert.deepEqual(head.details, ["场上 4 名欢愉角色，每人 1 笑点：笑点 +4"]);
+  // 额外回合不消耗笑点池，欢愉技也不产笑点：结束时的笑点 = 开始时的笑点 + 4。
+  assert.equal(head.res.punchline, (extra.res.punchline as number) + 4);
+});
+
+test("真珠专武在开局【阿哈时刻】的群疗：星神★阿哈行迹 2 +1 愿力", () => {
+  // 阿哈秘技的额外回合：真珠欢愉技触发专武群疗 +1，阿哈自己的欢愉技 +1。不带专武只有后者。
+  const team = (pearlLc: boolean) => [{ id: "1511", baseSpd: 1, traceSpd: 0 }, { id: "1503", baseSpd: 1, traceSpd: 0, equipment: { hasPearlLc: pearlLc } }];
+  const withLc = sim({ maxAV: 1, useTech: true, useAeonAha: true, trace3Advance: false, team: team(true) });
+  assert.equal(unit(withLc, "1511").mechanics.wishpower, 2);
+  assert.ok(labels(withLc, "戏中人的异想国").some((ev: Ev) => ev.details[0] === "真珠专武《献给明日的色彩》群疗 → 愿力 +1"));
+  const without = sim({ maxAV: 1, useTech: true, useAeonAha: true, trace3Advance: false, team: team(false) });
+  assert.equal(unit(without, "1511").mechanics.wishpower, 1);
+});
+
+test("开战：每名欢愉角色 20 好活当赏，再按欢愉角色数加人头笑点，排在秘技前面", () => {
+  // 依据 4.6 版本游戏配置；2026-11-07 用户按游戏实际确认开局也有。和计入 20 笑点的额外【阿哈时刻】结束时一样结算，只是不放欢愉技。
+  const res = sim({ maxAV: 1, useTech: true, useAeonAha: false, team: [{ id: "1501", baseSpd: 1, traceSpd: 0 }, { id: "1506", baseSpd: 1, traceSpd: 0 }, { id: "1304", baseSpd: 1, traceSpd: 0 }] });
+  const opening = labels(res, "开战：欢愉角色进场")[0];
+  assert.deepEqual(opening.details, ["和计入 20 笑点的额外【阿哈时刻】一样结算，不放欢愉技", "场上 2 名欢愉角色：每人好活当赏 +20", "人头笑点：笑点 +2"]);
+  for (const id of ["1501", "1506"]) assert.deepEqual(unit(res, id).mechanics.haohuo.map((item: Ev) => [item.label, item.count]), [["开战", 20]], id);
+  assert.deepEqual(unit(res, "1304").mechanics.haohuo ?? [], [], "存护砂金不是欢愉角色");
+  // 人头 2 + 银狼秘技 3；开战那一行在银狼秘技之前。
+  assert.equal(res.summary.punchlineGranted, 2 + 3);
+  const at = (label: string) => res.timeline.findIndex((ev: Ev) => ev.label === label);
+  assert.ok(at("开战：欢愉角色进场") < at("朋友，这才是T0级秘技"));
+  // 没有欢愉角色就没有这一行。
+  assert.equal(labels(sim({ maxAV: 1, ...QUIET, team: [{ id: "1304" }] }), "开战：欢愉角色进场").length, 0);
 });

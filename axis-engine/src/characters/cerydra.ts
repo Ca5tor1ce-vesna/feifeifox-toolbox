@@ -135,10 +135,12 @@ export class CerydraKit extends Kit {
   }
 
   onTechnique({ engine }: KitContext): void {
-    engine.record("tech", this.self, "秘技【先手优势】", {
-      details: ["使用秘技后获得【军功】", "战斗开始时自动对持有【军功】的角色施放 1 次战技（不消耗战技点）"],
-    });
-    this.skill(false);
+    // 【军功】跟着当前操控的角色走，进战斗时在进场角色身上；没指定进场角色时按战技目标算。
+    const holder = engine.techniqueHolder();
+    const details = ["使用秘技后获得【军功】", "战斗开始时自动对持有【军功】的角色施放 1 次战技（不消耗战技点）"];
+    if (holder) details.push(`进场角色 ${holder.name} 持有【军功】`);
+    engine.record("tech", this.self, "秘技【先手优势】", { details });
+    this.skill(false, holder);
   }
 
   onUltimate({ engine, self }: KitContext): void {
@@ -155,9 +157,9 @@ export class CerydraKit extends Kit {
     }
   }
 
-  protected skill(extra: boolean): void {
+  protected skill(extra: boolean, forced?: Unit): void {
     const { engine, self } = this;
-    const target = engine.unitAt(engine.resolveTarget(self)) ?? self;
+    const target = forced ?? engine.unitAt(engine.resolveTarget(self)) ?? self;
     engine.targetAlly(self, target, "战技");
     this.setMark(target, "战技：施加【军功】");
     // 行迹【征服者】。

@@ -240,6 +240,18 @@ test("献给明日的色彩：真珠施放欢愉技固定回 10，其他人不�
   near(other.units[0].energy, start);
 });
 
+test("献给明日的色彩：欢愉技的群疗给星神★阿哈行迹 2 +1 愿力，每个终结技周期 1 次", () => {
+  // 2026-11-07 群里反馈：开局【阿哈时刻】里真珠专武回血，阿哈应该 +1 愿力。
+  const engine = opening(zero("1503", { ...cone("23055"), ...SLOW }), zero("1511", SLOW));
+  const aha = engine.units[1];
+  const before = aha.energy;
+  engine.attack(engine.units[0], "elation_skill");
+  near(aha.energy, before + 1, "第一次群疗");
+  engine.attack(engine.units[0], "elation_skill");
+  near(aha.energy, before + 1, "同一个终结技周期里第二次不再给");
+  assert.ok(engine.timeline.some((row) => row.label === "戏中人的异想国" && row.details[0] === "真珠专武《献给明日的色彩》群疗 → 愿力 +1"));
+});
+
 // ------------------------------ 能量恢复效率 ------------------------------
 
 test("常驻能量恢复效率：一场术后对话 8%，S5 16%", () => {

@@ -101,6 +101,14 @@ export interface UnitGear {
   relics: { id: string; pieces: number }[];
 }
 
+export type UltMode = "auto" | "hold";
+
+/** 留大的开大点：某个站位的角色第几动结束后。 */
+export interface UltPoint {
+  slot: number;
+  action: number;
+}
+
 export interface UnitSpec {
   id: string;
   gear?: UnitGear;
@@ -127,6 +135,10 @@ export interface UnitSpec {
   script?: ActionKind[];
   /** 第几动之后开大（不看能量），用于算不出开大时点的角色。 */
   manualUltimates?: number[];
+  /** 开大方式：auto 有大就开（默认）；hold 留大，只在 ultAfter 指定的那几动之后开。 */
+  ultMode?: UltMode;
+  /** 留大时的开大点：站位 slot 的角色第 action 动（从 1 数，含额外回合）结束后开；能量不够就等攒够再开。 */
+  ultAfter?: UltPoint[];
   /** 终结技算一次攻击，由引擎发出攻击事件。自己结算攻击的模块不要打开。 */
   ultimateAttacks?: boolean;
   energyGains?: Partial<Record<ActionKind | "ultimate", number>>;
@@ -140,6 +152,8 @@ export interface UnitSpec {
   elation?: boolean;
   /** 指定目标所在的站位（令使、美学底本、星期日战技等）。 */
   targetSlot?: number | null;
+  /** 逐动改目标：第 n 动（从 1 数，含额外回合）的技能选中哪个站位，没填的按 targetSlot。终结技不按动数，不受它影响。 */
+  targetScript?: (number | null)[];
   equipment?: Record<string, boolean>;
   kit?: CharacterKit;
   /** 实际装配的真实属性（见 MemberInput.measured）。 */
@@ -153,6 +167,10 @@ export interface AxisConfig {
   cycle?: CycleStructure;
   /** 是否结算秘技，默认结算。 */
   useTechnique?: boolean;
+  /** 进场角色（开怪时操控的角色）的站位。真珠、刻律德菈的秘技会转到他身上。null 表示不指定，按各自的技能目标。 */
+  leadSlot?: number | null;
+  /** 几名角色同时能开大时的先后顺序（站位列表），没列到的按站位排在后面。 */
+  ultOrder?: number[];
   /** 敌人数量，默认 1。不模拟敌方，只用来算「每击中 1 个目标」这类回能。 */
   enemyCount?: number;
   /** 在角色模块之前安装：角色模块会用到它们的状态。 */
@@ -175,6 +193,20 @@ export interface AxisEvent {
   label: string;
   details: string[];
   res: Record<string, unknown>;
+}
+
+/** 一次拉条溢出：行动条剩余距离不够扣，到 0 为止，多出的作废。 */
+export interface AdvanceOverflow {
+  av: number;
+  /** 发生时时间轴上最后一条事件，通常就是触发这次拉条的动作。 */
+  after: AxisEvent | null;
+  /** 被拉条的单位。 */
+  target: string;
+  pct: number;
+  /** 拉条前离行动还差多少 AV。 */
+  leftAv: number;
+  /** 作废了多少 AV。 */
+  wastedAv: number;
 }
 
 export interface RecordOptions {

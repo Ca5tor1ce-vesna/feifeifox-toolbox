@@ -9,7 +9,16 @@ import { hasKit } from "../../axis-engine/src/characters/index.ts";
 import type { AxisEngine } from "../../axis-engine/src/engine.ts";
 import { AHA_WEIGHTS, type Elation } from "../../axis-engine/src/modules/elation.ts";
 import { LIGHTCONE_EFFECTS, RELIC_EFFECTS } from "../../axis-engine/src/modules/gear-effects.ts";
-import type { ActionKind, AxisEvent, UnsupportedMechanic } from "../../axis-engine/src/types.ts";
+import type { ActionKind, AxisEvent, UltMode, UnsupportedMechanic } from "../../axis-engine/src/types.ts";
+
+/** 留大的开大点：哪个角色的第几动之后。 */
+export interface UltMark {
+  id: string;
+  action: number;
+}
+
+/** 秘技效果跟着当前操控的角色走、进战斗时给进场角色的（4.6.54 版本资料）：真珠、刻律德菈。 */
+export const LEAD_TECHNIQUE_IDS = ["1503", "1412"];
 
 export interface PageMember {
   id: string;
@@ -32,7 +41,13 @@ export interface PageMember {
   rotation: ActionKind | null;
   /** 逐动覆盖：第 n 动（从 1 数）用什么。 */
   overrides: Record<string, ActionKind>;
+  /** 逐动改目标：第 n 动（从 1 数）的技能给哪位队友（id，换站位也不乱）。旧存档没有。 */
+  targetOverrides?: Record<string, string>;
   manualUltimates: number[] | null;
+  /** 开大方式：auto 有大就开；hold 留大，只在开大点之后开。旧存档没有，按 auto。 */
+  ultMode?: UltMode;
+  /** 留大的开大点：哪个角色（id，换站位也不乱）的第几动之后。 */
+  ultAfter?: UltMark[];
   /** 读取过哪份配装，只用来显示。 */
   buildName: string;
   /** 自定义角色的数值和效果；收录的角色是 null。 */
@@ -62,6 +77,10 @@ export interface PageState {
   /** 手动指定模拟到多少 AV，null 表示按模式和轮数。 */
   customAV: number | null;
   useTechnique: boolean;
+  /** 进场角色（开怪时操控谁）的 id：真珠、刻律德菈的秘技给他。null 按各自的技能目标。 */
+  leadId: string | null;
+  /** 几人同时能开大时的先后（id），没列到的按站位。 */
+  ultOrder: string[];
   enemyCount: number;
   team: PageMember[];
   elation: ElationSettings;
@@ -166,7 +185,7 @@ export const newElationSettings = (): ElationSettings => ({
   ahaAdvancePct: 0,
 });
 
-export const newState = (): PageState => ({ modeId: "moc", t: 2, customAV: null, useTechnique: true, enemyCount: 1, team: [], elation: newElationSettings(), rowFilter: "all", showDetail: false });
+export const newState = (): PageState => ({ modeId: "moc", t: 2, customAV: null, useTechnique: true, leadId: null, ultOrder: [], enemyCount: 1, team: [], elation: newElationSettings(), rowFilter: "all", showDetail: false });
 
 /** 选人列表：图鉴里的角色，加上图鉴还没收录、但资料和模块都有的角色（没有本地头像）。 */
 export function pageCharacters(game: GameData): CatalogItem[] {
@@ -211,6 +230,8 @@ export function restoreState(saved: unknown, data: PageData): PageState {
   if (data.modes.some((mode) => mode.id === raw.modeId)) state.modeId = raw.modeId as string;
   if (Number.isInteger(raw.t) && (raw.t as number) >= 0) state.t = raw.t as number;
   if (typeof raw.useTechnique === "boolean") state.useTechnique = raw.useTechnique;
+  if (typeof raw.leadId === "string") state.leadId = raw.leadId;
+  if (Array.isArray(raw.ultOrder)) state.ultOrder = raw.ultOrder.filter((id): id is string => typeof id === "string");
   if (Number.isInteger(raw.enemyCount) && (raw.enemyCount as number) >= 1) state.enemyCount = raw.enemyCount as number;
   if (typeof raw.customAV === "number" && raw.customAV >= 1 && raw.customAV <= MAX_WINDOW_AV) state.customAV = raw.customAV;
   if (ROW_FILTERS.some((item) => item.id === raw.rowFilter)) state.rowFilter = raw.rowFilter as RowFilter;
@@ -232,9 +253,61 @@ export function restoreState(saved: unknown, data: PageData): PageState {
     const custom = isCustomId(id) ? restoreCustom((member as Partial<PageMember>)?.custom) : null;
     if ((!known.has(id) && !custom) || seen.has(id) || seen.size >= 4) continue;
     seen.add(id);
-    state.team.push({ ...newMember(id), ...member, id, custom });
+    const restored: PageMember = { ...newMember(id), ...member, id, custom };
+    // 开大方式和开大点：认不出的丢掉，不让旧存档或手改的存档把页面弄坏。
+    if (restored.ultMode !== "hold") delete restored.ultMode;
+    restored.ultAfter = Array.isArray(restored.ultAfter)
+      ? restored.ultAfter.filter((mark) => typeof mark?.id === "string" && Number.isInteger(mark.action) && mark.action >= 1)
+      : [];
+    // 逐动改目标同样只留认得出的：键是正整数动数，值是队友 id。
+    const targets = restored.targetOverrides && typeof restored.targetOverrides === "object" ? restored.targetOverrides : {};
+    const kept = Object.entries(targets).filter(([key, id]) => /^[1-9]d*$/.test(key) && typeof id === "string");
+    if (kept.length > 0) restored.targetOverrides = Object.fromEntries(kept);
+    else delete restored.targetOverrides;
+    state.team.push(restored);
   }
   return state;
+}
+
+/** 某人在不在留大。遐蝶有自己的「第几动后开大」，不走这里。 */
+export const holdsUltimate = (member: PageMember): boolean => member.ultMode === "hold" && !needsManualUltimate(member.id);
+
+/** 点卡片切换开大点：有就去掉，没有就加上。 */
+export function toggleUltMark(member: PageMember, mark: UltMark): void {
+  const list = member.ultAfter ?? [];
+  const has = list.some((item) => item.id === mark.id && item.action === mark.action);
+  member.ultAfter = has ? list.filter((item) => !(item.id === mark.id && item.action === mark.action)) : [...list, mark];
+}
+
+/** 队里有秘技给进场角色的人时，才需要选进场角色。 */
+export const needsLead = (state: PageState): boolean => state.useTechnique && state.team.some((member) => LEAD_TECHNIQUE_IDS.includes(member.id));
+
+/** 开大顺序：用户排过的在前（只留还在队里的），其余按站位。 */
+export function ultOrderIds(state: PageState): string[] {
+  const ids = state.team.map((member) => member.id);
+  const first = state.ultOrder.filter((id, index, list) => ids.includes(id) && list.indexOf(id) === index);
+  return [...first, ...ids.filter((id) => !first.includes(id))];
+}
+
+/** 页面状态里按 id 记的东西（进场角色、开大顺序、开大点）翻成引擎要的站位；人不在队里了就不算。 */
+export function battleTargets(state: PageState): { leadSlot: number | null; ultOrder: number[]; ultAfter: (MemberInput["ultAfter"])[]; targetScript: (MemberInput["targetScript"])[] } {
+  const slotOf = new Map(state.team.map((member, slot) => [member.id, slot]));
+  const lead = needsLead(state) && state.leadId ? slotOf.get(state.leadId) ?? null : null;
+  return {
+    leadSlot: lead,
+    ultOrder: ultOrderIds(state).map((id) => slotOf.get(id)!),
+    ultAfter: state.team.map((member) => (holdsUltimate(member)
+      ? (member.ultAfter ?? []).flatMap((mark) => (slotOf.has(mark.id) ? [{ slot: slotOf.get(mark.id)!, action: mark.action }] : []))
+      : undefined)),
+    // 逐动改目标：没改过的动留 undefined（引擎按平时的目标）；目标不在队里了就当没改。
+    targetScript: state.team.map((member) => {
+      const entries = Object.entries(member.targetOverrides ?? {}).filter(([, id]) => slotOf.has(id) && id !== member.id);
+      if (entries.length === 0) return undefined;
+      const script: (number | null)[] = [];
+      for (const [key, id] of entries) script[Number(key) - 1] = slotOf.get(id)!;
+      return Array.from({ length: script.length }, (_, i) => script[i] ?? null);
+    }),
+  };
 }
 
 export const modeOf = (state: PageState, data: PageData): Mode =>
@@ -317,9 +390,22 @@ export interface Row {
   energyName: string;
   /** 第几动（从 1 数）；只有能覆盖的普攻、战技才有。 */
   action?: number;
+  /** 这一动的技能选中了哪位队友（站位）；没选队友的没有。逐动改目标用它。 */
+  target?: number;
   mark: boolean;
   /** 这条事件时的特殊资源，比如「笑点 20 · 愿力 3」。 */
   resources: string;
+  /** 紧跟这条事件发生的拉条溢出（剩余距离不够扣，多出的作废）。没有就不带。 */
+  overflows?: RowOverflow[];
+}
+
+export interface RowOverflow {
+  /** 被拉条的单位。 */
+  target: string;
+  pct: number;
+  /** 拉条前离行动还差多少 AV。 */
+  leftAv: number;
+  wastedAv: number;
 }
 
 export interface UnitView {
@@ -381,6 +467,7 @@ function resourceText(res: Record<string, unknown>): string {
 
 function buildRows(engine: AxisEngine, timeline: AxisEvent[]): Row[] {
   const counts = new Map<string, number>();
+  const overflowsOf = groupOverflows(engine, timeline);
   return timeline.map((event) => {
     const laneKey = laneKeyOf(event);
     const mark = laneKey !== null && MARK_TYPES.has(event.type);
@@ -394,6 +481,8 @@ function buildRows(engine: AxisEngine, timeline: AxisEvent[]): Row[] {
     // 特殊资源没有名字的（遐蝶【新蕊】）是引擎不模拟的，不显示，免得一直是 0 让人误会。
     const hidden = unit?.energyType === "resource" && energyName === "能量";
     const energy = hidden ? null : unit?.id === "1511" ? event.res.wishpower : unit?.id === "1506" ? event.res.hiddenScore : event.res.energy;
+    const action = event.type === "basic" || event.type === "skill" || event.type === "enhanced_basic" ? engine.actionIndexOf(event) : undefined;
+    const target = action !== undefined && event.slot !== null ? engine.actionTargetOf(event.slot, action) : undefined;
     return {
       key: `${bucket}-${nth}`,
       laneKey: laneKey ?? "",
@@ -407,11 +496,38 @@ function buildRows(engine: AxisEngine, timeline: AxisEvent[]): Row[] {
       extra: event.extra,
       energy: typeof energy === "number" ? energy : null,
       energyName,
-      action: event.type === "basic" || event.type === "skill" || event.type === "enhanced_basic" ? engine.actionIndexOf(event) : undefined,
+      action,
+      ...(target !== undefined ? { target } : {}),
       mark,
       resources: resourceText(event.res),
+      ...(overflowsOf.has(event) ? { overflows: overflowsOf.get(event) } : {}),
     };
   });
+}
+
+/** 这张卡上发生的拉条溢出（主动作、顺带的动作和说明行）。 */
+export const cardOverflows = (card: AxisCard): RowOverflow[] =>
+  [...(card.main ? [card.main] : []), ...card.follows, ...card.notes].flatMap((row) => row.overflows ?? []);
+
+/** 卡片详情里的一行说明。 */
+export const overflowText = (item: RowOverflow): string => {
+  const head = `${item.target} 拉条 ${Math.round(item.pct)}%`;
+  // 被拉的人同一时刻本来就要行动了：这口拉条整个作废。
+  if (item.leftAv < 0.05) return `${head}：已经轮到行动，${item.wastedAv.toFixed(1)} AV 全部作废`;
+  return `${head}：本来只差 ${item.leftAv.toFixed(1)} AV，溢出 ${item.wastedAv.toFixed(1)} AV 作废`;
+};
+
+/** 拉条溢出按发生时最后一条事件分组；还没有事件时算在第一条上。 */
+function groupOverflows(engine: AxisEngine, timeline: AxisEvent[]): Map<AxisEvent, RowOverflow[]> {
+  const groups = new Map<AxisEvent, RowOverflow[]>();
+  for (const item of engine.overflows) {
+    const event = item.after ?? timeline[0];
+    if (!event) continue;
+    const list = groups.get(event) ?? [];
+    list.push({ target: item.target, pct: item.pct, leftAv: item.leftAv, wastedAv: item.wastedAv });
+    groups.set(event, list);
+  }
+  return groups;
 }
 
 function elationView(engine: AxisEngine, rows: Row[], maxAV: number, mode: Mode): ElationView | null {
@@ -442,10 +558,17 @@ function elationView(engine: AxisEngine, rows: Row[], maxAV: number, mode: Mode)
 export function computeAxis(state: PageState, data: PageData, damage: DamageSetup | null = activeDamage()): AxisView {
   const mode = modeOf(state, data);
   const maxAV = windowAV(state, mode);
+  const targets = battleTargets(state);
   const engine = createBattle({
-    team: state.team.map(toMemberInput),
+    team: state.team.map((member, slot) => ({
+      ...toMemberInput(member),
+      ...(targets.targetScript[slot] ? { targetScript: targets.targetScript[slot] } : {}),
+      ...(holdsUltimate(member) ? { ultMode: "hold" as const, ultAfter: targets.ultAfter[slot] } : {}),
+    })),
     maxAV,
     useTechnique: state.useTechnique,
+    leadSlot: targets.leadSlot,
+    ultOrder: targets.ultOrder,
     cycle: { firstCycleAV: mode.firstCycleAV, cycleAV: mode.cycleAV },
     enemyCount: state.enemyCount,
     // 不勾时交给引擎按队伍判断：带了星神★阿哈就用她的底速。

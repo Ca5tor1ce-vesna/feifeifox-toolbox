@@ -27,7 +27,7 @@ import { listZip, writeZip } from "./zip.mjs";
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const DIST = join(ROOT, "dist");
 const SLUG = "feifeifox-toolbox";
-export const KINDS = { portable: ".zip", toy: ".zip", beta: ".zip", notes: ".md", steps: ".md" };
+export const KINDS = { portable: ".zip", toy: ".zip", beta: ".zip", notes: ".md", steps: ".md", update: ".exe" };
 const TOY_LIMIT = 50 * 1024 * 1024;
 
 export function versions() {
@@ -210,7 +210,8 @@ export function releaseNotes(v = version()) {
   const body = changelogSection(readFileSync(CHANGELOG_FILE, "utf-8"), v);
   return `# 绯绯狐工具箱 v${v}\n\n## 下载哪个\n\n| 文件 | 说明 |\n|---|---|\n`
     + `| \`${SLUG}-v${v}-portable.zip\` | 解压后双击 \`FeifeiFoxToolbox.exe\`，不用装任何东西（用系统自带的 WebView2） |\n`
-    + `| \`${SLUG}-v${v}-toy.zip\` | B站 Toy 网页版的上传包，一般用户不用下载 |\n\n`
+    + `| \`${SLUG}-v${v}-toy.zip\` | B站 Toy 网页版的上传包，一般用户不用下载 |\n`
+    + `| \`${SLUG}-v${v}-update.exe\` 和 \`latest.json\` | exe 自动更新用（打开 exe 会自己检查新版），一般不用下载 |\n\n`
     + "第一次打开 exe 时 Windows 可能提示「已保护你的电脑」（exe 没有数字签名），点「更多信息」再点「仍要运行」。"
     + "你的存档在解压目录的 `userdata/` 里，换新版本时把这个文件夹复制过去就不会丢。\n\n"
     + `## 更新内容\n\n${body}\n`;

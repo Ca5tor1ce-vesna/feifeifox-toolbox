@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import AxisHead, { type Head } from "./AxisHead.vue";
 import { vLoad } from "./img-load.ts";
 import { cardDamage, formatDamage, type RowDamage } from "./damage.ts";
-import { AHA_NAME, TYPE_NAMES, type AxisCard, type Row } from "./model.ts";
+import { AHA_NAME, cardOverflows, TYPE_NAMES, type AxisCard, type Row } from "./model.ts";
 import { prefersReducedMotion } from "./motion.ts";
 import { claimClipPlayback, releaseClipPlayback, type UltClip } from "./ult-clips.ts";
 
@@ -32,6 +32,9 @@ const energyText = (row: Row): string => {
   if (row.energy === null) return "";
   return row.energyName === "能量" ? `${row.energy.toFixed(0)} 能` : `${row.energyName} ${row.energy.toFixed(0)}`;
 };
+// 这张卡上的拉条溢出了多少 AV（多次就加起来）：说明平时不显示，在卡片上挂个角标，点开看详情。
+const overflowAv = computed(() => cardOverflows(props.card).reduce((sum, item) => sum + item.wastedAv, 0));
+const overflowTitle = computed(() => `拉条溢出 ${overflowAv.value.toFixed(1)} AV，点开看详情`);
 const techCount = computed(() => props.card.notes.filter((row) => row.type === "tech").length);
 const splash = computed(() => (main.value ? splashOf(main.value) : ""));
 // 横幅里的立绘按每个角色的头像取景摆：脸落在横幅右侧中间，不同立绘构图不同，统一裁会歪（2026-11-04 用户反馈）。
@@ -88,14 +91,14 @@ onBeforeUnmount(stop);
   <button class="axis-card" :class="[`is-${card.kind}`, { 'is-clip-playing': playing }]" type="button" :data-key="card.key" @animationstart="onAnimation" @mouseenter="onEnter" @mouseleave="onLeave">
     <template v-if="card.kind === 'start' || !main">
       <b>开战</b>
-      <span class="axis-card-meta">{{ techCount ? `${techCount} 个秘技 · ` : "" }}{{ card.notes.length }} 条进场效果</span>
+      <span class="axis-card-meta">{{ techCount ? `${techCount} 个秘技 · ` : "" }}{{ card.notes.length }} 条进场效果<span v-if="overflowAv > 0" class="axis-card-tag axis-card-overflow" :title="overflowTitle">溢出 {{ overflowAv.toFixed(1) }} AV</span></span>
     </template>
 
     <template v-else-if="card.kind === 'aha'">
       <span class="axis-face axis-face-aha axis-card-face" aria-hidden="true"></span>
       <span class="axis-card-body">
         <b>阿哈时刻</b>
-        <span class="axis-card-meta"><span v-if="extra" class="axis-card-tag">额外</span>{{ ahaText }}<template v-if="casters.length"> · {{ casters.length }} 个欢愉技</template></span>
+        <span class="axis-card-meta"><span v-if="extra" class="axis-card-tag">额外</span>{{ ahaText }}<template v-if="casters.length"> · {{ casters.length }} 个欢愉技</template><span v-if="overflowAv > 0" class="axis-card-tag axis-card-overflow" :title="overflowTitle">溢出 {{ overflowAv.toFixed(1) }} AV</span></span>
       </span>
       <span v-if="casters.length" class="axis-card-cast">
         <span v-for="row in casters" :key="row.key" class="axis-card-caster" :title="row.label"><img v-if="faceOf(row)" v-load :src="faceOf(row)" alt="" /><b v-else>{{ row.name.charAt(0) }}</b></span>
@@ -107,11 +110,15 @@ onBeforeUnmount(stop);
       <video v-if="clip" ref="video" class="axis-card-clip" :src="clip.src" :style="{ objectPosition: `50% ${clip.y}%` }" muted playsinline preload="none" aria-hidden="true" @ended="onEnded"></video>
       <AxisHead class="axis-card-face" :head="headOf(main)" :icon="faceOf(main)" :name="main.name" />
       <span class="axis-card-body">
-        <small v-if="card.kind === 'ult'" class="axis-card-ult">终结技</small>
+        <span v-if="card.kind === 'ult'" class="axis-card-ult-line">
+          <small class="axis-card-ult">终结技</small>
+          <span v-if="overflowAv > 0" class="axis-card-tag axis-card-overflow" :title="overflowTitle">溢出 {{ overflowAv.toFixed(1) }} AV</span>
+        </span>
         <b>{{ main.name }}</b>
         <span v-if="card.kind !== 'ult'" class="axis-card-meta">
           <span class="axis-card-type" :class="`is-${main.type}`">{{ TYPE_NAMES[main.type] ?? main.type }}</span>
           <span v-if="extra" class="axis-card-tag">额外</span>
+          <span v-if="overflowAv > 0" class="axis-card-tag axis-card-overflow" :title="overflowTitle">溢出 {{ overflowAv.toFixed(1) }} AV</span>
         </span>
       </span>
       <span v-if="card.kind !== 'ult' && energyText(main)" class="axis-card-energy">{{ energyText(main) }}</span>

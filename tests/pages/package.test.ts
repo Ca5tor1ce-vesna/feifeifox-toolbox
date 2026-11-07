@@ -28,7 +28,8 @@ test("版本号：package.json、Cargo.toml、tauri.conf.json 一致，包名一
   assert.equal(all.cargo, all.pkg);
   assert.equal(all.tauri, all.pkg);
   assert.ok(packagePath("portable").endsWith(`feifeifox-toolbox-v${version()}-portable.zip`));
-  assert.deepEqual(Object.keys(KINDS).sort(), ["beta", "notes", "portable", "steps", "toy"]);
+  assert.deepEqual(Object.keys(KINDS).sort(), ["beta", "notes", "portable", "steps", "toy", "update"]);
+  assert.match(releaseNotes(), /-update\.exe` 和 `latest\.json` \| exe 自动更新用/);
   assert.match(releaseNotes(), new RegExp(`^# 绯绯狐工具箱 v${version().replaceAll(".", "\\.")}`));
 });
 

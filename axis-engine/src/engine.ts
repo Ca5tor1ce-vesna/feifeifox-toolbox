@@ -8,6 +8,7 @@ import type { DamageLedger } from "./damage/ledger.ts";
 import { fmt } from "./format.ts";
 import type {
   ActionKind,
+  AdvanceOverflow,
   AxisConfig,
   AxisEvent,
   AxisEvents,
@@ -40,6 +41,8 @@ export class AxisEngine {
   readonly warnings: string[] = [];
   readonly notes: string[] = [];
   readonly timeline: AxisEvent[] = [];
+  /** 拉条溢出，见 noteOverflow。 */
+  readonly overflows: AdvanceOverflow[] = [];
   readonly summons: SummonActor[] = [];
   readonly maxAV: number;
   readonly enemyCount: number;
@@ -52,6 +55,9 @@ export class AxisEngine {
   private readonly maxTimeline: number;
   private readonly cycle: CycleStructure;
   private readonly useTechnique: boolean;
+  private readonly leadSlot: number | null;
+  /** 几名角色同时能开大时按这个顺序开（用户指定的在前，其余按站位）。 */
+  readonly ultQueue: readonly Unit[];
   private readonly scopeNote: string;
   private readonly handlers = new Map<keyof AxisEvents, Entry[]>();
   private readonly speedModifiers: ((unit: Unit) => { pct?: number; flat?: number })[] = [];
@@ -61,7 +67,16 @@ export class AxisEngine {
   private ultimateHolds = 0;
   private casts: string[] = [];
   private readonly actionOf = new WeakMap<AxisEvent, number>();
+  /** 正在自己这一动里出招的单位（开大、阿哈时刻里的欢愉技不算这一动）。逐动改目标靠它。 */
+  private acting: Unit | null = null;
+  /** 第几动选中了哪位队友：键是「站位:动数」。 */
+  private readonly actionTargets = new Map<string, number>();
   private readonly extraUnsupported: UnsupportedMechanic[] = [];
+  /**
+   * 正在结算的动作，拉条溢出挂在它上面。开大、阿哈时刻直接给出事件；自己这一动给出起点，取这之后自己的第一个出招。
+   * 开大里插了额外回合时，回来再结算的拉条仍算这次开大的（真珠 E2 拉队友在额外回合之后）。
+   */
+  private readonly causes: { event: AxisEvent | null; start: number; unit: Unit | null }[] = [];
   private readonly onceKeys = new Set<string>();
 
   constructor(config: AxisConfig) {
@@ -84,6 +99,22 @@ export class AxisEngine {
     this.useTechnique = config.useTechnique ?? true;
     this.scopeNote = config.scopeNote ?? "只模拟我方行动，不模拟敌方行动、受击、消灭和击破。";
     this.units = config.units.map((spec, slot) => new Unit(slot, spec));
+    const lead = config.leadSlot ?? null;
+    if (lead !== null && !(Number.isInteger(lead) && lead >= 0 && lead < count)) throw new Error(`进场角色的站位不对：需要在 0~${count - 1} 之间，收到 ${lead}`);
+    this.leadSlot = lead;
+    const order = config.ultOrder ?? [];
+    for (const slot of order) {
+      if (!(Number.isInteger(slot) && slot >= 0 && slot < count)) throw new Error(`开大顺序里的站位不对：需要在 0~${count - 1} 之间，收到 ${slot}`);
+    }
+    const first = [...new Set(order)].map((slot) => this.units[slot]);
+    this.ultQueue = [...first, ...this.units.filter((unit) => !first.includes(unit))];
+    for (const unit of this.units) {
+      for (const point of unit.ultAfter) {
+        if (!(Number.isInteger(point.slot) && point.slot >= 0 && point.slot < count && Number.isInteger(point.action) && point.action >= 1)) {
+          throw new Error(`${unit.name} 的开大点不对：需要是队伍里某人的第 1 动及以后，收到站位 ${point.slot} 第 ${point.action} 动`);
+        }
+      }
+    }
     for (const unit of this.units) unit.speedOf = (target) => this.computeSpeed(target);
     for (const module of config.modules ?? []) this.installModule(module);
     for (const unit of this.units) unit.kit?.install?.(this, unit);
@@ -174,6 +205,9 @@ export class AxisEngine {
   /** 指定目标：优先用户选的站位（不能是自己），否则用默认站位，是自己就顺延。 */
   resolveTarget(caster: Unit | undefined, prefer: number | null = null): number {
     const n = this.units.length;
+    // 逐动改目标：只管这一动自己的普攻、战技；同一动后面开大、阿哈时刻插进来的欢愉技仍按平时的目标。
+    const scripted = caster && this.acting === caster && !caster.castingUltimate ? caster.targetScript[caster.actions - 1] : undefined;
+    if (caster && scripted !== undefined && scripted !== null && scripted >= 0 && scripted < n && scripted !== caster.slot) return scripted;
     if (caster && caster.targetSlot !== null) {
       const requested = caster.targetSlot;
       if (requested >= 0 && requested < n && requested !== caster.slot) return requested;
@@ -218,6 +252,7 @@ export class AxisEngine {
    * 【阿哈时刻】的额外回合是「在回合中但距离大于 0」，这时照常立即扣减。
    * source：给别的队友拉条时传施放者，用来判断施放者是不是被禁止给队友拉条（【特邀嘉宾】）。
    * 给自己的召唤物拉条不传。
+   * 剩余距离不够扣时行动条到 0 为止，多出来的部分作废，记进 overflows（100% 及以上本来就是「立即行动」，不记）。
    */
   advance(actor: Actor, pct: number, options: { selfSource?: boolean; source?: Unit } = {}): void {
     if (pct <= 0) return;
@@ -230,12 +265,36 @@ export class AxisEngine {
       if (options.selfSource) actor.pendingAdvance += pct;
       return;
     }
-    actor.remDist = Math.max(0, actor.remDist - (DIST_BASE * pct) / 100);
+    const before = actor.remDist;
+    const dist = (DIST_BASE * pct) / 100;
+    actor.remDist = Math.max(0, before - dist);
+    if (pct < 100) this.noteOverflow(actor, pct, before);
+  }
+
+  /**
+   * 记一次拉条溢出：拉之前还剩 before 距离，拉 pct% 超出的部分作废。不进时间轴（旧格式和冻结基准不变），
+   * 挂在正在结算的那个动作上（见 causes，没有就是最后一条事件）；页面据此在卡片上挂角标。
+   * 2026-11-06 群里反馈：开了阿哈行迹3 开局提前，阿哈时刻反而少一次，就是开大拉条溢出。
+   */
+  noteOverflow(actor: Actor, pct: number, before: number): void {
+    const wasted = (DIST_BASE * pct) / 100 - before;
+    const speed = actor.speed();
+    // 不到 1 点距离（万分之一条）是浮点误差或刚好拉满，不算。
+    if (wasted < 1 || speed <= 0) return;
+    this.overflows.push({
+      av: this.av,
+      after: this.causeEvent(),
+      target: actor.name,
+      pct,
+      leftAv: before / speed,
+      wastedAv: wasted / speed,
+    });
   }
 
   /** 技能选中了另一名我方角色（选自己或没有目标不算）。只在技能真正施放时调用一次。 */
   targetAlly(caster: Unit, target: Unit | null | undefined, ability: string): void {
     if (!target || target === caster) return;
+    if (this.acting === caster && !caster.castingUltimate) this.actionTargets.set(`${caster.slot}:${caster.actions}`, target.slot);
     this.emit("allyTargeted", { caster, target, ability });
   }
 
@@ -324,13 +383,43 @@ export class AxisEngine {
     this.maybeUltimate(unit);
   }
 
-  /** 能开就开。开局结算、额外回合和资源连锁期间不插大，等它们结束后再统一检查。 */
+  /**
+   * 能开就开。开局结算、额外回合和资源连锁期间不插大，等它们结束后再统一检查。
+   * 留大的角色只在到了开大点（holdPending）之后开，一个点只开一次。
+   */
   maybeUltimate(unit: Unit): void {
     if (this.depth > MAX_NEST || this.extraDepth > 0 || this.ultimateHolds > 0 || this.opening || unit.castingUltimate) return;
     const context = { engine: this, self: unit };
     for (let guard = 0; guard < 4 && unit.energy >= unit.ultCost - EPS; guard += 1) {
+      if (unit.ultMode === "hold" && !unit.holdPending) return;
       if (unit.kit?.canUltimate && !unit.kit.canUltimate(context)) return;
+      unit.holdPending = false;
       this.castUltimate(unit);
+    }
+  }
+
+  /** 全队检查一次能不能开大，按开大顺序。 */
+  sweepUltimates(except?: Unit): void {
+    for (const unit of this.ultQueue) if (unit !== except) this.maybeUltimate(unit);
+  }
+
+  /** 进场角色：用了秘技且指定了时才有。真珠、刻律德菈的秘技效果转到他身上。 */
+  techniqueHolder(): Unit | undefined {
+    return this.useTechnique ? this.unitAt(this.leadSlot) : undefined;
+  }
+
+  /** 留大：actor 刚做完一动，到了谁的开大点就让谁开；能量不够先记下，攒够再开。 */
+  private reachUltPoints(actor: Unit): void {
+    for (const unit of this.ultQueue) {
+      if (unit.ultMode !== "hold" || !unit.ultAfter.some((point) => point.slot === actor.slot && point.action === actor.actions)) continue;
+      const where = `${actor === unit ? "自己" : actor.name}的第 ${actor.actions} 动后`;
+      if (unit.holdPending) this.record("note", unit, "留大：到了开大点", { details: [`${where}，上一个开大点的大还没放出来，合并成一次`] });
+      unit.holdPending = true;
+      if (unit.energy < unit.ultCost - EPS) {
+        this.record("note", unit, "留大：到了开大点", { details: [`${where}，${unit.energyName} ${fmt(unit.energy, 0)}/${fmt(unit.ultCost, 0)} 不够，攒够了就开`] });
+        continue;
+      }
+      this.maybeUltimate(unit);
     }
   }
 
@@ -341,6 +430,27 @@ export class AxisEngine {
       work();
     } finally {
       this.ultimateHolds -= 1;
+    }
+  }
+
+  /** 拉条溢出该挂在哪条事件上。 */
+  private causeEvent(): AxisEvent | null {
+    const top = this.causes[this.causes.length - 1];
+    if (top?.event) return top.event;
+    if (top?.unit) {
+      const own = this.timeline.slice(top.start).find((event) => event.kind === "unit" && event.slot === top.unit?.slot && CAST_TYPES.includes(event.type));
+      if (own) return own;
+    }
+    return this.timeline[this.timeline.length - 1] ?? null;
+  }
+
+  /** 在 work 里发生的拉条溢出挂到 event 上（刚记下的那条事件，默认时间轴最后一条）。 */
+  withCause(work: () => void, event: AxisEvent | null = this.timeline[this.timeline.length - 1] ?? null): void {
+    this.causes.push({ event, start: this.timeline.length, unit: null });
+    try {
+      work();
+    } finally {
+      this.causes.pop();
     }
   }
 
@@ -362,12 +472,14 @@ export class AxisEngine {
         details: payment?.details,
         resources: payment?.resources,
       });
-      unit.kit?.onUltimate?.(context);
-      this.emit("ultimate", { unit });
-      if (unit.ultimateAttacks) this.attack(unit, "ultimate");
-      if (unit.energyType === "standard") {
-        this.gainEnergy(unit, unit.energyGains.ultimate, { reason: "终结技返还" });
-      }
+      this.withCause(() => {
+        unit.kit?.onUltimate?.(context);
+        this.emit("ultimate", { unit });
+        if (unit.ultimateAttacks) this.attack(unit, "ultimate");
+        if (unit.energyType === "standard") {
+          this.gainEnergy(unit, unit.energyGains.ultimate, { reason: "终结技返还" });
+        }
+      });
     } finally {
       unit.castingUltimate = false;
       this.depth -= 1;
@@ -396,9 +508,17 @@ export class AxisEngine {
     const casts: string[] = [];
     this.casts = casts;
     this.emit("skillStart", { unit, kind, extra });
-    if (unit.kit?.act) unit.kit.act(context);
-    else this.defaultAct(unit, kind, extra);
-    unit.kit?.afterAct?.(context);
+    const outerActing = this.acting;
+    this.acting = unit;
+    this.causes.push({ event: null, start: this.timeline.length, unit });
+    try {
+      if (unit.kit?.act) unit.kit.act(context);
+      else this.defaultAct(unit, kind, extra);
+      unit.kit?.afterAct?.(context);
+    } finally {
+      this.causes.pop();
+      this.acting = outerActing;
+    }
     this.casts = outerCasts;
     this.emit("actionDone", { unit, casts, extra });
     // 手动开大：指定的那一动放不了（比如死龙还在场）就顺延到下一动，不悄悄丢掉。
@@ -407,6 +527,7 @@ export class AxisEngine {
       unit.manualPending -= 1;
       this.castUltimate(unit);
     }
+    this.reachUltPoints(unit);
   }
 
   defaultAct(unit: Unit, kind: ActionKind, extra = false): void {
@@ -467,6 +588,8 @@ export class AxisEngine {
   }
 
   private resetDistance(actor: Actor): void {
+    // 回合内挂起的自身拉条加起来超过 100%：多出的照样作废。
+    if (actor.pendingAdvance > 0) this.noteOverflow(actor, actor.pendingAdvance, DIST_BASE);
     actor.remDist = Math.max(0, DIST_BASE - (DIST_BASE * actor.pendingAdvance) / 100);
     actor.pendingAdvance = 0;
   }
@@ -492,7 +615,7 @@ export class AxisEngine {
       this.extraDepth -= 1;
       this.depth -= 1;
     }
-    for (const ally of this.units) this.maybeUltimate(ally);
+    this.sweepUltimates();
   }
 
   /** 额外的【阿哈时刻】这类结算同样不允许中途插大。 */
@@ -539,6 +662,11 @@ export class AxisEngine {
     if (isCast && unit) this.actionOf.set(event, unit.actions);
   }
 
+  /** 某站位第几动的技能选中了哪位队友的站位；这一动没选队友是 undefined。逐动改目标用它。 */
+  actionTargetOf(slot: number, action: number): number | undefined {
+    return this.actionTargets.get(`${slot}:${action}`);
+  }
+
   /** 这条时间轴记录是持有者的第几动（从 1 数），不是施放记录时没有。逐动覆盖用它定位。 */
   actionIndexOf(event: AxisEvent): number | undefined {
     return this.actionOf.get(event);
@@ -575,7 +703,7 @@ export class AxisEngine {
     }
     each("onOpeningEnd");
     this.opening = false;
-    for (const unit of this.units) this.maybeUltimate(unit);
+    this.sweepUltimates();
   }
 
   run(): AxisResult {

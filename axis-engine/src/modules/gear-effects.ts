@@ -9,7 +9,7 @@ import type { AxisEngine } from "../engine.ts";
 import { fmt } from "../format.ts";
 import type { SpeedBuff } from "../types.ts";
 import type { Unit } from "../unit.ts";
-import { TALENT_ATTACK_KINDS, type Elation } from "./elation.ts";
+import { kitOf, TALENT_ATTACK_KINDS, type Elation } from "./elation.ts";
 
 /** 战技或终结技以我方单体、我方全体为目标的角色，给「对我方目标施放…」这类条件用。按 4.6 版本文案整理。 */
 const SINGLE_ALLY_SKILL = new Set(["1001", "1101", "1105", "1110", "1202", "1203", "1211", "1217", "1225", "1301", "1306", "1313", "1314", "1412", "1414"]);
@@ -370,7 +370,11 @@ export const LIGHTCONE_EFFECTS: Record<string, GearEffect> = {
   23055: {
     name: "献给明日的色彩",
     apply: (w) => w.onAttack((kind) => {
-      if (kind === "elation_skill" && ALL_ALLY_ELATION.has(w.unit.id)) w.gain(10, { fixed: true });
+      if (kind !== "elation_skill" || !ALL_ALLY_ELATION.has(w.unit.id)) return;
+      w.gain(10, { fixed: true });
+      // 同一下「为我方全体回复生命值」：星神★阿哈行迹 2 受到队友治疗 +1 愿力（4.6.54 版本资料；2026-11-07 群里反馈）。
+      const aha = w.engine.findUnit("1511");
+      if (aha) kitOf(aha)?.onHealOrShield?.("真珠专武《献给明日的色彩》群疗");
     }),
   },
   23057: {

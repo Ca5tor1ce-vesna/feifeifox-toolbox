@@ -260,13 +260,13 @@ test("停云 E1：【赐福】目标施放终结技后速度提高 20%，持续 
 });
 
 test("银狼LV.999 开大消耗 60 隐藏分，溢出的保留", () => {
-  // 技能说明没写，2026-11-05 用户按游戏实际确认。开局 100（60 + 溢出 40），0 AV 开大：扣 60 剩 40，隐藏关卡 +20 → 60；
-  // 拉条 100% 当场打第一次强化普攻，笑点 +5 同步隐藏分 → 65。
+  // 技能说明没写，2026-11-05 用户按游戏实际确认。开局 100（60 + 溢出 40），开战 1 个人头笑点同步 → 101；0 AV 开大：扣 60 剩 41，隐藏关卡 +20 → 61；
+  // 拉条 100% 当场打第一次强化普攻，笑点 +5 同步隐藏分 → 66。
   const result = run({ team: [flat("1506", { initialEnergy: 100 })], maxAV: 1, useTechnique: false });
   const ult = result.timeline.find((row) => row.type === "ultimate")!;
-  assert.ok(ult.details.includes("隐藏分 100.00 → 40.00（消耗 60，溢出的保留）"), ult.details.join("；"));
+  assert.ok(ult.details.includes("隐藏分 101.00 → 41.00（消耗 60，溢出的保留）"), ult.details.join("；"));
   const after = result.timeline.filter((row) => row.slot === 0 && row.res.hiddenScore !== undefined).at(-1)!;
-  near(after.res.hiddenScore as number, 65);
+  near(after.res.hiddenScore as number, 66);
 });
 
 test("银狼LV.999 E2：本次【无敌玩家】隐藏分每 120 点给 1 个额外回合并补 1 次强化普攻", () => {

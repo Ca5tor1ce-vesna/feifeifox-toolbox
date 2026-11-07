@@ -1,16 +1,19 @@
 <script setup lang="ts">
-/* 角色顶分：按模式/关卡浏览 The Herta 采集的低配通关阵容，支持按角色名筛选。
- * 数据在浏览器里从镜像拉（records.ts），B站 Toy 版读随包数据（snapshot.ts）；元素 class 和以前一样，样式文件不用改。
+/* 角色顶分：按模式、版本、关卡浏览 The Herta 采集的低配通关阵容，可以按标签、角色和光锥筛选。
+ * 最新数据在浏览器里从镜像拉（records.ts），B站 Toy 版读随包数据（snapshot.ts）；往期成绩两边都随包（records_archive）。筛选在 filter.ts。
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { computed, onBeforeUnmount, ref, shallowRef } from "vue";
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from "vue";
 import { MODES } from "./data.ts";
+import { ALL, categoriesOf, charMatches, compareSeason, EIDOLONS, groupsOf, openMode, restoreFilter, rowsOf, seasonsOf, settle, SORTS, stageLabel, stagesOf, tagsOf, termsOf, totalRuns, type RecordsFilter } from "./filter.ts";
 
-export interface RecordsState {
+export interface RecordsState extends RecordsFilter {
   mode: string | null;
-  selIdx: number;
-  query: string;
 }
+
+/** 一次画多少组，全部版本一起看时不一口气画几百张卡。 */
+const PAGE = 60;
+const LIMITS = [0, 1, 2, 3, 4, 5, 6, 8, 10];
 
 const props = defineProps<{
   load: (refresh: boolean) => Promise<any>;
@@ -22,15 +25,17 @@ const res = shallowRef<any>(null);
 const error = ref("");
 const loading = ref(false);
 const mode = ref<string | null>(props.initial?.mode || null);
-const selIdx = ref(Number(props.initial?.selIdx) || 0);
-const query = ref(String(props.initial?.query || ""));
-props.expose(() => ({ mode: mode.value, selIdx: selIdx.value, query: query.value }));
+/** 存档里有上次的范围时用它，没有时加载后打开最新版本。 */
+const restored = typeof props.initial?.stage === "string";
+const filter = ref<RecordsFilter>(restoreFilter(props.initial));
+const shown = ref(PAGE);
+props.expose(() => ({ mode: mode.value, ...filter.value }));
 
 const targets = computed<any[]>(() => res.value?.data?.targets || []);
-const firstIdxOfMode = (m: string | null): number => targets.value.findIndex((t) => t.mode === m);
 
 let alive = true;
 let seq = 0;
+let opened = restored;
 async function doLoad(refresh: boolean): Promise<void> {
   const my = ++seq;
   loading.value = true;
@@ -49,26 +54,44 @@ async function doLoad(refresh: boolean): Promise<void> {
   error.value = "";
   res.value = next;
   const list = targets.value;
-  if (!MODES.includes(mode.value ?? "") || !list.some((t) => t.mode === mode.value)) mode.value = MODES.find((m) => list.some((t) => t.mode === m)) ?? null;
-  if (list[selIdx.value]?.mode !== mode.value) selIdx.value = mode.value == null ? 0 : firstIdxOfMode(mode.value);
+  if (!MODES.includes(mode.value ?? "") || !list.some((t) => t.mode === mode.value)) {
+    mode.value = MODES.find((m) => list.some((t) => t.mode === m)) ?? null;
+    opened = false;
+  }
+  filter.value = opened ? settle(filter.value, list, mode.value) : openMode(filter.value, list, mode.value);
+  opened = true;
 }
 onBeforeUnmount(() => { alive = false; });
 
-const tabs = computed(() => MODES.filter((m) => targets.value.some((t) => t.mode === m)).map((m) => ({ mode: m, season: targets.value.find((t) => t.mode === m)?.season ?? "" })));
-const stages = computed(() => targets.value.map((t, index) => ({ t, index })).filter(({ t }) => t.mode === mode.value));
+const tabs = computed(() => MODES.filter((m) => targets.value.some((t) => t.mode === m)).map((m) => ({ mode: m, season: seasonsOf(targets.value, m)[0] ?? "" })));
 const pickMode = (m: string): void => {
   if (m === mode.value) return;
   mode.value = m;
-  selIdx.value = firstIdxOfMode(m);
+  filter.value = openMode(filter.value, targets.value, m);
 };
-const onSearch = (event: Event): void => { query.value = (event.target as HTMLInputElement).value.replace(/\s+/g, ""); };
+/** 改一项筛选，再把对不上的选项收回来。 */
+const change = (patch: Partial<RecordsFilter>): void => { filter.value = settle({ ...filter.value, ...patch }, targets.value, mode.value); };
+const valueOf = (event: Event): string => (event.target as HTMLSelectElement).value;
+const limitOf = (event: Event): number | null => (valueOf(event) === "" ? null : Number(valueOf(event)));
+const onSearch = (event: Event): void => { filter.value = { ...filter.value, query: (event.target as HTMLInputElement).value }; };
 
-const target = computed(() => targets.value[selIdx.value]);
-const q = computed(() => query.value.toLowerCase());
-const list = computed<any[]>(() => {
-  const records = target.value?.records || [];
-  return q.value ? records.filter((r: any) => (r.lineup || []).some((c: any) => String(c.name ?? "").toLowerCase().includes(q.value))) : records;
+const seasons = computed(() => seasonsOf(targets.value, mode.value));
+const stages = computed(() => stagesOf(targets.value, mode.value, filter.value.season));
+const categories = computed(() => categoriesOf(targets.value, mode.value, filter.value.season, filter.value.stage));
+const groups = computed(() => groupsOf(targets.value, mode.value, filter.value));
+const rows = computed(() => rowsOf(targets.value, mode.value, filter.value));
+const runs = computed(() => totalRuns(targets.value, mode.value, filter.value));
+const terms = computed(() => termsOf(filter.value.query));
+const visible = computed(() => rows.value.slice(0, shown.value));
+const hasOlder = computed(() => seasons.value.some((season) => compareSeason(season, seasons.value[0]) > 0));
+watch(filter, () => { shown.value = PAGE; });
+/** 手机上阵容组、限定这些收起来，不把成绩挤到一屏以外。 */
+const moreOpen = ref(false);
+const moreCount = computed(() => {
+  const { group, ltdMax, stdMax, eidolon, sort } = filter.value;
+  return [group !== ALL, ltdMax !== null, stdMax !== null, eidolon !== "any", sort !== "default"].filter(Boolean).length;
 });
+const searchEverywhere = (): void => change({ season: ALL, stage: ALL, category: ALL });
 
 const status = computed(() => {
   const r = res.value;
@@ -118,7 +141,7 @@ void doLoad(false);
     <template v-else>
       <div class="hr-head">
         <div class="hr-title"><h1>角色顶分</h1><p>队伍记录与角色配置</p></div>
-        <input class="hr-search" type="search" placeholder="按角色名筛选，如 爻光" aria-label="按角色名筛选" :value="query" @input="onSearch" />
+        <input class="hr-search" type="search" placeholder="角色或光锥，空格分开，如 爻光 绯英" aria-label="按角色或光锥筛选" :value="filter.query" @input="onSearch" />
       </div>
       <div class="hr-top">
         <div class="hr-tabs">
@@ -130,21 +153,68 @@ void doLoad(false);
           <button v-if="!res.snapshot" class="hr-refresh" type="button" :disabled="loading" @click="doLoad(true)">{{ loading ? "刷新中…" : "刷新" }}</button>
         </div>
       </div>
+      <div class="hr-filters" :class="{ 'is-open': moreOpen }">
+        <label class="hr-field"><span>版本</span>
+          <select class="hr-stage" :value="filter.season" @change="change({ season: valueOf($event) })">
+            <option :value="ALL">全部版本</option>
+            <option v-for="season in seasons" :key="season" :value="season">{{ season }}{{ hasOlder && season === seasons[0] ? "（当期）" : "" }}</option>
+          </select>
+        </label>
+        <label class="hr-field hr-field-wide"><span>关卡</span>
+          <select class="hr-stage" :value="filter.stage" @change="change({ stage: valueOf($event) })">
+            <option :value="ALL">全部关卡</option>
+            <option v-for="stage in stages" :key="stage" :value="stage">{{ stageLabel(mode, stage) }}</option>
+          </select>
+        </label>
+        <label class="hr-field hr-field-more"><span>阵容组</span>
+          <select class="hr-stage" :value="filter.group" @change="change({ group: valueOf($event) })">
+            <option :value="ALL">全部阵容</option>
+            <option v-for="item in groups" :key="item.group" :value="item.group">{{ item.group }}（{{ item.count }}）</option>
+          </select>
+        </label>
+        <label class="hr-field hr-field-more"><span>限定</span>
+          <select class="hr-stage" :value="filter.ltdMax ?? ''" @change="change({ ltdMax: limitOf($event) })">
+            <option value="">不限</option>
+            <option v-for="limit in LIMITS" :key="limit" :value="limit">{{ limit }} 个以内</option>
+          </select>
+        </label>
+        <label class="hr-field hr-field-more"><span>常驻</span>
+          <select class="hr-stage" :value="filter.stdMax ?? ''" @change="change({ stdMax: limitOf($event) })">
+            <option value="">不限</option>
+            <option v-for="limit in LIMITS" :key="limit" :value="limit">{{ limit }} 个以内</option>
+          </select>
+        </label>
+        <label class="hr-field hr-field-more"><span>星魂</span>
+          <select class="hr-stage" :value="filter.eidolon" @change="change({ eidolon: valueOf($event) as RecordsFilter['eidolon'] })">
+            <option v-for="item in EIDOLONS" :key="item.id" :value="item.id">{{ item.label }}</option>
+          </select>
+        </label>
+        <label class="hr-field hr-field-more"><span>排序</span>
+          <select class="hr-stage" :value="filter.sort" @change="change({ sort: valueOf($event) as RecordsFilter['sort'] })">
+            <option v-for="item in SORTS" :key="item.id" :value="item.id">{{ item.label }}</option>
+          </select>
+        </label>
+      </div>
       <div class="hr-stagebar">
-        <label class="hr-label">关卡</label>
-        <select class="hr-stage" :value="String(selIdx)" @change="selIdx = Number(($event.target as HTMLSelectElement).value)">
-          <option v-for="stage in stages" :key="stage.index" :value="String(stage.index)">{{ stage.t.stage }} · {{ stage.t.category }}</option>
-        </select>
-        <span class="hr-chip">{{ target ? target.category ?? "" : "" }}</span>
-        <span class="hr-meta">{{ target ? `共 ${target.total_runs} 条记录 · 显示 ${list.length} 组` : "共 0 条记录 · 显示 0 组" }}</span>
+        <div class="hr-cats" role="group" aria-label="分类">
+          <button class="hr-cat" :class="{ 'is-active': filter.category === ALL }" type="button" @click="change({ category: ALL })">全部</button>
+          <button v-for="category in categories" :key="category" class="hr-cat" :class="{ 'is-active': filter.category === category }" type="button" @click="change({ category })">{{ category }}</button>
+        </div>
+        <button class="hr-cat hr-more-filters" :class="{ 'is-active': moreCount > 0 }" type="button" :aria-expanded="moreOpen" @click="moreOpen = !moreOpen">{{ moreOpen ? "收起筛选" : "更多筛选" }}{{ moreCount ? `（${moreCount}）` : "" }}</button>
+        <span class="hr-meta">共 {{ runs }} 条记录 · 显示 {{ rows.length }} 组</span>
+        <button v-if="terms.length && (filter.season !== ALL || filter.stage !== ALL)" class="hr-cat" type="button" @click="searchEverywhere">在全部版本里找</button>
       </div>
       <div v-if="res.offline" class="hr-note">{{ res.note }}</div>
-      <div v-if="list.length" class="hr-grid">
-        <div class="hr-grid-head" aria-hidden="true"><span>队伍 / 同组</span><span>上阵角色</span><span>限定</span><span>常驻</span><span>轮次</span><span>记录时间</span></div>
-        <div v-for="(r, index) in list" :key="index" class="hr-card">
-          <div class="hr-card-head"><span class="hr-group">{{ r.group }}</span><span class="hr-runs">{{ r.runs_in_group }} 条同组</span></div>
+      <div v-if="rows.length" class="hr-grid">
+        <div class="hr-grid-head" aria-hidden="true"><span>队伍 / 同组</span><span>上阵角色</span><span>限定</span><span>常驻</span><span>成绩</span><span>记录时间</span></div>
+        <div v-for="(row, index) in visible" :key="index" class="hr-card">
+          <div class="hr-card-head">
+            <span class="hr-group">{{ row.record.group }}</span>
+            <span class="hr-runs">{{ row.record.runs_in_group }} 条同组</span>
+            <span class="hr-tags"><span v-for="tag in tagsOf(row, filter.stage === ALL)" :key="tag" class="hr-tag">{{ tag }}</span></span>
+          </div>
           <div class="hr-lineup">
-            <div v-for="(c, ci) in r.lineup || []" :key="ci" class="hr-char" :class="{ 'is-match': q && String(c.name ?? '').toLowerCase().includes(q) }" :title="charTitle(c)">
+            <div v-for="(c, ci) in row.record.lineup || []" :key="ci" class="hr-char" :class="{ 'is-match': charMatches(c, terms) }" :title="charTitle(c)">
               <div class="hr-avatar">
                 <img v-if="avatarOf(c) && !brokenAvatars.has(avatarOf(c)!)" class="hr-avatar-img" :src="avatarOf(c)" alt="" @error="breakAvatar(avatarOf(c)!)" />
                 <template v-else>{{ firstChar(c.name) }}</template>
@@ -161,14 +231,15 @@ void doLoad(false);
             </div>
           </div>
           <div class="hr-stats">
-            <span class="hr-pill hr-ltd" title="限定">{{ r.ltd }}</span>
-            <span class="hr-pill hr-std" title="常驻">{{ r.std }}</span>
-            <span class="hr-pill hr-result">{{ resultText(r) }}</span>
+            <span class="hr-pill hr-ltd" title="限定">{{ row.record.ltd }}</span>
+            <span class="hr-pill hr-std" title="常驻">{{ row.record.std }}</span>
+            <span class="hr-pill hr-result">{{ resultText(row.record) }}</span>
           </div>
-          <div class="hr-date">{{ r.date }}</div>
+          <div class="hr-date">{{ row.record.date }}</div>
         </div>
       </div>
       <div v-else class="hr-empty">没有符合条件的记录</div>
+      <button v-if="rows.length > shown" class="hr-more" type="button" @click="shown += PAGE">再显示 {{ Math.min(PAGE, rows.length - shown) }} 组（还有 {{ rows.length - shown }} 组）</button>
       <div class="hr-footer">{{ footer }}</div>
     </template>
   </div>

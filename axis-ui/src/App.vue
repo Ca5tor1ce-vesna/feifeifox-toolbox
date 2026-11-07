@@ -14,6 +14,7 @@ import DamagePanel from "./DamagePanel.vue";
 import ElationPanel from "./ElationPanel.vue";
 import ElationSettingsPanel from "./ElationSettingsPanel.vue";
 import EventList from "./EventList.vue";
+import type { Holder } from "./CardDetail.vue";
 import { stateFromLegacy, stateFromRecord, type TeamRecord } from "./legacy-team.ts";
 import {
   castsOf,
@@ -21,11 +22,15 @@ import {
   defaultManualUltimates,
   droppedMembers,
   droppedNotice,
+  holdsUltimate,
   MAX_WINDOW_AV,
   modeOf,
+  needsLead,
   needsManualUltimate,
   newCustomMember,
   newMember,
+  toggleUltMark,
+  ultOrderIds,
   windowAV,
   type AxisView,
   type PageData,
@@ -109,6 +114,21 @@ const heads = computed<Record<number, Head>>(() =>
 const clips = computed<Record<number, UltClip>>(() =>
   Object.fromEntries(state.team.flatMap((member, slot) => { const clip = ultClipOf(member.id); return clip ? [[slot, clip]] : []; })));
 const manualIds = computed(() => new Set(state.team.flatMap((member, slot) => (needsManualUltimate(member.id) ? [slot] : []))));
+const nameOf = (id: string): string => {
+  const member = state.team.find((mate) => mate.id === id);
+  return member?.custom?.name || byId.value.get(id)?.name || id;
+};
+const teamIds = computed(() => state.team.map((member) => member.id));
+// 留大的人：卡片里给他们每人一个「在这之后开大」。
+const holders = computed<Holder[]>(() =>
+  state.team.filter(holdsUltimate).map((member) => ({ id: member.id, name: nameOf(member.id), marks: member.ultAfter ?? [] })));
+const showLead = computed(() => needsLead(state));
+// 开大顺序：两人及以上才有意义；点名字排到最前。
+const ultOrder = computed(() => ultOrderIds(state));
+const toFront = (id: string): void => {
+  state.ultOrder = [id, ...ultOrder.value.filter((item) => item !== id)];
+  changed();
+};
 
 const totals = computed(() => {
   const units = view.value?.units ?? [];
@@ -289,11 +309,41 @@ const override = (row: Row): void => {
   props.onChange();
 };
 
+/** 逐动改目标：这一动的技能改给另一位队友。机制定死目标的（改了也没变）不留假的覆盖。 */
+const retarget = (row: Row, slot: number): void => {
+  if (row.slot === null || row.action === undefined || !view.value) return;
+  const member = state.team[row.slot];
+  const target = state.team[slot];
+  if (!member || !target) return;
+  const key = String(row.action);
+  const previous = member.targetOverrides?.[key];
+  member.targetOverrides = { ...member.targetOverrides, [key]: target.id };
+  recompute();
+  const after = view.value?.rows.find((item) => item.slot === row.slot && item.action === row.action);
+  if (view.value && after?.target !== slot) {
+    if (previous) member.targetOverrides[key] = previous;
+    else delete member.targetOverrides[key];
+    if (Object.keys(member.targetOverrides).length === 0) delete member.targetOverrides;
+    recompute();
+    say(`${nameOf(member.id)} 的第 ${row.action} 动目标由角色机制决定，改不了。`);
+    return;
+  }
+  props.onChange();
+};
+
 const toggleUltimate = (row: Row): void => {
   if (row.slot === null || row.action === undefined) return;
   const member = state.team[row.slot];
   const list = member.manualUltimates ?? defaultManualUltimates(member.id);
   member.manualUltimates = list.includes(row.action) ? list.filter((n) => n !== row.action) : [...list, row.action].sort((a, b) => a - b);
+  changed();
+};
+
+const toggleHold = (row: Row, holderId: string): void => {
+  const holder = state.team.find((member) => member.id === holderId);
+  const owner = row.slot === null ? undefined : state.team[row.slot];
+  if (!holder || !owner || row.action === undefined) return;
+  toggleUltMark(holder, { id: owner.id, action: row.action });
   changed();
 };
 
@@ -349,6 +399,21 @@ onBeforeUnmount(() => {
           </select>
         </label>
         <AxisSwitch v-model="state.useTechnique" class="axis-field-switch" label="开战前用秘技" @update:model-value="changed" />
+        <label v-if="showLead" class="axis-field">
+          <span>进场角色</span>
+          <select v-model="state.leadId" class="input" @change="changed">
+            <option :value="null">不指定</option>
+            <option v-for="id in teamIds" :key="id" :value="id">{{ nameOf(id) }}</option>
+          </select>
+        </label>
+        <div v-if="state.team.length > 1" class="axis-field axis-ult-order">
+          <span>同时能开大时</span>
+          <div class="axis-ult-order-list">
+            <button v-for="(id, index) in ultOrder" :key="id" class="ghost small" type="button" :title="`${nameOf(id)} 排到最前`" @click="toFront(id)">
+              <b>{{ index + 1 }}</b>{{ nameOf(id) }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="axis-team">
@@ -429,7 +494,7 @@ onBeforeUnmount(() => {
           <span class="axis-result-summary">{{ summary }}</span>
         </div>
         <DamagePanel v-if="view.damage" :damage="view.damage" />
-        <EventList v-model:filter="state.rowFilter" @update:filter="onChange" :view="view" :icons="icons" :splashes="splashes" :heads="heads" :clips="clips" :manual-ids="manualIds" :active-key="activeKey" :reveal-key="revealKey" @override="override" @toggle-ultimate="toggleUltimate" @select="selectRow" />
+        <EventList v-model:filter="state.rowFilter" @update:filter="onChange" :view="view" :icons="icons" :splashes="splashes" :heads="heads" :clips="clips" :manual-ids="manualIds" :holders="holders" :ids="teamIds" :active-key="activeKey" :reveal-key="revealKey" @override="override" @retarget="retarget" @toggle-ultimate="toggleUltimate" @toggle-hold="toggleHold" @select="selectRow" />
       </template>
     </section>
 

@@ -1,4 +1,4 @@
-import type { ActionKind, AssistPreference, CharacterKit, EnergyType, SpeedBuff, UnitGear, UnitSpec } from "./types.ts";
+import type { ActionKind, AssistPreference, CharacterKit, EnergyType, SpeedBuff, UltMode, UltPoint, UnitGear, UnitSpec } from "./types.ts";
 
 export const DIST_BASE = 10000;
 
@@ -49,6 +49,10 @@ export class Unit implements Actor {
   readonly manualUltimates: readonly number[];
   /** 已到指定动数、还没放出来的手动开大。 */
   manualPending = 0;
+  readonly ultMode: UltMode;
+  readonly ultAfter: readonly UltPoint[];
+  /** 留大：到了开大点还没放出来（能量不够或暂时放不了）。只记一次：几个点之间都没攒够，攒够后只开一次。 */
+  holdPending = false;
   /** 这名角色的终结技算一次攻击，由引擎发出攻击事件。 */
   readonly ultimateAttacks: boolean;
   /** 能存到多少，默认等于能量上限。可溢出的角色（Saber、白厄）会调高。 */
@@ -69,6 +73,7 @@ export class Unit implements Actor {
   readonly path: string;
   readonly elation: boolean;
   readonly targetSlot: number | null;
+  readonly targetScript: readonly (number | null)[];
   readonly equip: Readonly<Record<string, boolean>>;
   readonly gear: UnitGear | undefined;
   /** 忆灵在场。由角色模块通过 engine.setMemosprite 维护。 */
@@ -112,6 +117,8 @@ export class Unit implements Actor {
     this.maxEnergy = spec.maxEnergy;
     this.ultCost = spec.ultCost ?? spec.maxEnergy;
     this.manualUltimates = spec.manualUltimates ?? [];
+    this.ultMode = spec.ultMode ?? "auto";
+    this.ultAfter = spec.ultAfter ?? [];
     this.ultimateAttacks = spec.ultimateAttacks ?? false;
     this.energyCap = spec.maxEnergy;
     this.energyType = spec.energyType ?? "standard";
@@ -128,6 +135,7 @@ export class Unit implements Actor {
     this.path = spec.path ?? "";
     this.elation = spec.elation ?? false;
     this.targetSlot = spec.targetSlot ?? null;
+    this.targetScript = spec.targetScript ?? [];
     this.equip = spec.equipment ?? {};
     this.gear = spec.gear;
     this.energy = spec.initialEnergy ?? (this.energyType === "standard" ? spec.maxEnergy * 0.5 : 0);

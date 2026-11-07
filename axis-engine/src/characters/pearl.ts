@@ -20,7 +20,10 @@ export class PearlKit extends Kit {
   aesteSlot = 0;
 
   protected setup(): void {
-    this.aesteSlot = this.engine.resolveTarget(this.self, 0);
+    // 秘技：【美学底本】跟着当前操控的角色走，进战斗时在进场角色身上（只能是真珠以外的人）。
+    // 没指定进场角色、没用秘技时，按用户选的【美学底本】目标算。开大后换成大招目标。
+    const holder = this.engine.techniqueHolder();
+    this.aesteSlot = holder && holder !== this.self ? holder.slot : this.engine.resolveTarget(this.self, 0);
     // 【美学底本】（欢愉）开大时，消耗一层【艺术壁垒】。排在开大者自己的效果之后、遗器之前。
     this.engine.on("ultimate", ({ unit }) => {
       if (unit === this.self || unit.slot !== this.aesteSlot || !unit.elation) return;
@@ -55,7 +58,13 @@ export class PearlKit extends Kit {
 
   onTechnique({ engine, self }: KitContext): void {
     this.depth = 2;
-    engine.record("tech", self, "真珠秘技", { details: ["【深度学习】2 层", "全队好活当赏 +20"] });
+    const details = ["【深度学习】2 层", "全队好活当赏 +20"];
+    // 指定了进场角色才说明【美学底本】给了谁，不指定时和以前一样。
+    const holder = engine.techniqueHolder();
+    const aeste = engine.unitAt(this.aesteSlot);
+    if (holder === self) details.unshift(`进场角色是真珠自己：【美学底本】只能给别人，按【美学底本】目标 ${aeste?.name ?? ""} 算`);
+    else if (holder) details.unshift(`进场角色 ${holder.name} 成为【美学底本】`);
+    engine.record("tech", self, "真珠秘技", { details });
     this.el.grantHaohuo([...engine.units], 20, "真珠秘技");
   }
 
@@ -91,8 +100,10 @@ export class PearlKit extends Kit {
 
   afterElationCommon = (): void => {
     if (!this.self.equip.hasPearlLc) return;
-    this.engine.record("note", this.self, "献给明日的色彩", { details: ["施放欢愉技：固定能量 +10"] });
+    this.engine.record("note", this.self, "献给明日的色彩", { details: ["施放欢愉技：固定能量 +10", "我方全体回复生命值"] });
     this.engine.gainEnergy(this.self, PEARL_LC_ENERGY, { fixed: true, reason: "专武" });
+    // 专武的群疗也算队友治疗：星神★阿哈行迹 2 +1 愿力（每个终结技周期 1 次）。
+    this.healOrShield("真珠专武《献给明日的色彩》群疗");
   };
 
   onUltimate({ engine, self }: KitContext): void {
@@ -102,6 +113,8 @@ export class PearlKit extends Kit {
     this.barrier = true;
     const count = el.elationUnits().length;
     const pct = count === 1 ? 10 : count === 2 ? 15 : 30;
+    // 大招重新指定【美学底本】：秘技给的可能是进场角色，开大后换成用户选的大招目标。
+    this.aesteSlot = engine.resolveTarget(self, 0);
     const target = engine.unitAt(this.aesteSlot);
     engine.targetAlly(self, target, "终结技");
     // E2：除真珠和【美学底本】外的其他欢愉角色也拉条。

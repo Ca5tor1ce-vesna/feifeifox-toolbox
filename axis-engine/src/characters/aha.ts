@@ -107,11 +107,15 @@ export class AhaKit extends Kit {
   protected skill(extra: boolean): void {
     const { engine, self } = this;
     const details: string[] = [];
-    const target = engine.unitAt(this.lingshiPrefer);
+    // 施放时再取目标：逐动改目标能让这一动指定别人。【「欢愉」令使】持续到切换下一个目标（4.6.54 版本资料）。
+    const target = engine.unitAt(engine.resolveTarget(self, this.lingshiPrefer));
     engine.targetAlly(self, target, "战技");
-    if (this.lingshiSlot === null && target) {
+    if (target && this.lingshiSlot !== target.slot) {
+      const previous = engine.unitAt(this.lingshiSlot);
       this.lingshiSlot = target.slot;
-      details.push(`指定 ${target.name} 为【「欢愉」令使】（欢愉度 +20%）`);
+      details.push(previous
+        ? `【「欢愉」令使】从 ${previous.name} 换到 ${target.name}（欢愉度 +20%）`
+        : `指定 ${target.name} 为【「欢愉」令使】（欢愉度 +20%）`);
     }
     if (self.equip.hasSigLc && this.sigLcCooldown <= 0) {
       this.sigLcCooldown = 2;

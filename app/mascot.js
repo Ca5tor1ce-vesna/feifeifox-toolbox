@@ -35,6 +35,11 @@ export function searchResults(modules, text) {
   return modules.flatMap((module) => matchingFeatures(module, needle).map((feature) => ({ module, feature })));
 }
 
+/** 手机上不打字时不列功能，只有搜索框：底部标签栏里都有，列出来一大串还挡页面。 */
+export function listedResults(modules, text, phone) {
+  return phone && !text.trim() ? [] : searchResults(modules, text);
+}
+
 /** 返回「打开搜索」给 Ctrl K 用。saved 是存档里的位置，remember 在她挪动后保存新位置。 */
 export function setupMascot({ root, toggle, panel, input, list, saved, remember, modules, open, document: doc, window: win }) {
   let spot = Number.isFinite(saved?.x) && Number.isFinite(saved?.y) ? saved : { x: 1, y: 1 };
@@ -86,9 +91,9 @@ export function setupMascot({ root, toggle, panel, input, list, saved, remember,
 
   const render = () => {
     const typed = !!input.value.trim();
-    hits = searchResults(modules(), input.value);
+    hits = listedResults(modules(), input.value, isPhone());
     active = typed && hits.length ? 0 : -1;
-    root.classList.toggle("no-match", !hits.length);
+    root.classList.toggle("no-match", typed && !hits.length);
     root.classList.toggle("has-match", typed && hits.length > 0);
     list.innerHTML = hits.length
       ? hits.map(({ module, feature }, index) => `
@@ -96,7 +101,8 @@ export function setupMascot({ root, toggle, panel, input, list, saved, remember,
           <span class="icon">${featureIcon(module.id, feature.id) || escapeHtml(feature.icon || "•")}</span>
           <span class="text"><b>${escapeHtml(feature.name)}</b><small>${escapeHtml(feature.description || module.name)}</small></span>
         </button>`).join("")
-      : `<div class="mascot-empty">没有匹配的功能，换个词试试。</div>`;
+      : typed ? `<div class="mascot-empty">没有匹配的功能，换个词试试。</div>` : "";
+    list.hidden = !typed && !hits.length;
     mark();
     placePanel();
   };

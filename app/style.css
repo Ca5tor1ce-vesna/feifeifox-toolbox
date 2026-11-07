@@ -412,6 +412,7 @@ html.night .theme-sun { display: block; }
 .mascot-panel[hidden] { display: none; }
 .search-box { position: relative; flex: 0 0 auto; }
 .mascot-results { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; min-height: 0; overflow-x: hidden; overflow-y: auto; }
+.mascot-results[hidden] { display: none; }
 .mascot-hit { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px; border: 0; border-radius: 9px; background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
 .mascot-hit:hover, .mascot-hit.is-active { background: var(--accent-soft); }
 .mascot-hit .icon { flex: 0 0 22px; display: grid; place-items: center; color: var(--accent); }

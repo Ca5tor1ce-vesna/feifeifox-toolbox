@@ -60,6 +60,16 @@ export function lightconeMap(lightcones: any[], names: Iterable<string | undefin
 
 const lineups = (data: any): any[] => (data?.targets || []).flatMap((t: any) => (t.records || []).flatMap((r: any) => r.lineup || []));
 
+const targetKey = (target: any): string => [target.mode, target.season, target.stage, target.category].join("|");
+
+/** 把随包的往期成绩接在最新数据后面。两边都有的关卡用最新的。 */
+export function withArchive(result: any, archive: any): any {
+  const targets: any[] = result?.data?.targets || [];
+  const known = new Set(targets.map(targetKey));
+  const older = (archive?.targets || []).filter((target: any) => !known.has(targetKey(target)));
+  return older.length ? { ...result, data: { ...result.data, targets: [...targets, ...older] } } : result;
+}
+
 export function withAvatars(result: any, characters: any[], lightcones: any[]): any {
   const data = result.data || {};
   const [avatars, unmapped] = avatarMap(characters, lineups(data).map((c) => c.name));

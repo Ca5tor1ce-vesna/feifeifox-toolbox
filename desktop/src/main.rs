@@ -1,13 +1,14 @@
 // 绯绯狐工具箱的 exe 外壳（2026-11-04 用户决定改用 Rust 打包，不再带 Python）。
 //
 // 工具箱本身是静态站点（tools/build_site.mjs → build/site），编译时嵌进 exe，用系统自带的 WebView2 显示。
-// 计算都在页面里；这里只做三件事：
+// 计算都在页面里；这里只做这几件事：
 //   1. read_store / write_store：读写 exe 旁边的 userdata/<名字>.json。文件名和以前 Python 版一样
 //      （honkai-star-rail/speed-plan-presets.json、honkai-star-rail/aha-team-presets.json、ui-state.json），
 //      老用户把 userdata 文件夹拷过来就能接着用，复制这个文件夹就是备份；
 //   2. open_external：外部链接（b站主页、GitHub）用系统默认浏览器打开；
 //   3. fetch_showcase：UID 查询，向 Enka 要展柜数据（网页请求会被跨域拦下，所以由 exe 发；B站 Toy 版没有这个功能）；
-//   4. 不弹控制台窗口。
+//   4. 自动更新（update.rs，1.3）：检查公开仓库的新版、校验签名、替换自己再重启；
+//   5. 不弹控制台窗口。
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::collections::HashMap;
@@ -15,6 +16,8 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
+
+mod update;
 
 /// userdata 目录：exe 旁边。开发时（cargo run）也是可执行文件旁边。
 fn userdata_dir() -> Result<PathBuf, String> {
@@ -168,8 +171,20 @@ fn browser_args(extra: Option<String>) -> String {
 }
 
 fn main() {
+    // 删掉上次自动更新留下的旧 exe（.old）。刚更新完（带 --updated）时先等旧进程退出再开窗口。
+    if let Ok(exe) = std::env::current_exe() {
+        update::remove_old(&exe, std::env::args().any(|arg| arg == update::UPDATED_ARG));
+    }
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![read_store, write_store, open_external, fetch_showcase])
+        .invoke_handler(tauri::generate_handler![
+            read_store,
+            write_store,
+            open_external,
+            fetch_showcase,
+            update::check_update,
+            update::install_update,
+            update::open_release_page
+        ])
         // 窗口按 tauri.conf.json 里的配置建（那里 create 为 false），只是多传浏览器参数。
         .setup(|app| {
             let config = app.config().app.windows.first().cloned().ok_or("tauri.conf.json 里没有窗口配置")?;

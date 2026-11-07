@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { panelPlace, searchResults, toFraction, toPoint } from "../../app/mascot.js";
+import { listedResults, panelPlace, searchResults, toFraction, toPoint } from "../../app/mascot.js";
 
 const box = { left: 6, top: 6, right: 924, bottom: 574 };
 
@@ -57,4 +57,13 @@ test("搜索结果：不打字列出菜单里的功能，打字只留匹配的�
   assert.deepEqual(names("GACHA"), ["抽卡规划"]);
   assert.deepEqual(names("隐藏"), ["隐藏工具"]);
   assert.deepEqual(names("不存在"), []);
+});
+
+const listed = (text: string, phone: boolean) => listedResults(modules, text, phone).map((hit: { feature: { name: string } }) => hit.feature.name);
+
+test("搜索结果：手机上不打字时什么都不列，打字后和电脑一样", () => {
+  assert.deepEqual(listed("", true), []);
+  assert.deepEqual(listed("   ", true), []);
+  assert.deepEqual(listed("抽卡", true), ["抽卡规划"]);
+  assert.deepEqual(listed("", false), ["抽卡规划", "配速查询"]);
 });

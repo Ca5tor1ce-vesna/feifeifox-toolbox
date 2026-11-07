@@ -3,13 +3,14 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import AxisFace from "./AxisFace.vue";
 import type { Head } from "./AxisHead.vue";
 import type { UltClip } from "./ult-clips.ts";
-import CardDetail from "./CardDetail.vue";
+import CardDetail, { type Holder } from "./CardDetail.vue";
 import { buildCards, cardMatches, groupMoments, ROW_FILTERS, type AxisCard, type AxisMoment, type AxisView, type Row, type RowFilter } from "./model.ts";
 import { prefersReducedMotion } from "./motion.ts";
 import TimelineCard from "./TimelineCard.vue";
 
-const props = defineProps<{ view: AxisView; icons: Record<number, string>; splashes: Record<number, string>; heads: Record<number, Head>; clips: Record<number, UltClip>; manualIds: Set<number>; activeKey: string | null; revealKey: number }>();
-const emit = defineEmits<{ override: [row: Row]; toggleUltimate: [row: Row]; select: [key: string] }>();
+const props = defineProps<{ view: AxisView; icons: Record<number, string>; splashes: Record<number, string>; heads: Record<number, Head>; clips: Record<number, UltClip>; manualIds: Set<number>; holders: Holder[]; ids: string[]; activeKey: string | null; revealKey: number }>();
+const emit = defineEmits<{ override: [row: Row]; retarget: [row: Row, slot: number]; toggleUltimate: [row: Row]; toggleHold: [row: Row, holder: string]; select: [key: string] }>();
+const names = computed(() => props.view.units.map((unit) => unit.name));
 
 const reduced = prefersReducedMotion();
 
@@ -186,7 +187,7 @@ const revealStyle = (moment: AxisMoment) => (revealing.value ? { "--axis-delay":
                       :aria-pressed="card.key === activeKey"
                       @click="select(card)"
                     />
-                    <CardDetail v-if="!wide && card.key === activeKey" :key="card.key" :damage="view.damage?.rows ?? null" :card="card" :icons="icons" :splashes="splashes" :heads="heads" :manual-ids="manualIds" @override="emit('override', $event)" @toggle-ultimate="emit('toggleUltimate', $event)" />
+                    <CardDetail v-if="!wide && card.key === activeKey" :key="card.key" :damage="view.damage?.rows ?? null" :card="card" :icons="icons" :splashes="splashes" :heads="heads" :manual-ids="manualIds" :holders="holders" :ids="ids" :names="names" @override="emit('override', $event)" @retarget="(row, slot) => emit('retarget', row, slot)" @toggle-ultimate="emit('toggleUltimate', $event)" @toggle-hold="(row, holder) => emit('toggleHold', row, holder)" />
                   </template>
                 </div>
               </div>
@@ -197,7 +198,7 @@ const revealStyle = (moment: AxisMoment) => (revealing.value ? { "--axis-delay":
       </div>
 
       <aside v-if="wide" class="axis-detail-side" aria-live="polite">
-        <CardDetail v-if="activeCard" :key="activeCard.key" :damage="view.damage?.rows ?? null" :card="activeCard" :icons="icons" :splashes="splashes" :heads="heads" :manual-ids="manualIds" @override="emit('override', $event)" @toggle-ultimate="emit('toggleUltimate', $event)" />
+        <CardDetail v-if="activeCard" :key="activeCard.key" :damage="view.damage?.rows ?? null" :card="activeCard" :icons="icons" :splashes="splashes" :heads="heads" :manual-ids="manualIds" :holders="holders" :ids="ids" :names="names" @override="emit('override', $event)" @retarget="(row, slot) => emit('retarget', row, slot)" @toggle-ultimate="emit('toggleUltimate', $event)" @toggle-hold="(row, holder) => emit('toggleHold', row, holder)" />
         <p v-else class="axis-detail-hint">点轴上的卡片，这里显示那一刻的细节：回能、资源、触发了什么，也能把这一动改成普攻或战技。</p>
       </aside>
     </div>

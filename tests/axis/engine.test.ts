@@ -113,6 +113,33 @@ test("拉条打在等待中的单位上立即扣减，且不低于 0", () => {
   assertAvs(avOf(full.timeline, "b"), [50]);
 });
 
+test("拉条超过剩余距离：到 0 为止，多出的作废并记下来", () => {
+  const run = (units: UnitSpec[], maxAV: number) => {
+    const engine = new AxisEngine({ maxAV, units });
+    engine.run();
+    return engine.overflows;
+  };
+  // a（速度 200）在 50 行动时拉 b 80%：b 还差 5000（50 AV），拉 8000，溢出 3000 / 100 = 30 AV
+  const [item, ...rest] = run([unit("a", 200, { kit: onAct(({ engine }) => engine.advance(engine.unit("b"), 80)) }), unit("b", 100)], 50);
+  assert.equal(rest.length, 0);
+  assert.equal(item.target, "b");
+  assert.equal(item.pct, 80);
+  near(item.av, 50);
+  near(item.leftAv, 50);
+  near(item.wastedAv, 30);
+  assert.equal(item.after?.name, "a", "挂在触发拉条的那一动上");
+  // 拉 30%：够扣，不记
+  assert.equal(run([unit("a", 200, { kit: onAct(({ engine }) => engine.advance(engine.unit("b"), 30)) }), unit("b", 100)], 50).length, 0);
+  // 拉 100% 本来就是立即行动，不记
+  assert.equal(run([unit("a", 200, { kit: onAct(({ engine }) => engine.advance(engine.unit("b"), 100)) }), unit("b", 100)], 50).length, 0);
+  // 自己回合内挂起的两口 60% 合计 120%：回合结束重置时溢出 2000 / 100 = 20 AV
+  const twice = onAct(({ engine, self }) => { engine.advance(self, 60, { selfSource: true }); engine.advance(self, 60, { selfSource: true }); });
+  const [pending] = run([unit("a", 100, { kit: twice })], 100);
+  assert.equal(pending.pct, 120);
+  near(pending.leftAv, 100);
+  near(pending.wastedAv, 20);
+});
+
 test("行动延后增加剩余距离", () => {
   // 开局 b 延后 20%：12000 / 100 = 120
   const kit: CharacterKit = {

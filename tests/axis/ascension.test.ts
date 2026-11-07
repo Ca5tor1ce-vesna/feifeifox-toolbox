@@ -75,8 +75,9 @@ test("心灵感应 2 级：爻光开大固定回能 30，【大吉大利】倍�
 test("全息幻象 2 级：好活当赏的 40% 进隐藏分", () => {
   // 真珠 0 AV 开大，全队好活当赏 20；1 级给银狼 4，2 级给 8。
   const team = (eidolon: number) => [slowAha(eidolon), { id: "1503", initAdv: 100, err: 0, baseSpd: 200, traceSpd: 0, targetSlot: 0 }, { id: "1506", baseSpd: 1, traceSpd: 0 }];
-  near(unit(sim({ maxAV: 5, ...ASCENDED, team: team(1) }), "1506").finalEnergy, 4);
-  near(unit(sim({ maxAV: 5, ...ASCENDED, team: team(2) }), "1506").finalEnergy, 8);
+  // 另有开战 3 名欢愉角色的人头笑点同步 +3（开战时还没升格）。
+  near(unit(sim({ maxAV: 5, ...ASCENDED, team: team(1) }), "1506").finalEnergy, 3 + 4);
+  near(unit(sim({ maxAV: 5, ...ASCENDED, team: team(2) }), "1506").finalEnergy, 3 + 8);
 });
 
 test("跃然纸上 2 级：额外回合结束保留该次好活当赏的 20%", () => {

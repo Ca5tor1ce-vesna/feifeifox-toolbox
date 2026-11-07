@@ -13,6 +13,7 @@ import { CHEVRON, featureIcon, matchingFeatures, pageIcon, setupMoreSheet, setup
 import { statusPageHtml } from "./status-page.js";
 import { setupWhatsNew } from "./whats-new.js";
 import { setupInstallGuide } from "./install-guide.js";
+import { setupUpdater } from "./updater.js";
 
 const state = {
   registry: null,
@@ -403,6 +404,8 @@ async function boot() {
     const showWhatsNew = await setupWhatsNew({ seen: whatsNewSeen, remember: (version) => { whatsNewSeen = version; saveShell(); } });
     // 首页会被重新渲染（openHome 换 innerHTML），所以用事件委托。
     document.addEventListener("click", (event) => { if (event.target instanceof Element && event.target.closest("[data-whats-new]")) void showWhatsNew(); });
+    // exe 自动更新（1.3）：后台检查，不挡启动；网页版没有 exe 的命令，直接跳过。
+    void setupUpdater({ invoke: window.__TAURI__?.core?.invoke, dialog: window.GT_DIALOG, window });
     // 页面里的 #/模块/功能 链接、手改地址栏。setHash 用的是 replaceState，不会触发这里。
     window.addEventListener("hashchange", () => {
       const route = parseHash();

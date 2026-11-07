@@ -121,6 +121,7 @@ export class Elation implements BattleModule {
     });
     engine.on("battleStart", () => {
       this.aha.remDist = Math.max(0, DIST_BASE - (DIST_BASE * this.cfg.ahaAdvancePct) / 100);
+      this.openingGrants();
     });
     engine.on("speedSnapshot", () => { this.ahaInitialSpeed = this.ahaSpeed(); });
     engine.on("turnEnd", ({ unit, buffsExpired }) => this.onTurnEnd(unit, buffsExpired), 10);
@@ -236,6 +237,27 @@ export class Elation implements BattleModule {
     }
   }
 
+  /**
+   * 进入战斗（第一波）时：场上每名欢愉角色获得 20 点好活当赏，再按欢愉角色数各给 1 笑点。
+   * 和计入 20 笑点的额外【阿哈时刻】结束时的结算一样，只是不放欢愉技；排在各人秘技之前。
+   * 依据 4.6 版本游戏配置（进入战斗第一波：好活当赏 20、欢愉角色数 × 1 笑点）；2026-11-07 用户按游戏实际确认开局也有。
+   */
+  private openingGrants(): void {
+    const units = this.elationUnits();
+    if (units.length === 0) return;
+    this.engine.record("note", null, "开战：欢愉角色进场", {
+      kind: "aha",
+      name: "【阿哈时刻】",
+      details: [
+        "和计入 20 笑点的额外【阿哈时刻】一样结算，不放欢愉技",
+        `场上 ${units.length} 名欢愉角色：每人好活当赏 +20`,
+        `人头笑点：笑点 +${units.length}`,
+      ],
+    });
+    this.grantHaohuo(units, 20, "开战");
+    this.gainPunchline(units.length);
+  }
+
   // ----------------------------- 欢愉技 ----------------------------- //
 
   /** 所有欢愉技共用的结算：角色自己的部分和专武《向浪花掷下盛夏》的【风口】。 */
@@ -324,7 +346,7 @@ export class Elation implements BattleModule {
     } finally {
       engine.depth -= 1;
     }
-    for (const ally of engine.units) engine.maybeUltimate(ally);
+    engine.sweepUltimates();
   }
 
   private ahaBody(isExtra: boolean, fixed: number): void {
@@ -383,14 +405,27 @@ export class Elation implements BattleModule {
       engine.record("note", null, "【阿哈时刻】笑点结算", { ...rowOptions, details });
       if (consumed > 0) this.grantHaohuo(recipients, consumed, "阿哈时刻");
     }
+    // 人头笑点：每次【阿哈时刻】结束（普通、额外回合、要有笑声都算），场上每名欢愉角色给 1 笑点，
+    // 在消耗笑点池之后加（4.6 版本游戏配置：阿哈时刻结束时按欢愉角色数 × 1 加笑点）。
+    // 2026-11-07 群里反馈：额外【阿哈时刻】前后笑点、银狼隐藏分都少了人头这一份。
+    if (recipients.length > 0) {
+      this.gainPunchline(recipients.length);
+      engine.record("note", null, "【阿哈时刻】结束：人头笑点", {
+        ...rowOptions,
+        details: [`场上 ${recipients.length} 名欢愉角色，每人 1 笑点：笑点 +${recipients.length}`],
+        extra: isExtra,
+      });
+    }
     // 天赋：阿哈回合结束后可再次触发。额外回合也是阿哈的回合。
     // 触发仍要求笑点从低于 40 再升上去，所以这里清标志不会在池子仍 ≥40 时连发。
     this.punchline40Done = false;
     this.ahaFlat = 0;
     if (!isExtra) {
+      if (a.pendingAdvance > 0) engine.noteOverflow(a, a.pendingAdvance, DIST_BASE);
       a.remDist = Math.max(0, DIST_BASE - (DIST_BASE * a.pendingAdvance) / 100);
       a.pendingAdvance = 0;
     } else if (!wasInTurn) {
+      if (a.pendingAdvance > 0) engine.noteOverflow(a, a.pendingAdvance, a.remDist);
       a.remDist = Math.max(0, a.remDist - (DIST_BASE * a.pendingAdvance) / 100);
       a.pendingAdvance = 0;
     }

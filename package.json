@@ -1,6 +1,6 @@
 {
   "name": "game-toolbox-development",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "private": true,
   "scripts": {
     "typecheck": "tsc -p tsconfig.check.json && tsc -p tsconfig.axis.json && vue-tsc -p tsconfig.axis-ui.json && vue-tsc -p tsconfig.pages.json",

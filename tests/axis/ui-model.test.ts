@@ -9,7 +9,7 @@ import type { GameData } from "../../axis-engine/src/battle.ts";
 import { createBattle } from "../../axis-engine/src/battle.ts";
 import { memberFromBuild } from "../../axis-ui/src/build.ts";
 import { memberFromLegacyUnit, stateFromLegacy, stateFromRecord } from "../../axis-ui/src/legacy-team.ts";
-import { buildCards, cardMatches, cardSlots, castsOf, computeAxis, droppedMembers, droppedNotice, groupMoments, newCustomMember, newElationSettings, newMember, newState, pageCharacters, restoreState, speedThreshold, toMemberInput, windowAV, type PageData, type PageState } from "../../axis-ui/src/model.ts";
+import { buildCards, cardMatches, cardOverflows, overflowText, cardSlots, castsOf, computeAxis, droppedMembers, droppedNotice, groupMoments, newCustomMember, newElationSettings, newMember, newState, pageCharacters, restoreState, speedThreshold, toMemberInput, windowAV, type PageData, type PageState } from "../../axis-ui/src/model.ts";
 import { TEAM_PRESETS } from "../../axis-ui/src/presets.ts";
 import { claimClipPlayback, releaseClipPlayback, ULT_CLIP_FRAMING, ultClipOf } from "../../axis-ui/src/ult-clips.ts";
 
@@ -124,6 +124,30 @@ test("星神★阿哈的行显示愿力，不是空着；别人照常显示能�
   assert.ok(pearl.energy !== null && pearl.energy > 10);
 });
 
+test("拉条溢出挂到触发它的那张卡上，详情一行写清楚", () => {
+  // 预设开着行迹3 开局提前：阿哈第一次开大时【阿哈时刻】快到了，20% 拉条溢出（数值由 engine / elation-mechanics 的手算测试钉住）。
+  const cards = buildCards(computeAxis(stateFromLegacy(TEAM_PRESETS.aha_quad, pageData), pageData).rows);
+  const ahaUlt = cards.find((card) => card.kind === "ult" && card.main?.name === "星神★阿哈" && cardOverflows(card).length > 0);
+  assert.ok(ahaUlt, "阿哈有一次开大拉条溢出");
+  const [item] = cardOverflows(ahaUlt!).filter((entry) => entry.target === "【阿哈时刻】");
+  assert.equal(item.pct, 20);
+  assert.ok(item.wastedAv > 0 && item.leftAv > 0);
+  assert.equal(overflowText(item), `【阿哈时刻】 拉条 20%：本来只差 ${item.leftAv.toFixed(1)} AV，溢出 ${item.wastedAv.toFixed(1)} AV 作废`);
+  // 没有溢出的卡不带这个字段
+  assert.ok(cards.some((card) => cardOverflows(card).length === 0));
+  assert.ok(cards.flatMap((card) => [...card.follows, ...card.notes]).every((row) => row.overflows === undefined || row.overflows.length > 0));
+  // 被拉的人同一时刻本来就要行动：整口作废，换个说法，不写「只差 0.0 AV」
+  assert.equal(overflowText({ target: "银狼LV.999", pct: 30, leftAv: 0, wastedAv: 15.94 }), "银狼LV.999 拉条 30%：已经轮到行动，15.9 AV 全部作废");
+});
+
+test("开大里插了额外回合，回来再结算的拉条仍挂在这次开大上", () => {
+  // 绯英预设：真珠开大先给绯英【美学底本】额外回合，E2 拉阿哈在额外回合之后才结算，溢出要算真珠开大的。
+  const cards = buildCards(computeAxis(stateFromLegacy(TEAM_PRESETS.feiying_aha, pageData), pageData).rows);
+  const flagged = cards.filter((card) => cardOverflows(card).some((item) => item.target === "星神★阿哈"));
+  assert.ok(flagged.length > 0);
+  assert.ok(flagged.every((card) => card.kind === "ult" && card.main?.name === "真珠"), flagged.map((card) => card.main?.name).join("、"));
+});
+
 test("终结技靠特殊资源的角色，这一列写资源名", () => {
   const names: Record<string, string> = { 1220: "飞黄", 1308: "残梦", 1408: "火种", 1415: "追忆", 1506: "隐藏分", 1511: "愿力" };
   // 遐蝶的【新蕊】靠掉血累积，引擎不模拟：不显示，免得一直是 0。
@@ -138,15 +162,15 @@ test("终结技靠特殊资源的角色，这一列写资源名", () => {
 });
 
 test("银狼LV.999 的隐藏分按含溢出的合计显示", () => {
-  // 开局 140（60 + 溢出 80）当场开大：消耗 60 剩 80（溢出的保留，2026-11-05 用户确认），再 +20（隐藏关卡），之后每次强化普攻 +5。
-  // 能开大的那部分封顶 60，合计要超过 60 才对；第一次强化普攻时合计 = 80 + 20 = 100。
+  // 开局 140（60 + 溢出 80），开战 1 个人头笑点同步 → 141，当场开大：消耗 60 剩 81（溢出的保留，2026-11-05 用户确认），
+  // 再 +20（隐藏关卡），之后每次强化普攻 +5。能开大的那部分封顶 60，合计要超过 60 才对；第一次强化普攻时合计 = 81 + 20 = 101。
   const state = stateOf("1506");
   state.team[0].initialEnergy = 140;
   const rows = computeAxis(state, pageData).rows.filter((item) => item.slot === 0 && item.energy !== null);
   const first = rows.find((item) => item.type === "enhanced_basic")!;
   assert.equal(first.energyName, "隐藏分");
-  assert.equal(first.energy, 100);
-  assert.ok(rows.some((item) => item.energy! > 100));
+  assert.equal(first.energy, 101);
+  assert.ok(rows.some((item) => item.energy! > 101));
 });
 
 test("机制按队伍出现：有欢愉角色才有【阿哈时刻】，它不属于任何角色", () => {
@@ -297,6 +321,11 @@ test("队伍存档：新格式原样读回，旧格式走转换，坏数据不�
 // 改过的条目：2026-11-06 aha_quad、feiying_aha、wolf_sparkle 三个预设——【阿哈时刻】里不再中途插终结技，
 // 首个分歧都是旧基准在阿哈时刻那一刻先放了某人的终结技，新的先把其余人的欢愉技放完。
 // 2026-11-06 sandu_duel：星期日带舞！舞！舞！在自己回合里开大，自己那口拉条以前跳过、现在回合结束后结算（和风套一样），首个分歧是星期日下一动提前。
+// 2026-11-07 四个预设：【阿哈时刻】结束时按欢愉角色数加人头笑点、爻光秘技的自动战技不加笑点也不再记成一张战技卡、银狼秘技 +3 笑点（4.6 版本游戏配置）。
+// aha_quad、feiying_aha、wolf_sparkle 首个分歧是 0 AV 那张爻光秘技的「战技」卡没了；sandu_duel 首个分歧是星神★阿哈第三次终结技从 231.0 提前到 199.3：
+// 人头笑点让笑点在 124.1 AV 首达 40，天赋多给 1 愿力。
+// 2026-11-07 开战每名欢愉角色 20 好活当赏、人头笑点（4.6 版本游戏配置，用户按游戏实际确认）：feiying_aha 首个分歧是绯英【狐狸老师】
+// 追击提前到 68.3 AV（开战好活当赏转了能量）；wolf_sparkle 首个分歧是银狼 100.9 AV 的终结技提前到额外【阿哈时刻】之前（隐藏分多了开战人头）。
 test("预设和旧引擎逐事件一致（基准来自下线前的旧页面，不证明机制正确）", () => {
   const baseline = JSON.parse(readFileSync(join(HERE, "..", "fixtures", "axis_preset_timelines.json"), "utf-8")) as Record<string, [number, string, number | null][]>;
   assert.deepEqual(Object.keys(baseline).sort(), Object.keys(TEAM_PRESETS).sort());
@@ -505,4 +534,93 @@ test("每张【阿哈时刻】卡都挂着全部欢愉角色的欢愉技（2026-
     const casters = card.follows.filter((row) => row.type === "elation_skill").map((row) => row.slot);
     assert.deepEqual([...casters].sort(), [0, 1, 2, 3], `${card.av.toFixed(2)} 的阿哈时刻`);
   }
+});
+
+test("留大：开大点按角色 id 记，换站位不乱；读档认不出的丢掉", () => {
+  // 玲可 100 速（100、200 AV）、星期日 … 只看留大的人什么时候开。玲可开局满能，留到 1 号位第 1 动后。
+  const state = stateOf("1110", "1313");
+  state.team[0].initialEnergy = 1000;
+  const auto = computeAxis(state, data);
+  const firstAuto = auto.rows.find((row) => row.type === "ultimate" && row.slot === 0)!;
+  near(firstAuto.av, 0, "有大就开：开局就开");
+  state.team[0].ultMode = "hold";
+  state.team[0].ultAfter = [{ id: "1313", action: 1 }];
+  const held = computeAxis(state, data);
+  const firstHeld = held.rows.find((row) => row.type === "ultimate" && row.slot === 0)!;
+  const mateFirst = held.rows.find((row) => row.slot === 1 && row.action === 1)!;
+  near(firstHeld.av, mateFirst.av, "留到队友第 1 动后");
+  // 换站位：开大点跟着角色走。
+  const swapped = { ...state, team: [state.team[1], state.team[0]] };
+  const again = computeAxis(swapped, data);
+  near(again.rows.find((row) => row.type === "ultimate" && row.slot === 1)!.av, firstHeld.av);
+  // 存档往返；坏数据丢掉。
+  const saved = JSON.parse(JSON.stringify({ ...state, leadId: "1313", ultOrder: ["1313", 3] }));
+  saved.team[0].ultAfter.push({ id: "1313", action: 0 }, { action: 2 });
+  saved.team[1].ultMode = "weird";
+  const restored = restoreState(saved, data);
+  assert.equal(restored.team[0].ultMode, "hold");
+  assert.deepEqual(restored.team[0].ultAfter, [{ id: "1313", action: 1 }]);
+  assert.equal(restored.team[1].ultMode, undefined);
+  assert.equal(restored.leadId, "1313");
+  assert.deepEqual(restored.ultOrder, ["1313"]);
+  assert.equal(restoreState({ team: [] }, data).leadId, null, "旧存档没有进场角色");
+});
+
+test("进场角色和开大顺序：只在需要时生效，人不在队里就不算", () => {
+  const state = { ...stateOf("1412", "1408", "1218"), useTechnique: true, leadId: "1218" };
+  state.team[0].targetSlot = 1;
+  const markOf = (next: PageState) => computeAxis(next, data).rows.find((row) => row.label === "战技：施加【军功】" && row.av === 0)?.name;
+  assert.equal(markOf(state), "椒丘");
+  assert.equal(markOf({ ...state, leadId: "9999" }), "白厄", "进场角色不在队里，按技能目标");
+  assert.equal(markOf({ ...state, useTechnique: false }), undefined);
+  // 开大顺序：开局都满能，排过的先开。
+  const both = stateOf("1110", "1218");
+  for (const member of both.team) member.initialEnergy = 1000;
+  const order = (next: PageState) => computeAxis(next, data).rows.filter((row) => row.type === "ultimate" && row.av === 0).map((row) => row.slot).filter((slot, index, list) => list.indexOf(slot) === index);
+  assert.deepEqual(order(both).slice(0, 2), [0, 1]);
+  assert.deepEqual(order({ ...both, ultOrder: ["1218"] }).slice(0, 2), [1, 0]);
+});
+
+// 2026-11-07 群里提的可优化项：令使这类以队友为目标的技能，像改普攻一样在卡片上逐动改目标。
+test("逐动改目标：星神★阿哈第 1 动令使改给真珠，下一动回到平时的目标并换回令使", () => {
+  const state = { ...stateOf("1511", "1502", "1503", "1506"), customAV: 300 };
+  const skills = (view: ReturnType<typeof computeAxis>) => view.rows.filter((row) => row.slot === 0 && row.type === "skill" && row.action !== undefined);
+  const plain = skills(computeAxis(state, pageData));
+  assert.ok(plain.length >= 2, "300 AV 里阿哈至少放两次战技");
+  assert.equal(plain[0].target, 1, "平时给站位里第一个队友（爻光）");
+  state.team[0].targetOverrides = { [String(plain[0].action)]: "1503" };
+  const changed = skills(computeAxis(state, pageData));
+  assert.equal(changed[0].target, 2);
+  assert.ok(changed[0].details.includes("指定 真珠 为【「欢愉」令使】（欢愉度 +20%）"), changed[0].details.join("|"));
+  // 只改这一动：下一次战技按平时的目标，令使从真珠换回爻光。
+  assert.equal(changed[1].target, 1);
+  assert.ok(changed[1].details.includes("【「欢愉」令使】从 真珠 换到 爻光（欢愉度 +20%）"), changed[1].details.join("|"));
+});
+
+test("逐动改目标：星期日战技也能改；目标不在队里了当没改；存档读回只留认得出的", () => {
+  const state = stateOf("1313", "1110", "1003");
+  const first = () => computeAxis(state, pageData).rows.find((row) => row.slot === 0 && row.type === "skill" && row.action === 1)!;
+  assert.equal(first().target, 1);
+  state.team[0].targetOverrides = { 1: "1003" };
+  assert.equal(first().target, 2);
+  state.team[0].targetOverrides = { 1: "1001" };
+  assert.equal(first().target, 1, "目标不在队里就按平时的");
+  const saved = JSON.parse(JSON.stringify({ ...state, team: state.team.map((member, i) => (i === 0 ? { ...member, targetOverrides: { 1: "1003", x: "1110", 2: 5 } } : member)) }));
+  assert.deepEqual(restoreState(saved, pageData).team[0].targetOverrides, { 1: "1003" });
+  assert.equal(restoreState({ ...saved, team: [{ ...saved.team[0], targetOverrides: "坏" }] }, pageData).team[0].targetOverrides, undefined);
+});
+
+test("逐动改目标只管这一动的普攻、战技，不改同一动后面开大的目标", () => {
+  // 星期日第 1 动战技改给姬子（站位 2），第 1 动后手动开大：终结技仍按平时的目标给玲可（站位 1）。
+  const engine = createBattle({
+    team: [{ id: "1313", targetScript: [2], manualUltimates: [1], rotation: "skill" }, { id: "1110", baseSpd: 1 }, { id: "1003", baseSpd: 1 }],
+    maxAV: 300,
+    useTechnique: false,
+  }, game);
+  const hits: string[] = [];
+  engine.on("allyTargeted", ({ ability, target }) => hits.push(`${ability}:${target.slot}`));
+  engine.run();
+  assert.deepEqual(hits.slice(0, 3), ["战技:2", "终结技:1", "战技:1"]);
+  assert.equal(engine.actionTargetOf(0, 1), 2);
+  assert.equal(engine.actionTargetOf(0, 2), 1);
 });
